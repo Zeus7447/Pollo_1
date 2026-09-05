@@ -1,0 +1,32 @@
+---
+import '../styles/global.css';
+import polloLogo from '../assets/logo_pollo.png';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Ubicaciones en Irapuato | Pollo Fresa',
+  description = 'Encuentra las ubicaciones de Pollo Fresa en Irapuato, consulta el mapa y abre la ruta para llegar.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#2c100b" />
+    <link rel="icon" type="image/png" href={polloLogo.src} />
+    <title>{title}</title>
+  </head>
+  <body><slot /></body>
+</html>
+
+<style is:global>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; min-width: 320px; overflow-x: hidden; background: #fff4df; }
+</style>

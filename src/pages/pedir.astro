@@ -1,0 +1,396 @@
+---
+import Layout from '../layouts/Layout_pedir.astro';
+import Header from '../components/header.astro';
+import Footer from '../components/footer.astro';
+import WhatsappFlotante from '../components/whatsapp_flotante.astro';
+import polloLogo from '../assets/logo_pollo.png';
+import alitasLogo from '../assets/alitas_logo.jpeg';
+import polloEntero from '../assets/menu-pollo-entero.png';
+import medioPollo from '../assets/menu-medio-pollo.png';
+import comboPollo from '../assets/menu-combo.png';
+import acompanamientos from '../assets/menu-acompanamientos.png';
+import alitas from '../assets/fresa-wings-alitas.png';
+import comboAlitas from '../assets/fresa-wings-combo.png';
+
+const polloProducts = [
+  { name: 'Pollo entero', detail: 'Con tortillas y salsa de la casa', price: 249, badge: 'El favorito', image: polloEntero },
+  { name: 'Medio pollo', detail: 'La porción perfecta para uno o dos', price: 139, badge: 'Para compartir', image: medioPollo },
+  { name: 'Combo Fresa', detail: 'Medio pollo, papas, tortillas, salsa y bebida', price: 179, badge: 'Todo incluido', image: comboPollo },
+  { name: 'Combo familiar', detail: 'Pollo entero, dos acompañamientos, tortillas y salsas', price: 329, badge: 'Para la familia', image: polloEntero },
+];
+
+const wingsProducts = [
+  { name: '6 alitas', detail: 'Elige uno de nuestros 10 sabores', price: 80, badge: 'Alitas', image: alitas },
+  { name: '12 alitas', detail: 'Para compartir o quedártelas todas', price: 150, badge: 'Alitas', image: alitas },
+  { name: '6 boneless', detail: 'Crujientes, sin hueso y bañados', price: 80, badge: 'Boneless', image: alitas },
+  { name: '12 boneless', detail: 'Más bocados, más sabor', price: 150, badge: 'Boneless', image: alitas },
+  { name: 'Combo 1', detail: '6 alitas, una malteada y papas', price: 135, badge: 'Combo', image: comboAlitas },
+  { name: 'Combo 3', detail: '12 alitas y dos malteadas', price: 225, badge: 'Combo', image: comboAlitas },
+  { name: 'Combo familiar Wings', detail: '25 alitas, 4 hamburguesas, 2 malteadas y papas', price: 630, badge: 'Para la banda', image: comboAlitas },
+];
+
+const sabores = ['BBQ', 'Mango', 'Mango habanero', 'Tamarindo', 'Búfalo', 'Valentina', 'Habanero', 'Parmesano', 'Lemon pepper', 'Takis fuego'];
+
+const extras = [
+  { name: 'Papas a la francesa', price: 50 },
+  { name: 'Gajos de papa', price: 50 },
+  { name: '10 aros de cebolla', price: 50 },
+  { name: '5 dedos de queso', price: 75 },
+  { name: 'Refresco', price: 25 },
+  { name: 'Salsa extra', price: 10 },
+  { name: 'Aderezo', price: 12 },
+  { name: 'Chimichurri', price: 12 },
+];
+---
+
+<Layout>
+  <Header />
+  <main>
+    <section class="order-hero" id="top">
+      <div class="hero-images" aria-hidden="true"><img src={polloEntero.src} alt="" /><img src={alitas.src} alt="" /></div>
+      <div class="hero-shade"></div>
+      <div class="hero-copy"><p><span></span> Pedido directo por WhatsApp</p><h1>Tu antojo,<br /><i>en camino.</i></h1><span>Elige, combina y envía tu pedido en pocos pasos.</span><a href="#armar-pedido">Empezar pedido <b>↓</b></a></div>
+      <div class="hero-note"><b>2</b><span>negocios<br />un solo pedido</span></div>
+    </section>
+
+    <section class="order-builder" id="armar-pedido" aria-labelledby="builder-title">
+      <header class="builder-heading"><div><p><span>01</span> Arma tu pedido</p><h2 id="builder-title">¿Qué se te<br /><i>antoja hoy?</i></h2></div><p>Selecciona tus favoritos. Al terminar abriremos WhatsApp con el resumen listo para enviar.</p></header>
+
+      <form class="order-form" data-order-form>
+        <div class="form-content">
+          <fieldset class="business-fieldset">
+            <legend>Primero, elige tu negocio</legend>
+            <div class="business-options">
+              <label class="business-option chicken-option">
+                <input type="radio" name="business" value="Pollo Fresa" checked />
+                <span class="radio-mark"></span>
+                <span class="option-logo pollo-option-logo"><img src={polloLogo.src} alt="" /></span>
+                <span class="option-copy"><small>ROSTIZADO Y COMBOS</small><strong>Pollo Fresa</strong><b>Elegir →</b></span>
+              </label>
+              <label class="business-option wing-option">
+                <input type="radio" name="business" value="Fresa Wings" />
+                <span class="radio-mark"></span>
+                <span class="option-logo wing-option-logo"><img src={alitasLogo.src} alt="" /></span>
+                <span class="option-copy"><small>ALITAS Y BONELESS</small><strong>Fresa Wings</strong><b>Elegir →</b></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="product-fieldset">
+            <legend>Ahora elige tu favorito</legend>
+            <div class="product-options" data-products="pollo">
+              {polloProducts.map((product, index) => (
+                <label class="product-option">
+                  <input type="radio" name="product" value={product.name} data-price={product.price} checked={index === 0} />
+                  <span class="product-image"><img src={product.image.src} alt={product.name} loading="lazy" /><small>{product.badge}</small><b>✓</b></span>
+                  <span class="product-copy"><strong>{product.name}</strong><small>{product.detail}</small><b>${product.price}</b></span>
+                </label>
+              ))}
+            </div>
+            <div class="product-options" data-products="wings" hidden>
+              {wingsProducts.map((product) => (
+                <label class="product-option">
+                  <input type="radio" name="product" value={product.name} data-price={product.price} />
+                  <span class="product-image"><img src={product.image.src} alt={product.name} loading="lazy" /><small>{product.badge}</small><b>✓</b></span>
+                  <span class="product-copy"><strong>{product.name}</strong><small>{product.detail}</small><b>${product.price}</b></span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset class="flavor-fieldset" data-flavors hidden>
+            <legend>Elige el sabor de tus alitas o boneless</legend>
+            <div class="flavor-options">
+              {sabores.map((sabor, index) => <label><input type="radio" name="flavor" value={sabor} checked={index === 0} /><span>{sabor}</span></label>)}
+            </div>
+          </fieldset>
+
+          <fieldset class="extras-fieldset">
+            <legend>Complementa el antojo</legend>
+            <div class="extras-options">
+              {extras.map((extra) => <label><input type="checkbox" name="extra" value={extra.name} data-price={extra.price} /><span><b>+</b><span><strong>{extra.name}</strong><small>Agregar al pedido</small></span><em>${extra.price}</em></span></label>)}
+            </div>
+          </fieldset>
+
+          <fieldset class="details-fieldset">
+            <legend>Últimos detalles</legend>
+            <div class="detail-grid">
+              <label><span>¿Cómo lo quieres?</span><select name="method"><option value="Recoger en sucursal">Recoger en sucursal</option><option value="Envío a domicilio">Envío a domicilio</option></select></label>
+              <label><span>Sucursal</span><select name="branch"><option value="Por confirmar en WhatsApp">Confirmar por WhatsApp</option><option value="Av. Independencia 1823, Col. Miguel Hidalgo">Av. Independencia 1823</option></select></label>
+              <label><span>Tu nombre</span><input type="text" name="customer" placeholder="¿A nombre de quién?" /></label>
+              <label class="notes"><span>Indicaciones especiales</span><textarea name="notes" rows="3" placeholder="Sin cebolla, salsa aparte, referencia de domicilio..."></textarea></label>
+            </div>
+          </fieldset>
+        </div>
+
+        <aside class="order-summary" aria-live="polite">
+          <div class="summary-top"><p>RESUMEN DEL PEDIDO</p><span>Se actualiza automáticamente</span></div>
+          <div class="summary-brand"><span class="summary-logo"><img src={polloLogo.src} alt="" data-summary-logo /></span><div><small data-summary-business>POLLO FRESA</small><strong>Tu pedido</strong></div></div>
+          <div class="summary-product"><span><small>PRODUCTO</small><strong data-summary-product>Pollo entero</strong></span><b data-summary-product-price>$249</b></div>
+          <div class="summary-flavor" data-summary-flavor-row hidden><span>Sabor</span><strong data-summary-flavor>BBQ</strong></div>
+          <div class="summary-extras"><small>COMPLEMENTOS</small><ul data-summary-extras><li>Aún no agregas complementos.</li></ul></div>
+          <div class="quantity-control"><span>Cantidad</span><div><button type="button" data-minus aria-label="Disminuir cantidad">−</button><strong data-quantity>1</strong><button type="button" data-plus aria-label="Aumentar cantidad">+</button></div></div>
+          <div class="summary-total"><span><small>TOTAL ESTIMADO</small><b>Confirma disponibilidad por WhatsApp</b></span><strong data-total>$249</strong></div>
+          <button class="send-order" type="submit"><span><small>LISTO PARA ENVIAR</small>Continuar en WhatsApp</span><b>↗</b></button>
+          <p class="delivery-note">El servicio a domicilio puede generar un costo adicional según la ubicación.</p>
+        </aside>
+      </form>
+    </section>
+
+    <section class="order-help"><div><p>¿PREFIERES HABLAR CON NOSOTROS?</p><h2>Te ayudamos a<br /><i>elegir.</i></h2></div><p>Escríbenos directamente y cuéntanos para cuántas personas es el pedido.</p><a href="https://wa.me/524463869132?text=Hola%2C%20necesito%20ayuda%20para%20armar%20mi%20pedido." target="_blank" rel="noreferrer">Hablar por WhatsApp <span>↗</span></a></section>
+  </main>
+  <Footer />
+  <WhatsappFlotante />
+</Layout>
+
+<script>
+  const form = document.querySelector('[data-order-form]');
+
+  if (form instanceof HTMLFormElement) {
+    const polloProducts = form.querySelector('[data-products="pollo"]');
+    const wingsProducts = form.querySelector('[data-products="wings"]');
+    const flavorSection = form.querySelector('[data-flavors]');
+    const productName = form.querySelector('[data-summary-product]');
+    const productPrice = form.querySelector('[data-summary-product-price]');
+    const summaryBusiness = form.querySelector('[data-summary-business]');
+    const summaryFlavorRow = form.querySelector('[data-summary-flavor-row]');
+    const summaryFlavor = form.querySelector('[data-summary-flavor]');
+    const summaryExtras = form.querySelector('[data-summary-extras]');
+    const summaryLogo = form.querySelector('[data-summary-logo]');
+    const total = form.querySelector('[data-total]');
+    const quantityText = form.querySelector('[data-quantity]');
+    let quantity = 1;
+
+    const money = (amount: number) => `$${amount.toLocaleString('es-MX')}`;
+
+    const getChecked = (name: string) => form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`);
+
+    const updateSummary = () => {
+      const business = getChecked('business')?.value ?? 'Pollo Fresa';
+      const product = getChecked('product');
+      const flavor = getChecked('flavor')?.value ?? 'BBQ';
+      const checkedExtras = Array.from(form.querySelectorAll<HTMLInputElement>('input[name="extra"]:checked'));
+      const extrasTotal = checkedExtras.reduce((sum, item) => sum + Number(item.dataset.price ?? 0), 0);
+      const unitPrice = Number(product?.dataset.price ?? 0);
+
+      if (summaryBusiness) summaryBusiness.textContent = business.toUpperCase();
+      if (productName) productName.textContent = product?.value ?? 'Selecciona un producto';
+      if (productPrice) productPrice.textContent = money(unitPrice);
+      if (summaryFlavor) summaryFlavor.textContent = flavor;
+      if (summaryFlavorRow instanceof HTMLElement) summaryFlavorRow.hidden = business !== 'Fresa Wings';
+      if (quantityText) quantityText.textContent = String(quantity);
+      if (total) total.textContent = money((unitPrice + extrasTotal) * quantity);
+
+      if (summaryLogo instanceof HTMLImageElement) {
+        summaryLogo.src = business === 'Fresa Wings' ? summaryLogo.dataset.wingsSrc ?? summaryLogo.src : summaryLogo.dataset.polloSrc ?? summaryLogo.src;
+      }
+
+      if (summaryExtras) {
+        summaryExtras.innerHTML = checkedExtras.length
+          ? checkedExtras.map((item) => `<li><span>${item.value}</span><b>+${money(Number(item.dataset.price ?? 0))}</b></li>`).join('')
+          : '<li>Aún no agregas complementos.</li>';
+      }
+    };
+
+    if (summaryLogo instanceof HTMLImageElement) {
+      summaryLogo.dataset.polloSrc = summaryLogo.src;
+      summaryLogo.dataset.wingsSrc = document.querySelector<HTMLImageElement>('.wing-option-logo img')?.src ?? '';
+    }
+
+    form.querySelectorAll<HTMLInputElement>('input[name="business"]').forEach((input) => input.addEventListener('change', () => {
+      const wings = input.value === 'Fresa Wings' && input.checked;
+      if (polloProducts instanceof HTMLElement) polloProducts.hidden = wings;
+      if (wingsProducts instanceof HTMLElement) wingsProducts.hidden = !wings;
+      if (flavorSection instanceof HTMLElement) flavorSection.hidden = !wings;
+      const visibleProducts = wings ? wingsProducts : polloProducts;
+      const firstProduct = visibleProducts?.querySelector<HTMLInputElement>('input[name="product"]');
+      if (firstProduct) firstProduct.checked = true;
+      updateSummary();
+    }));
+
+    form.querySelectorAll('input, select').forEach((input) => input.addEventListener('change', updateSummary));
+    form.querySelector('[data-minus]')?.addEventListener('click', () => { quantity = Math.max(1, quantity - 1); updateSummary(); });
+    form.querySelector('[data-plus]')?.addEventListener('click', () => { quantity = Math.min(20, quantity + 1); updateSummary(); });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const business = String(data.get('business') ?? 'Pollo Fresa');
+      const product = String(data.get('product') ?? '');
+      const selectedProduct = getChecked('product');
+      const checkedExtras = Array.from(form.querySelectorAll<HTMLInputElement>('input[name="extra"]:checked'));
+      const extrasTotal = checkedExtras.reduce((sum, item) => sum + Number(item.dataset.price ?? 0), 0);
+      const estimatedTotal = (Number(selectedProduct?.dataset.price ?? 0) + extrasTotal) * quantity;
+      const message = [
+        'Hola, quiero hacer el siguiente pedido:',
+        '',
+        `Negocio: ${business}`,
+        `Producto: ${quantity} × ${product}`,
+        ...(business === 'Fresa Wings' ? [`Sabor: ${String(data.get('flavor') ?? 'BBQ')}`] : []),
+        `Complementos: ${checkedExtras.length ? checkedExtras.map((item) => item.value).join(', ') : 'Ninguno'}`,
+        `Modalidad: ${String(data.get('method') ?? '')}`,
+        `Sucursal: ${String(data.get('branch') ?? '')}`,
+        `Nombre: ${String(data.get('customer') ?? 'Sin especificar')}`,
+        `Indicaciones: ${String(data.get('notes') ?? 'Ninguna')}`,
+        `Total estimado: ${money(estimatedTotal)}`,
+        '',
+        '¿Me ayudan a confirmar disponibilidad y total?'
+      ].join('\n');
+      window.open(`https://wa.me/524463869132?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+    });
+
+    updateSummary();
+  }
+</script>
+
+<style>
+  .order-hero { position: relative; min-height: 690px; overflow: hidden; color: #fff4df; background: #2c100b; isolation: isolate; }
+  .hero-images { position: absolute; z-index: -3; inset: 0; display: grid; grid-template-columns: 1fr 1fr; }
+  .hero-images img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1.08) contrast(1.08); }
+  .hero-images img:first-child { object-position: 53% center; }
+  .hero-shade { position: absolute; z-index: -2; inset: 0; background: linear-gradient(90deg, #210b06f2 0%, #210b06d8 34%, #210b068c 58%, #0007 100%), linear-gradient(0deg, #210b06c4, transparent 40%); }
+  .hero-copy { width: min(1180px, calc(100% - 64px)); margin: auto; padding-top: 190px; }
+  .hero-copy > p { margin: 0 0 24px; color: #ffd36a; font-size: 9px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+  .hero-copy > p span { display: inline-block; width: 31px; height: 2px; margin: 0 11px 3px 0; background: #ffd36a; }
+  .hero-copy h1 { max-width: 750px; margin: 0; font-family: var(--font-display); font-size: clamp(80px, 9vw, 130px); font-weight: 400; letter-spacing: -.045em !important; line-height: .73; }
+  .hero-copy h1 i { color: #ffd36a; font-style: normal; }
+  .hero-copy > span { display: block; max-width: 390px; margin-top: 29px; color: #fff4dfb8; font-size: 13px; line-height: 1.7; }
+  .hero-copy > a { display: inline-block; margin-top: 28px; padding: 15px 18px; color: #422018; background: #ffd36a; font-size: 9px; font-weight: 900; text-decoration: none; text-transform: uppercase; }
+  .hero-copy > a b { margin-left: 27px; color: #c51f2b; font-size: 16px; }
+  .hero-note { position: absolute; right: max(32px, calc((100vw - 1180px) / 2)); bottom: 45px; display: flex; width: 132px; height: 132px; align-items: center; justify-content: center; gap: 9px; border: 1px solid #ffd36a; border-radius: 50%; color: #422018; background: #ffd36ae9; transform: rotate(5deg); }
+  .hero-note b { color: #c51f2b; font-family: var(--font-display); font-size: 44px; font-weight: 400; }
+  .hero-note span { font-size: 7px; font-weight: 900; line-height: 1.5; text-transform: uppercase; }
+  .order-builder { padding: 120px 32px 135px; color: #422018; background: #fff4df; scroll-margin-top: 90px; }
+  .builder-heading { display: grid; width: min(1180px, 100%); grid-template-columns: 1fr 360px; gap: 55px; align-items: end; margin: 0 auto 55px; }
+  .builder-heading > div > p { margin: 0 0 17px; color: #c51f2b; font-size: 8px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+  .builder-heading > div > p span { display: inline-grid; width: 31px; height: 31px; place-items: center; margin-right: 10px; border: 1px solid #c51f2b55; border-radius: 50%; }
+  .builder-heading h2 { margin: 0; font-family: var(--font-display); font-size: clamp(58px, 6.5vw, 88px); font-weight: 400; line-height: .8; }
+  .builder-heading h2 i { color: #c51f2b; font-style: normal; }
+  .builder-heading > p { margin: 0; color: #79584a; font-size: 12px; line-height: 1.7; }
+  .order-form { display: grid; width: min(1180px, 100%); grid-template-columns: minmax(0, 1fr) 350px; gap: 27px; align-items: start; margin: auto; }
+  fieldset { min-width: 0; margin: 0 0 56px; padding: 0; border: 0; }
+  legend { width: 100%; margin-bottom: 22px; padding-bottom: 13px; border-bottom: 1px solid #42201824; color: #422018; font-family: var(--font-display); font-size: 25px; }
+  .business-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .business-option { position: relative; display: grid; min-height: 170px; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; padding: 17px; overflow: hidden; color: #422018; background: #ffd36a; cursor: pointer; }
+  .wing-option { color: #fff4df; background: #090909; }
+  .business-option input, .product-option input, .flavor-options input, .extras-options input { position: absolute; opacity: 0; pointer-events: none; }
+  .radio-mark { position: absolute; z-index: 3; top: 14px; right: 14px; width: 14px; height: 14px; border: 1px solid currentColor; border-radius: 50%; }
+  .business-option input:checked ~ .radio-mark { border: 4px solid #c51f2b; background: #ffd36a; }
+  .wing-option input:checked ~ .radio-mark { border-color: #f28c16; background: #c51f2b; }
+  .business-option:has(input:checked) { box-shadow: inset 0 0 0 3px #c51f2b; }
+  .wing-option:has(input:checked) { box-shadow: inset 0 0 0 3px #f28c16; }
+  .option-logo { position: relative; display: block; width: 115px; height: 125px; overflow: hidden; }
+  .option-logo img { position: absolute; top: 50%; left: 50%; max-width: none; transform: translate(-50%, -50%); }
+  .pollo-option-logo img { width: 265px; }
+  .wing-option-logo img { width: auto; height: 100%; mix-blend-mode: screen; }
+  .option-copy { display: grid; align-content: center; }
+  .option-copy small { font-size: 6px; font-weight: 900; letter-spacing: .15em; }
+  .option-copy strong { margin: 8px 0 22px; font-family: var(--font-display); font-size: 31px; font-weight: 400; line-height: .9; }
+  .option-copy b { color: #c51f2b; font-size: 7px; letter-spacing: .1em; }
+  .wing-option .option-copy b { color: #f28c16; }
+  .product-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  [hidden] { display: none !important; }
+  .product-option { position: relative; display: grid; grid-template-columns: 150px 1fr; min-height: 165px; overflow: hidden; border: 1px solid #42201825; background: #f5e4c8; cursor: pointer; transition: border-color .2s, transform .2s; }
+  .product-option:hover { border-color: #c51f2b; transform: translateY(-3px); }
+  .product-option:has(input:checked) { border-color: #c51f2b; box-shadow: inset 0 0 0 2px #c51f2b; }
+  .product-image { position: relative; overflow: hidden; background: #422018; }
+  .product-image img { width: 100%; height: 100%; object-fit: cover; }
+  .product-image small { position: absolute; top: 10px; left: 10px; padding: 6px 7px; color: #422018; background: #ffd36a; font-size: 6px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+  .product-image > b { position: absolute; right: 10px; bottom: 10px; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: #fff; background: #c51f2b; opacity: 0; transform: scale(.7); transition: .2s; }
+  .product-option input:checked ~ .product-image > b { opacity: 1; transform: scale(1); }
+  .product-copy { display: flex; flex-direction: column; padding: 21px 18px; }
+  .product-copy > strong { font-family: var(--font-display); font-size: 24px; font-weight: 400; line-height: 1; }
+  .product-copy > small { margin-top: 8px; color: #79584a; font-size: 8px; line-height: 1.5; }
+  .product-copy > b { margin-top: auto; color: #c51f2b; font-family: var(--font-display); font-size: 23px; font-weight: 400; }
+  .flavor-options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .flavor-options label { position: relative; cursor: pointer; }
+  .flavor-options span { display: block; padding: 10px 13px; border: 1px solid #42201833; color: #422018; font-size: 8px; font-weight: 900; text-transform: uppercase; transition: .2s; }
+  .flavor-options input:checked + span { border-color: #c51f2b; color: #fff4df; background: #c51f2b; }
+  .extras-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .extras-options label { position: relative; cursor: pointer; }
+  .extras-options label > span { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; padding: 15px; border: 1px solid #42201822; background: #f5e4c8; transition: .2s; }
+  .extras-options input:checked + span { border-color: #c51f2b; background: #ffd36a; }
+  .extras-options label > span > b { display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid #c51f2b; border-radius: 50%; color: #c51f2b; }
+  .extras-options input:checked + span > b { color: #fff; background: #c51f2b; transform: rotate(45deg); }
+  .extras-options label > span > span { display: grid; gap: 3px; }
+  .extras-options strong { font-size: 9px; }
+  .extras-options small { color: #79584a; font-size: 7px; }
+  .extras-options em { color: #c51f2b; font-family: var(--font-display); font-size: 19px; font-style: normal; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+  .detail-grid label { display: grid; gap: 8px; }
+  .detail-grid label > span { color: #79584a; font-size: 8px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+  .detail-grid input, .detail-grid select, .detail-grid textarea { width: 100%; padding: 14px; border: 1px solid #4220182e; border-radius: 0; color: #422018; background: #f5e4c8; font-size: 10px; outline: none; }
+  .detail-grid input:focus, .detail-grid select:focus, .detail-grid textarea:focus { border-color: #c51f2b; }
+  .notes { grid-column: 1 / -1; }
+  .detail-grid textarea { resize: vertical; }
+  .order-summary { position: sticky; top: 100px; padding: 25px; color: #fff4df; background: #2c100b; box-shadow: 15px 15px 0 #ffd36a; }
+  .summary-top { display: flex; justify-content: space-between; gap: 15px; padding-bottom: 17px; border-bottom: 1px solid #ffd36a2d; }
+  .summary-top p { margin: 0; color: #ffd36a; font-size: 7px; font-weight: 900; letter-spacing: .14em; }
+  .summary-top > span { max-width: 90px; color: #fff4df69; font-size: 6px; line-height: 1.4; text-align: right; }
+  .summary-brand { display: flex; gap: 11px; align-items: center; padding: 20px 0; border-bottom: 1px solid #ffd36a2d; }
+  .summary-logo { position: relative; display: block; width: 61px; height: 58px; overflow: hidden; }
+  .summary-logo img { position: absolute; top: 50%; left: 50%; width: 137px; max-width: none; height: auto; mix-blend-mode: screen; transform: translate(-50%, -50%); }
+  .summary-brand > div { display: grid; }
+  .summary-brand small { color: #f28c16; font-size: 6px; font-weight: 900; letter-spacing: .15em; }
+  .summary-brand strong { margin-top: 3px; font-family: var(--font-display); font-size: 22px; font-weight: 400; }
+  .summary-product { display: flex; justify-content: space-between; gap: 20px; align-items: end; padding: 24px 0; border-bottom: 1px solid #ffd36a2d; }
+  .summary-product > span { display: grid; gap: 6px; }
+  .summary-product small, .summary-extras > small { color: #f28c16; font-size: 6px; font-weight: 900; letter-spacing: .15em; }
+  .summary-product strong { font-family: var(--font-display); font-size: 24px; font-weight: 400; line-height: 1; }
+  .summary-product > b { color: #ffd36a; font-family: var(--font-display); font-size: 24px; font-weight: 400; }
+  .summary-flavor { display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #ffd36a2d; color: #fff4df9a; font-size: 9px; }
+  .summary-flavor strong { color: #ffd36a; }
+  .summary-extras { padding: 20px 0; border-bottom: 1px solid #ffd36a2d; }
+  .summary-extras ul { display: grid; gap: 8px; margin: 13px 0 0; padding: 0; color: #fff4df82; font-size: 8px; list-style: none; }
+  .summary-extras li { display: flex; justify-content: space-between; }
+  .summary-extras li b { color: #ffd36a; }
+  .quantity-control { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; }
+  .quantity-control > span { font-size: 9px; font-weight: 800; }
+  .quantity-control > div { display: flex; align-items: center; border: 1px solid #ffd36a42; }
+  .quantity-control button { width: 34px; height: 32px; border: 0; color: #ffd36a; background: transparent; font-size: 18px; cursor: pointer; }
+  .quantity-control strong { min-width: 31px; color: #fff4df; font-size: 11px; text-align: center; }
+  .summary-total { display: flex; justify-content: space-between; gap: 15px; align-items: center; padding: 18px; color: #422018; background: #ffd36a; }
+  .summary-total > span { display: grid; gap: 4px; }
+  .summary-total small { font-size: 6px; font-weight: 900; letter-spacing: .13em; }
+  .summary-total b { max-width: 115px; color: #79584a; font-size: 6px; font-weight: 700; line-height: 1.35; }
+  .summary-total > strong { color: #c51f2b; font-family: var(--font-display); font-size: 35px; font-weight: 400; }
+  .send-order { display: flex; width: 100%; justify-content: space-between; align-items: center; margin-top: 12px; padding: 15px; border: 0; color: #fff; background: #c51f2b; text-align: left; cursor: pointer; transition: background .2s, transform .2s; }
+  .send-order:hover { background: #df2935; transform: translateY(-2px); }
+  .send-order > span { display: grid; gap: 2px; font-size: 10px; font-weight: 900; }
+  .send-order small { color: #ffd36a; font-size: 6px; letter-spacing: .13em; }
+  .send-order > b { color: #ffd36a; font-size: 20px; }
+  .delivery-note { margin: 14px 0 0; color: #fff4df5e; font-size: 7px; line-height: 1.5; text-align: center; }
+  .order-help { display: grid; grid-template-columns: 1.15fr .7fr auto; gap: 55px; align-items: center; padding: 85px max(32px, calc((100vw - 1180px) / 2)); color: #fff4df; background: #c51f2b; }
+  .order-help > div > p { margin: 0 0 13px; color: #ffd36a; font-size: 8px; font-weight: 900; letter-spacing: .16em; }
+  .order-help h2 { margin: 0; font-family: var(--font-display); font-size: clamp(50px, 5.5vw, 75px); font-weight: 400; line-height: .82; }
+  .order-help h2 i { color: #ffd36a; font-style: normal; }
+  .order-help > p { margin: 0; color: #fff4dfb4; font-size: 11px; line-height: 1.7; }
+  .order-help > a { padding: 17px 19px; color: #422018; background: #ffd36a; font-size: 9px; font-weight: 900; text-decoration: none; white-space: nowrap; text-transform: uppercase; }
+  .order-help > a span { margin-left: 24px; color: #c51f2b; font-size: 17px; }
+  @media (max-width: 980px) {
+    .order-form { grid-template-columns: 1fr; }
+    .order-summary { position: relative; top: auto; max-width: 520px; margin: auto; }
+    .order-help { grid-template-columns: 1fr 1fr; }
+    .order-help > a { grid-column: 1 / -1; text-align: center; }
+  }
+  @media (max-width: 700px) {
+    .order-hero { min-height: 720px; }
+    .hero-images { grid-template-columns: 1fr; }
+    .hero-images img:first-child { display: none; }
+    .hero-copy { width: calc(100% - 36px); padding-top: 165px; }
+    .hero-copy h1 { font-size: 68px; }
+    .hero-note { right: 18px; bottom: 25px; width: 105px; height: 105px; }
+    .order-builder { padding: 85px 18px 100px; }
+    .builder-heading { grid-template-columns: 1fr; gap: 22px; }
+    .builder-heading h2 { font-size: 55px; }
+    .business-options, .product-options, .extras-options, .detail-grid { grid-template-columns: 1fr; }
+    .business-option { min-height: 145px; grid-template-columns: 100px 1fr; }
+    .option-logo { width: 95px; height: 105px; }
+    .pollo-option-logo img { width: 225px; }
+    .product-option { grid-template-columns: 135px 1fr; }
+    .notes { grid-column: auto; }
+    .order-summary { width: calc(100% - 10px); }
+    .order-help { grid-template-columns: 1fr; gap: 25px; padding: 70px 18px; }
+    .order-help > a { grid-column: auto; }
+  }
+</style>

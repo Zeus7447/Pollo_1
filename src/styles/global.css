@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Bree+Serif&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-display: 'Bree Serif', Georgia, serif;
+  --font-body: 'Nunito Sans', Arial, sans-serif;
+}
+
+html,
+body {
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display) !important;
+  letter-spacing: -0.025em !important;
+}
+
+h1 i,
+h2 i,
+h3 i {
+  font-style: normal;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font-family: var(--font-body);
+}

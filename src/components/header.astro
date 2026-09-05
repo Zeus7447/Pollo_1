@@ -1,0 +1,78 @@
+---
+import polloLogo from '../assets/logo_pollo.png';
+
+const pathname = Astro.url.pathname;
+const links = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Menú', href: '/menu' },
+  { label: 'Nosotros', href: '/nosotros' },
+  { label: 'Pedir', href: '/pedir' },
+  { label: 'Ubicaciones', href: '/ubicaciones' },
+];
+const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href);
+---
+
+<header class="site-header" data-header>
+  <nav class="nav" aria-label="Navegación principal">
+    <a class="brand" href="/" aria-label="Pollo Fresa, inicio">
+      <span class="brand-logo"><img src={polloLogo.src} alt="" /></span>
+      <span class="brand-name">POLLO<em>FRESA</em></span>
+    </a>
+
+    <div class="desktop-links">
+      {links.map((link) => <a class:list={{ active: isActive(link.href) }} href={link.href}><span>{link.label}</span></a>)}
+    </div>
+
+    <div class="nav-actions">
+      <a class="order-link" href="/pedir"><span class="order-dot"></span>Pedir ahora <b>↗</b></a>
+      <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" data-menu-toggle><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" data-mobile-menu aria-hidden="true">
+    <div class="mobile-menu-inner">
+      <p>MENÚ PRINCIPAL</p>
+      <div>{links.map((link, index) => <a class:list={{ active: isActive(link.href) }} href={link.href}><small>0{index + 1}</small><span>{link.label}</span><b>↗</b></a>)}</div>
+      <a class="mobile-order" href="/pedir">Hacer mi pedido <span>↗</span></a>
+      <p class="mobile-note">Pollo doradito · Recién hecho · Para compartir</p>
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector('[data-header]');
+  const toggle = document.querySelector('[data-menu-toggle]');
+  const menu = document.querySelector('[data-mobile-menu]');
+
+  const closeMenu = () => {
+    header?.classList.remove('menu-open');
+    toggle?.setAttribute('aria-expanded', 'false');
+    menu?.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  };
+
+  toggle?.addEventListener('click', () => {
+    const open = !header?.classList.contains('menu-open');
+    header?.classList.toggle('menu-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    menu?.setAttribute('aria-hidden', String(!open));
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  menu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMenu(); });
+  const updateHeader = () => header?.classList.toggle('scrolled', window.scrollY > 36);
+  updateHeader();
+  window.addEventListener('scroll', updateHeader, { passive: true });
+</script>
+
+<style>
+  .site-header { position: fixed; z-index: 50; top: 0; left: 0; width: 100%; padding: 16px 24px; transition: padding .3s ease; }.nav { display: grid; width: min(1180px, 100%); height: 72px; grid-template-columns: 1fr auto 1fr; align-items: center; margin: auto; padding: 0 13px 0 18px; border: 1px solid #fff4df2b; border-radius: 18px; background: #2c100b59; box-shadow: 0 12px 35px #17070420; backdrop-filter: blur(13px) saturate(1.2); transition: height .3s ease, border-radius .3s ease, background .3s ease, box-shadow .3s ease; }.scrolled { padding-top: 9px; }.scrolled .nav { height: 64px; border-color: #ffd36a33; border-radius: 14px; background: #2c100bf0; box-shadow: 0 12px 35px #17070455; }.brand { display: flex; width: max-content; align-items: center; gap: 11px; color: #fff4df; text-decoration: none; }.brand-mark { display: grid; width: 39px; height: 39px; place-items: center; overflow: hidden; color: #fff; background: #c51f2b; border-radius: 50% 50% 50% 9px; box-shadow: inset 0 0 0 1px #fff4df26, 0 6px 15px #210b0645; transform: rotate(-16deg); }.brand-mark i { color: #ffd36a; font-size: 19px; font-style: normal; transform: rotate(16deg); }.brand-name { display: grid; font-size: 13px; font-weight: 800; letter-spacing: .13em; line-height: .9; }.brand-name em { margin-top: 4px; color: #ffd36a; font-style: normal; }.desktop-links { display: flex; gap: 4px; align-items: center; padding: 4px; border: 1px solid #fff4df17; border-radius: 12px; background: #210b062e; }.desktop-links a { position: relative; padding: 10px 14px; border-radius: 8px; color: #fff4dfbd; font-size: 11px; font-weight: 700; text-decoration: none; transition: color .2s ease, background .2s ease; }.desktop-links a:hover { color: #ffd36a; background: #fff4df0d; }.desktop-links a.active { color: #422018; background: #ffd36a; box-shadow: 0 5px 15px #210b0630; }.nav-actions { display: flex; justify-self: end; align-items: center; gap: 9px; }.order-link { display: flex; align-items: center; padding: 12px 15px; border-radius: 10px; color: #fff; background: #c51f2b; box-shadow: 0 7px 18px #210b0648; font-size: 10px; font-weight: 800; text-decoration: none; transition: transform .2s ease, background .2s ease; }.order-link:hover { background: #df2935; transform: translateY(-2px); }.order-link b { margin-left: 11px; color: #ffd36a; font-size: 15px; }.order-dot { width: 6px; height: 6px; margin-right: 8px; border: 1px solid #fff4df; border-radius: 50%; background: #ffd36a; box-shadow: 0 0 0 3px #ffd36a20; }.menu-toggle { display: none; width: 43px; height: 43px; place-items: center; border: 1px solid #ffd36a45; border-radius: 10px; background: #fff4df0c; cursor: pointer; }.menu-toggle span { position: absolute; width: 18px; height: 2px; background: #ffd36a; transition: transform .25s ease; }.menu-toggle span:first-child { transform: translateY(-4px); }.menu-toggle span:last-child { transform: translateY(4px); }.mobile-menu { position: fixed; z-index: -1; inset: 0; visibility: hidden; opacity: 0; background: #2c100bf5; backdrop-filter: blur(15px); transition: opacity .3s ease, visibility .3s ease; }.mobile-menu-inner { display: flex; width: min(540px, 100%); height: 100%; flex-direction: column; justify-content: center; margin: auto; padding: 105px 24px 35px; }.mobile-menu-inner > p:first-child { margin: 0 0 17px; color: #f28c16; font-size: 8px; font-weight: 800; letter-spacing: .2em; }.mobile-menu-inner > div { border-top: 1px solid #ffd36a35; }.mobile-menu-inner > div a { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; padding: 16px 4px; border-bottom: 1px solid #ffd36a35; color: #fff4df; text-decoration: none; }.mobile-menu-inner a small { color: #f28c16; font-family: var(--font-display); font-size: 12px; }.mobile-menu-inner a span { font-family: var(--font-display); font-size: clamp(31px, 9vw, 43px); line-height: 1; }.mobile-menu-inner a b { color: #ffd36a; font-size: 20px; }.mobile-menu-inner > div a.active span { color: #ffd36a; }.mobile-order { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding: 16px 18px; color: #fff; background: #c51f2b; font-size: 11px; font-weight: 800; text-decoration: none; }.mobile-order span { color: #ffd36a; font-family: var(--font-body) !important; font-size: 19px !important; }.mobile-note { margin: auto 0 0; color: #fff4df65; font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }.menu-open .mobile-menu { visibility: visible; opacity: 1; }.menu-open .menu-toggle span:first-child { transform: rotate(45deg); }.menu-open .menu-toggle span:last-child { transform: rotate(-45deg); }
+  .brand { gap: 3px; }
+  .brand-logo { position: relative; display: block; width: 82px; height: 72px; overflow: hidden; flex: 0 0 auto; filter: drop-shadow(0 6px 11px #17070480); transition: transform .25s ease; }
+  .brand-logo img { position: absolute; top: 50%; left: 50%; width: 172px; max-width: none; height: auto; transform: translate(-50%, -50%); }
+  .brand:hover .brand-logo { transform: translateY(-2px) rotate(-2deg); }
+  .brand-name { font-size: 12px; }
+  @media (max-width: 900px) { .site-header { padding: 11px 14px; }.nav { height: 70px; grid-template-columns: 1fr auto; padding-left: 5px; border-radius: 14px; }.desktop-links, .order-link { display: none; }.menu-toggle { position: relative; display: grid; }.menu-open .nav { background: #2c100b; }.brand-logo { width: 70px; height: 64px; }.brand-logo img { width: 151px; } }
+  @media (max-height: 620px) and (max-width: 900px) { .mobile-menu-inner { justify-content: start; overflow-y: auto; }.mobile-menu-inner > div a { padding-block: 10px; }.mobile-menu-inner a span { font-size: 28px; } }
+  @media (prefers-reduced-motion: reduce) { .site-header, .nav, .mobile-menu, .menu-toggle span { transition: none; } }
+</style>

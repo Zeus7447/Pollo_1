@@ -1,0 +1,86 @@
+---
+import polloEntero from '../assets/menu-pollo-entero.png';
+import medioPollo from '../assets/menu-medio-pollo.png';
+import combo from '../assets/menu-combo.png';
+import acompanamientos from '../assets/menu-acompanamientos.png';
+
+const products = [
+  { label: 'El favorito', name: 'Pollo entero', description: 'Rostizado lentamente hasta quedar dorado y jugoso.', price: '$249', image: polloEntero, accent: 'red' },
+  { label: 'Para ti', name: 'Medio pollo', description: 'La porción perfecta con tortillas y salsa de la casa.', price: '$139', image: medioPollo, accent: 'yellow' },
+  { label: 'Todo incluido', name: 'Combo Fresa', description: 'Pollo, acompañamiento, tortillas, salsa y bebida.', price: 'Desde $179', image: combo, accent: 'orange' },
+  { label: 'Para la mesa', name: 'Acompañamientos', description: 'Papas, cebollitas, tortillas y salsas para completar.', price: 'Desde $45', image: acompanamientos, accent: 'brown' },
+];
+
+const loopProducts = [products[products.length - 1], ...products, products[0]].map((product, index) => ({
+  ...product,
+  realIndex: (index - 1 + products.length) % products.length,
+}));
+---
+
+<section class="featured" aria-labelledby="menu-destacado" data-carousel>
+  <div class="inner">
+    <header class="heading">
+      <div><p class="eyebrow"><span></span> Nuestros favoritos</p><h2 id="menu-destacado">Menú <i>destacado</i></h2></div>
+      <div class="controls"><button type="button" data-prev aria-label="Anterior">←</button><button type="button" data-next aria-label="Siguiente">→</button></div>
+    </header>
+
+    <div class="carousel" data-stage tabindex="0" aria-roledescription="carrusel">
+      <div class="carousel-track" data-track>
+      {loopProducts.map((product, index) => (
+        <article class="slide" data-slide data-real-index={product.realIndex} aria-hidden={index === 1 ? 'false' : 'true'}>
+          <div class="visual"><img src={product.image.src} alt={product.name} /><span class:list={['tag', product.accent]}>{product.label}</span><span class="counter">0{index + 1} / 0{products.length}</span></div>
+          <div class="content"><span class="mini">POLLO FRESA · RECIÉN HECHO</span><h3>{product.name}</h3><p>{product.description}</p><strong>{product.price}</strong><a href="/menu">Ver producto <span>↗</span></a></div>
+        </article>
+      ))}
+      </div>
+    </div>
+
+    <footer class="carousel-footer">
+      <div class="dots">{products.map((product, index) => <button type="button" class:list={{ active: index === 0 }} data-dot={index} aria-label={`Mostrar ${product.name}`}><span></span></button>)}</div>
+      <span class="autoplay"><i></i> Deslizamiento automático</span>
+      <a href="/menu">Ver menú completo <span>↗</span></a>
+    </footer>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('[data-carousel]').forEach((root) => {
+    const slides = Array.from(root.querySelectorAll('[data-slide]'));
+    const dots = Array.from(root.querySelectorAll('[data-dot]'));
+    const stage = root.querySelector('[data-stage]');
+    let current = 0;
+    let timer;
+    let touchStart = 0;
+
+    const show = (next) => {
+      current = (next + slides.length) % slides.length;
+      slides.forEach((slide, index) => {
+        slide.classList.toggle('active', index === current);
+        slide.classList.toggle('previous', index < current);
+        slide.setAttribute('aria-hidden', index === current ? 'false' : 'true');
+      });
+      dots.forEach((dot, index) => dot.classList.toggle('active', index === current));
+    };
+    const start = () => { window.clearInterval(timer); timer = window.setInterval(() => show(current + 1), 4500); };
+    const stop = () => window.clearInterval(timer);
+
+    root.querySelector('[data-prev]')?.addEventListener('click', () => { show(current - 1); start(); });
+    root.querySelector('[data-next]')?.addEventListener('click', () => { show(current + 1); start(); });
+    dots.forEach((dot, index) => dot.addEventListener('click', () => { show(index); start(); }));
+    stage?.addEventListener('mouseenter', stop);
+    stage?.addEventListener('mouseleave', start);
+    stage?.addEventListener('focusin', stop);
+    stage?.addEventListener('focusout', start);
+    stage?.addEventListener('keydown', (event) => { if (event.key === 'ArrowLeft') show(current - 1); if (event.key === 'ArrowRight') show(current + 1); });
+    stage?.addEventListener('touchstart', (event) => { touchStart = event.touches[0].clientX; stop(); }, { passive: true });
+    stage?.addEventListener('touchend', (event) => { const distance = event.changedTouches[0].clientX - touchStart; if (Math.abs(distance) > 45) show(current + (distance < 0 ? 1 : -1)); start(); }, { passive: true });
+    start();
+  });
+</script>
+
+<style>
+  .featured { padding: 108px 32px 118px; overflow: hidden; background: #fff4df; }.inner { width: min(1160px, 100%); margin: auto; }.heading { display: flex; justify-content: space-between; align-items: end; margin-bottom: 42px; }.eyebrow { margin: 0 0 13px; color: #c51f2b; font-size: 10px; font-weight: 700; letter-spacing: .17em; text-transform: uppercase; }.eyebrow span { display: inline-block; width: 29px; height: 2px; margin: 0 11px 3px 0; background: #c51f2b; }h2 { margin: 0; color: #422018; font-family: 'Playfair Display', serif; font-size: clamp(43px, 5vw, 68px); letter-spacing: -.06em; line-height: .88; }h2 i { color: #c51f2b; font-weight: 600; }.controls { display: flex; gap: 9px; }.controls button { display: grid; width: 50px; height: 50px; place-items: center; border: 1px solid #42201855; border-radius: 50%; color: #422018; background: transparent; font-size: 20px; cursor: pointer; transition: .2s ease; }.controls button:hover { color: #fff4df; background: #c51f2b; border-color: #c51f2b; transform: scale(1.06); }.carousel { position: relative; height: 520px; overflow: hidden; background: #422018; outline: none; }.slide { position: absolute; inset: 0; display: grid; grid-template-columns: 64% 36%; visibility: hidden; opacity: 0; transform: translateX(8%); transition: opacity .65s ease, transform .65s cubic-bezier(.22,.8,.24,1), visibility .65s; pointer-events: none; }.slide.previous { transform: translateX(-8%); }.slide.active { z-index: 2; visibility: visible; opacity: 1; transform: translateX(0); pointer-events: auto; }.visual { position: relative; overflow: hidden; }.visual::after { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 60%, #422018); content: ''; }.visual img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.06); transition: transform 5s ease; }.slide.active .visual img { transform: scale(1); }.tag { position: absolute; z-index: 1; top: 25px; left: 25px; padding: 10px 13px; color: #fff; font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }.tag.red { background: #c51f2b; }.tag.yellow { color: #422018; background: #ffd36a; }.tag.orange { background: #f28c16; }.tag.brown { background: #422018; }.counter { position: absolute; z-index: 1; right: 24px; bottom: 22px; color: #ffd36a; font-family: 'Playfair Display', serif; font-size: 15px; font-style: italic; }.content { display: flex; flex-direction: column; justify-content: center; padding: 45px 48px 45px 35px; color: #fff4df; background: #422018; }.mini { color: #ffd36a; font-size: 8px; font-weight: 700; letter-spacing: .17em; }.content h3 { margin: 18px 0 15px; font-family: 'Playfair Display', serif; font-size: clamp(40px, 4vw, 61px); letter-spacing: -.055em; line-height: .88; }.content > p { max-width: 280px; margin: 0 0 24px; color: #fff4dfb8; font-size: 13px; line-height: 1.65; }.content strong { margin-bottom: 36px; color: #ffd36a; font-size: 17px; }.content > a { align-self: start; padding: 15px 18px; color: #fff; background: #c51f2b; font-size: 11px; font-weight: 700; text-decoration: none; }.content > a span { margin-left: 25px; color: #ffd36a; font-size: 17px; }.carousel-footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 20px; }.dots { display: flex; gap: 6px; }.dots button { width: 42px; height: 12px; padding: 4px 0; border: 0; background: transparent; cursor: pointer; }.dots button span { display: block; height: 2px; background: #4220183d; transition: .25s ease; }.dots button.active span { height: 4px; background: #c51f2b; }.autoplay { color: #80695b; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }.autoplay i { display: inline-block; width: 6px; height: 6px; margin-right: 7px; background: #f28c16; border-radius: 50%; animation: pulse 1.5s infinite; }.carousel-footer > a { justify-self: end; padding-bottom: 8px; border-bottom: 2px solid #c51f2b; color: #c51f2b; font-size: 11px; font-weight: 700; text-decoration: none; }.carousel-footer > a span { margin-left: 9px; font-size: 17px; }@keyframes pulse { 50% { opacity: .3; transform: scale(.7); } }
+  @media (max-width: 800px) { .carousel { height: 650px; }.slide { grid-template-columns: 1fr; grid-template-rows: 60% 40%; }.visual::after { background: linear-gradient(180deg, transparent 70%, #422018); }.content { padding: 25px 30px; }.content h3 { margin: 10px 0; }.content > p { margin-bottom: 12px; }.content strong { margin-bottom: 15px; }.autoplay { display: none; }.carousel-footer { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .featured { padding: 78px 18px 84px; }.heading { margin-bottom: 30px; }.controls button { width: 40px; height: 40px; }.controls button:first-child { display: none; }.carousel { height: 600px; }.slide { grid-template-rows: 56% 44%; }.content { padding: 22px; }.content h3 { font-size: 39px; }.content > p { font-size: 12px; }.carousel-footer > a { font-size: 9px; }.dots button { width: 28px; } }
+  @media (prefers-reduced-motion: reduce) { .slide, .visual img { transition: none; }.autoplay { display: none; } }
+</style>

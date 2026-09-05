@@ -1,0 +1,63 @@
+---
+import rosticero from '../assets/nuestra-esencia-rosticero.png';
+
+const principles = [
+  { number: '01', title: 'Nuestra receta', text: 'Una mezcla de especias con ese sabor que se reconoce desde el primer bocado.' },
+  { number: '02', title: 'Fuego lento', text: 'Cada pollo gira sin prisa para conservar sus jugos y lograr un dorado irresistible.' },
+  { number: '03', title: 'Siempre fresco', text: 'Preparamos durante el día para que llegue caliente y recién hecho a tu mesa.' },
+];
+---
+
+<section class="essence" aria-labelledby="nuestra-esencia">
+  <div class="story">
+    <div class="story-image">
+      <img src={rosticero.src} alt="Pollos rostizándose lentamente sobre carbón y fuego" loading="lazy" />
+      <div class="image-stamp"><span>✦</span><strong>FUEGO<br />LENTO</strong><small>POLLO FRESA</small></div>
+      <span class="image-caption">Del rosticero directo a tu mesa</span>
+    </div>
+
+    <div class="story-copy">
+      <p class="eyebrow"><span></span> Nuestra esencia</p>
+      <h2 id="nuestra-esencia">Aquí el sabor<br /><i>se toma su tiempo.</i></h2>
+      <p class="lead">No buscamos atajos. Cada pollo se prepara con nuestra receta, gira lentamente frente al fuego y sale cuando está en su punto: dorado por fuera, jugoso por dentro.</p>
+      <blockquote>“Una receta sencilla, hecha con paciencia y pensada para compartirse.”</blockquote>
+      <a href="/nosotros">Conoce nuestra historia <span>↗</span></a>
+    </div>
+  </div>
+
+  <div class="principles">
+    {principles.map((principle) => (
+      <article><span>{principle.number}</span><div><h3>{principle.title}</h3><p>{principle.text}</p></div></article>
+    ))}
+  </div>
+</section>
+
+<script>
+  const essence = document.querySelector('.essence');
+  if (essence) {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { essence.classList.add('reveal'); observer.disconnect(); }
+    }, { threshold: 0.18 });
+    observer.observe(essence);
+  }
+</script>
+
+<style>
+  .essence { padding: 0 32px 108px; overflow: hidden; color: #fff4df; background: #422018; }.story { display: grid; width: min(1240px, calc(100% + 80px)); grid-template-columns: 58% 42%; margin: auto; }.story-image { position: relative; min-height: 620px; overflow: hidden; }.story-image::after { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 65%, #422018), linear-gradient(0deg, #210b0666, transparent 35%); content: ''; }.story-image img { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: contrast(1.05) saturate(1.08); }.image-stamp { position: absolute; z-index: 2; top: 36px; left: 36px; display: grid; width: 105px; height: 105px; place-items: center; border: 1px solid #ffd36a; border-radius: 50%; color: #ffd36a; background: #422018b8; text-align: center; transform: rotate(-7deg); }.image-stamp span { position: absolute; top: 9px; font-size: 12px; }.image-stamp strong { font-size: 12px; letter-spacing: .12em; line-height: 1.05; }.image-stamp small { position: absolute; bottom: 11px; font-size: 7px; letter-spacing: .13em; }.image-caption { position: absolute; z-index: 2; bottom: 28px; left: 36px; color: #ffd36a; font-size: 9px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }.story-copy { display: flex; flex-direction: column; justify-content: center; padding: 70px 0 70px 62px; }.eyebrow { margin: 0 0 18px; color: #ffd36a; font-size: 10px; font-weight: 800; letter-spacing: .17em; text-transform: uppercase; }.eyebrow span { display: inline-block; width: 29px; height: 2px; margin: 0 11px 3px 0; background: #ffd36a; }h2 { margin: 0 0 27px; font-family: var(--font-display); font-size: clamp(43px, 4.8vw, 68px); font-weight: 400; letter-spacing: -.025em; line-height: .91; }h2 i { color: #f28c16; font-style: normal; font-weight: 400; }.lead { max-width: 455px; margin: 0; color: #fff4dfc7; font-size: 14px; line-height: 1.8; }.story-copy blockquote { max-width: 410px; margin: 29px 0 27px; padding: 2px 0 2px 19px; border-left: 2px solid #ffd36a; color: #ffd36a; font-family: var(--font-display); font-size: 17px; line-height: 1.45; }.story-copy a { align-self: start; padding-bottom: 8px; border-bottom: 2px solid #c51f2b; color: #fff4df; font-size: 11px; font-weight: 800; text-decoration: none; }.story-copy a span { margin-left: 10px; color: #ffd36a; font-size: 17px; }.principles { display: grid; width: min(1160px, 100%); grid-template-columns: repeat(3, 1fr); margin: 55px auto 0; border-top: 1px solid #ffd36a38; }.principles article { display: grid; grid-template-columns: 38px 1fr; gap: 15px; padding: 30px 35px 0 0; }.principles article + article { padding-left: 35px; border-left: 1px solid #ffd36a38; }.principles article > span { color: #f28c16; font-family: var(--font-display); font-size: 14px; }.principles h3 { margin: 0 0 8px; color: #ffd36a; font-family: var(--font-display); font-size: 21px; font-weight: 400; }.principles p { max-width: 270px; margin: 0; color: #fff4df99; font-size: 11px; line-height: 1.65; }
+  @media (max-width: 900px) { .story { width: 100%; grid-template-columns: 1fr; }.story-image { min-height: 500px; }.story-image::after { background: linear-gradient(0deg, #422018, transparent 35%); }.story-copy { padding: 25px 0 65px; }.principles { margin-top: 0; } }
+  @media (max-width: 650px) { .essence { padding: 0 18px 80px; }.story-image { min-height: 430px; margin-inline: -18px; }.image-stamp { top: 24px; left: 22px; width: 90px; height: 90px; }.image-caption { left: 22px; }.story-copy { padding-top: 18px; }.principles { grid-template-columns: 1fr; }.principles article, .principles article + article { padding: 24px 0; border-left: 0; border-bottom: 1px solid #ffd36a2e; } }
+  .story-image img { transform: scale(1.025); transition: filter .8s ease, transform 1.2s cubic-bezier(.2,.7,.2,1); }
+  .story:hover .story-image img { filter: contrast(1.08) saturate(1.16); transform: scale(1); }
+  @media (prefers-reduced-motion: no-preference) {
+    .essence:not(.reveal) .story-copy > *, .essence:not(.reveal) .principles article { opacity: 0; }
+    .essence.reveal .story-copy > * { animation: essence-in .75s both; }
+    .story-copy > :nth-child(2) { animation-delay: .08s; }
+    .story-copy > :nth-child(3) { animation-delay: .16s; }
+    .story-copy > :nth-child(4) { animation-delay: .24s; }
+    .story-copy > :nth-child(5) { animation-delay: .32s; }
+    .essence.reveal .principles article { animation: essence-in .65s both; }
+    .principles article:nth-child(2) { animation-delay: .12s; }
+    .principles article:nth-child(3) { animation-delay: .24s; }
+  }
+  @keyframes essence-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+</style>

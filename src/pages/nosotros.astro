@@ -1,0 +1,275 @@
+---
+import Layout from '../layouts/Layout_nosotros.astro';
+import Header from '../components/header.astro';
+import Footer from '../components/footer.astro';
+import WhatsappFlotante from '../components/whatsapp_flotante.astro';
+import rosticero from '../assets/nuestra-esencia-rosticero.png';
+import polloEntero from '../assets/menu-pollo-entero.png';
+import alitas from '../assets/fresa-wings-alitas.png';
+import polloLogo from '../assets/logo_pollo.png';
+import alitasLogo from '../assets/alitas_logo.jpeg';
+import nuestroPollo from '../assets/nuestro_pollo.mp4';
+
+const whatsappUrl = `https://wa.me/524463869132?text=${encodeURIComponent('Hola, quiero conocer más y hacer un pedido en Pollo Fresa.')}`;
+
+const principios = [
+  { number: '01', title: 'Sabor honesto', text: 'Una receta que se siente cercana, abundante y hecha para disfrutarse sin complicaciones.' },
+  { number: '02', title: 'Tiempo y fuego', text: 'Dejamos que el rosticero haga su trabajo hasta lograr una piel dorada y un interior jugoso.' },
+  { number: '03', title: 'Recién preparado', text: 'Cocinamos durante el día para que cada pedido llegue caliente y en su mejor momento.' },
+  { number: '04', title: 'Mesa compartida', text: 'Pensamos nuestros pollos, alitas y combos para convertir cualquier comida en un buen plan.' },
+];
+---
+
+<Layout>
+  <Header />
+  <main>
+    <section class="about-hero" id="top" aria-label="Nuestro pollo" data-video-hero>
+      <div class="hero-sticky">
+        <div class="video-window">
+          <video autoplay muted loop playsinline preload="auto" poster={rosticero.src} aria-label="Nuestro pollo preparándose al fuego">
+            <source src={nuestroPollo} type="video/mp4" />
+          </video>
+        </div>
+      </div>
+    </section>
+
+    <section class="story" id="nuestra-historia" aria-labelledby="story-title">
+      <div class="story-heading">
+        <p><span>01</span> Lo que nos mueve</p>
+        <h2 id="story-title">No hacemos solo pollo.<br /><i>Hacemos el plan.</i></h2>
+      </div>
+      <div class="story-copy">
+        <p class="lead">Ese momento en el que abres la bolsa, llega el aroma y todos se acercan a la mesa: eso es lo que queremos provocar.</p>
+        <div><p>Por eso cuidamos el sazón, respetamos el tiempo del rostizado y servimos porciones pensadas para compartir. Queremos que comer rico sea sencillo, cercano y siempre se sienta especial.</p><p>Pollo Fresa nació alrededor de una idea muy clara: ofrecer comida que se antoje desde que la ves y que se recuerde después del último bocado.</p></div>
+      </div>
+    </section>
+
+    <section class="craft" aria-labelledby="craft-title">
+      <div class="craft-photo">
+        <img src={rosticero.src} alt="Pollo Fresa cocinándose en el rosticero" loading="lazy" />
+        <span class="photo-note">EL FUEGO HACE SU PARTE</span>
+        <div class="photo-count"><strong>3</strong><span>momentos<br />del proceso</span></div>
+      </div>
+      <div class="craft-content">
+        <p class="section-label"><span></span> Nuestra manera de hacerlo</p>
+        <h2 id="craft-title">El sabor está<br />en <i>los detalles.</i></h2>
+        <div class="steps">
+          <article><span>01</span><div><h3>Sazonamos</h3><p>Cada pollo comienza con una mezcla que le da carácter desde el primer bocado.</p></div></article>
+          <article><span>02</span><div><h3>Dejamos girar</h3><p>El tiempo y el calor trabajan juntos para dorar por fuera y conservar la jugosidad.</p></div></article>
+          <article><span>03</span><div><h3>Servimos caliente</h3><p>Lo acompañamos con los favoritos de la casa y queda listo para llegar a tu mesa.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="brands" aria-labelledby="brands-title">
+      <header>
+        <div><p><span></span> Una casa, dos antojos</p><h2 id="brands-title">Elige tu lado<br /><i>más Fresa.</i></h2></div>
+        <p>Compartimos la misma obsesión por servir algo abundante, antojable y preparado para disfrutarse en compañía.</p>
+      </header>
+
+      <div class="brand-grid">
+        <a class="brand-card chicken-brand" href="/menu#pollo-fresa">
+          <img class="brand-food" src={polloEntero.src} alt="Pollo entero rostizado" loading="lazy" />
+          <span class="brand-overlay"></span>
+          <span class="brand-logo pollo-logo"><img src={polloLogo.src} alt="Pollo Fresa" /></span>
+          <div class="brand-copy"><small>01 · EL CLÁSICO DE LA CASA</small><h3>Pollo<br />Fresa</h3><p>Rostizado, doradito y listo para compartir.</p><b>Ver menú <span>↗</span></b></div>
+        </a>
+        <a class="brand-card wings-brand-card" href="/menu#fresa-wings">
+          <img class="brand-food" src={alitas.src} alt="Alitas bañadas de Fresa Wings" loading="lazy" />
+          <span class="brand-overlay"></span>
+          <span class="brand-logo alitas-logo"><img src={alitasLogo.src} alt="Fresa Wings" /></span>
+          <div class="brand-copy"><small>02 · EL LADO MÁS ATREVIDO</small><h3>Fresa<br /><i>Wings</i></h3><p>Alitas, boneless y sabores para todos los niveles de antojo.</p><b>Ver menú <span>↗</span></b></div>
+        </a>
+      </div>
+    </section>
+
+    <section class="values" aria-labelledby="values-title">
+      <div class="values-title"><p>LO QUE NO NEGOCIAMOS</p><h2 id="values-title">Nuestra forma<br />de hacer <i>las cosas.</i></h2></div>
+      <div class="value-grid">
+        {principios.map((principio) => <article><span>{principio.number}</span><h3>{principio.title}</h3><p>{principio.text}</p></article>)}
+      </div>
+    </section>
+
+    <section class="about-cta">
+      <span class="cta-word" aria-hidden="true">FRESA</span>
+      <div><p>YA CONOCES NUESTRA ESENCIA</p><h2>Ahora falta<br /><i>probarla.</i></h2></div>
+      <p>Elige entre pollo rostizado, alitas, boneless y combos para compartir.</p>
+      <a href={whatsappUrl} target="_blank" rel="noreferrer">Hacer mi pedido <span>↗</span></a>
+    </section>
+  </main>
+  <Footer />
+  <WhatsappFlotante />
+</Layout>
+
+<script>
+  const videoHero = document.querySelector('[data-video-hero]');
+
+  if (videoHero instanceof HTMLElement) {
+    let scheduled = false;
+
+    const updateVideoHero = () => {
+      const availableScroll = Math.max(1, videoHero.offsetHeight - window.innerHeight);
+      const progress = Math.min(1, Math.max(0, (window.scrollY - videoHero.offsetTop) / availableScroll));
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const mobile = window.innerWidth <= 650;
+      const sideTarget = mobile ? 18 : Math.max(32, (window.innerWidth - 1180) / 2);
+      const topTarget = mobile ? 92 : 112;
+      const bottomTarget = mobile ? 190 : 210;
+      videoHero.style.setProperty('--frame-top', `${eased * topTarget}px`);
+      videoHero.style.setProperty('--frame-side', `${eased * sideTarget}px`);
+      videoHero.style.setProperty('--frame-bottom', `${eased * bottomTarget}px`);
+      videoHero.style.setProperty('--frame-radius', `${eased * 22}px`);
+      scheduled = false;
+    };
+
+    const scheduleUpdate = () => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(updateVideoHero);
+    };
+
+    updateVideoHero();
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+  }
+</script>
+
+<style>
+  .about-hero { --frame-top: 0px; --frame-side: 0px; --frame-bottom: 0px; --frame-radius: 0px; --copy-opacity: 1; --copy-y: 0px; --facts-opacity: 1; --facts-y: 0px; --exit-opacity: 0; --exit-y: 18px; position: relative; height: 165vh; min-height: 1180px; color: #fff4df; background: #fff4df; isolation: isolate; }
+  .hero-sticky { position: sticky; top: 0; height: 100vh; min-height: 700px; overflow: hidden; background: #fff4df; }
+  .video-window { position: absolute; z-index: 0; top: var(--frame-top); right: var(--frame-side); bottom: var(--frame-bottom); left: var(--frame-side); overflow: hidden; border-radius: var(--frame-radius); background: #2c100b; box-shadow: 0 25px 70px #4220184f; will-change: inset, border-radius; }
+  .video-window video { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(1.12) contrast(1.08) brightness(.9); animation: hero-in 1.2s cubic-bezier(.2,.75,.25,1) both; }
+  .hero-shade { position: absolute; z-index: 1; inset: 0; background: linear-gradient(90deg, #210b06f7 0%, #210b06e7 31%, #210b0694 52%, transparent 80%), linear-gradient(0deg, #210b06bd 0%, transparent 34%); }
+  .hero-word { position: absolute; z-index: 1; bottom: 65px; left: -12px; color: #ffd36a0b; font-family: var(--font-display); font-size: clamp(145px, 22vw, 320px); letter-spacing: -.07em; line-height: .7; opacity: var(--copy-opacity); transform: translateY(var(--copy-y)); }
+  .hero-inner { position: relative; z-index: 3; width: min(1180px, calc(100% - 64px)); margin: auto; padding-top: 215px; opacity: var(--copy-opacity); transform: translateY(var(--copy-y)); will-change: opacity, transform; }
+  .eyebrow, .section-label { margin: 0 0 27px; color: #ffd36a; font-size: 9px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+  .eyebrow span, .section-label span, .brands header > div > p span { display: inline-block; width: 33px; height: 2px; margin: 0 11px 3px 0; background: currentColor; }
+  .hero-inner h1 { max-width: 750px; margin: 0; font-family: var(--font-display); font-size: clamp(78px, 9vw, 130px); font-weight: 400; letter-spacing: -.045em !important; line-height: .73; }
+  .hero-inner h1 i { color: #ffd36a; font-style: normal; }
+  .hero-bottom { display: flex; gap: 42px; align-items: center; margin-top: 45px; }
+  .hero-bottom > p { max-width: 430px; margin: 0; color: #fff4dfbc; font-size: 14px; line-height: 1.75; }
+  .hero-bottom > a { padding: 15px 18px; color: #422018; background: #ffd36a; font-size: 10px; font-weight: 900; text-decoration: none; text-transform: uppercase; transition: transform .2s, background .2s; }
+  .hero-bottom > a:hover { background: #f28c16; transform: translateY(-3px); }
+  .hero-bottom > a span { margin-left: 28px; color: #c51f2b; font-size: 16px; }
+  .hero-seal { position: absolute; z-index: 3; right: max(32px, calc((100vw - 1180px) / 2)); bottom: 150px; display: grid; width: 135px; height: 135px; place-content: center; border: 1px solid #ffd36a; border-radius: 50%; color: #ffd36a; background: #c51f2be8; text-align: center; opacity: var(--copy-opacity); transform: translateY(var(--copy-y)) rotate(7deg); }
+  .hero-seal > span { color: #f28c16; font-size: 18px; }
+  .hero-seal strong { margin: 4px 0; font-family: var(--font-display); font-size: 18px; font-weight: 400; line-height: 1; }
+  .hero-seal small { font-size: 6px; font-weight: 900; letter-spacing: .16em; }
+  .hero-facts { position: absolute; z-index: 4; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: repeat(3, 1fr); color: #422018; background: #ffd36a; opacity: var(--facts-opacity); transform: translateY(var(--facts-y)); will-change: opacity, transform; }
+  .hero-facts div { display: flex; gap: 14px; align-items: center; justify-content: center; min-height: 90px; border-right: 1px solid #42201826; }
+  .hero-facts div:last-child { border: 0; }
+  .hero-facts small { color: #c51f2b; font-family: var(--font-display); font-size: 18px; }
+  .hero-facts span { font-size: 7px; font-weight: 800; letter-spacing: .1em; line-height: 1.5; text-transform: uppercase; }
+  .hero-facts b { font-size: 10px; }
+  .compact-caption { position: absolute; z-index: 4; right: max(32px, calc((100vw - 1180px) / 2)); bottom: 38px; left: max(32px, calc((100vw - 1180px) / 2)); display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center; color: #422018; opacity: var(--exit-opacity); transform: translateY(var(--exit-y)); pointer-events: none; }
+  .compact-caption > span { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; color: #fff4df; background: #c51f2b; }
+  .compact-caption p { display: grid; gap: 3px; margin: 0; }
+  .compact-caption small { color: #c51f2b; font-size: 7px; font-weight: 900; letter-spacing: .15em; }
+  .compact-caption strong { font-family: var(--font-display); font-size: 18px; font-weight: 400; }
+  .compact-caption > b { color: #79584a; font-size: 8px; letter-spacing: .1em; text-transform: uppercase; }
+  .story { display: grid; width: min(1180px, calc(100% - 64px)); grid-template-columns: 1.1fr .9fr; gap: 100px; margin: auto; padding: 125px 0 135px; color: #422018; }
+  .story-heading > p, .brands header > div > p { margin: 0 0 19px; color: #c51f2b; font-size: 8px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+  .story-heading > p span { display: inline-grid; width: 31px; height: 31px; place-items: center; margin-right: 11px; border: 1px solid #c51f2b55; border-radius: 50%; }
+  .story h2, .craft h2, .brands h2, .values h2, .about-cta h2 { margin: 0; font-family: var(--font-display); font-size: clamp(55px, 6vw, 83px); font-weight: 400; letter-spacing: -.04em !important; line-height: .82; }
+  .story h2 i, .craft h2 i, .brands h2 i, .values h2 i, .about-cta h2 i { color: #c51f2b; font-style: normal; }
+  .story-copy { padding-top: 50px; }
+  .story-copy .lead { margin: 0 0 32px; color: #422018; font-family: var(--font-display); font-size: 27px; line-height: 1.25; }
+  .story-copy > div { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; padding-top: 27px; border-top: 1px solid #42201824; }
+  .story-copy > div p { margin: 0; color: #79584a; font-size: 11px; line-height: 1.75; }
+  .craft { display: grid; grid-template-columns: 55% 45%; min-height: 760px; color: #fff4df; background: #2c100b; }
+  .craft-photo { position: relative; min-height: 680px; overflow: hidden; }
+  .craft-photo::after { position: absolute; inset: 0; background: linear-gradient(0deg, #210b069e, transparent 48%); content: ''; }
+  .craft-photo > img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s ease; }
+  .craft:hover .craft-photo > img { transform: scale(1.025); }
+  .photo-note { position: absolute; z-index: 2; bottom: 24px; left: 25px; color: #ffd36a; font-size: 7px; font-weight: 900; letter-spacing: .17em; }
+  .photo-count { position: absolute; z-index: 2; top: 28px; right: 28px; display: flex; width: 115px; height: 115px; align-items: center; justify-content: center; gap: 8px; border: 1px solid #ffd36a; border-radius: 50%; color: #422018; background: #ffd36ae8; transform: rotate(5deg); }
+  .photo-count strong { color: #c51f2b; font-family: var(--font-display); font-size: 42px; font-weight: 400; }
+  .photo-count span { font-size: 7px; font-weight: 900; line-height: 1.4; text-transform: uppercase; }
+  .craft-content { display: flex; justify-content: center; flex-direction: column; padding: 75px max(35px, calc((100vw - 1180px) / 2)); padding-left: 70px; }
+  .craft h2 i { color: #ffd36a; }
+  .steps { margin-top: 45px; border-top: 1px solid #ffd36a2b; }
+  .steps article { display: grid; grid-template-columns: 46px 1fr; gap: 18px; padding: 25px 0; border-bottom: 1px solid #ffd36a2b; }
+  .steps article > span { color: #f28c16; font-family: var(--font-display); font-size: 16px; }
+  .steps h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 25px; font-weight: 400; }
+  .steps p { max-width: 330px; margin: 0; color: #fff4df8f; font-size: 10px; line-height: 1.65; }
+  .brands { padding: 125px 32px 135px; color: #422018; background: #ffd36a; }
+  .brands > header { display: grid; width: min(1180px, 100%); grid-template-columns: 1fr 360px; gap: 60px; align-items: end; margin: 0 auto 45px; }
+  .brands h2 i { color: #c51f2b; }
+  .brands > header > p { margin: 0; color: #79584a; font-size: 12px; line-height: 1.7; }
+  .brand-grid { display: grid; width: min(1180px, 100%); grid-template-columns: 1fr 1fr; gap: 16px; margin: auto; }
+  .brand-card { position: relative; display: block; min-height: 610px; overflow: hidden; color: #fff4df; background: #422018; text-decoration: none; isolation: isolate; }
+  .brand-food { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .8s ease, filter .8s ease; }
+  .brand-card:hover .brand-food { filter: saturate(1.15); transform: scale(1.045); }
+  .brand-overlay { position: absolute; z-index: -1; inset: 0; background: linear-gradient(0deg, #210b06ef 0%, #210b068c 45%, transparent 76%); }
+  .wings-brand-card .brand-overlay { background: linear-gradient(0deg, #000 0%, #000a 48%, transparent 80%); }
+  .brand-card > .brand-logo { position: absolute; top: 20px; left: 20px; display: block; width: 110px; height: 95px; overflow: hidden; }
+  .brand-logo > img { position: absolute; top: 50%; left: 50%; max-width: none; transform: translate(-50%, -50%); }
+  .pollo-logo img { width: 245px; }
+  .alitas-logo { background: #000; }
+  .alitas-logo img { width: auto; height: 100%; mix-blend-mode: screen; }
+  .brand-copy { position: absolute; right: 34px; bottom: 35px; left: 34px; }
+  .brand-copy small { color: #f28c16; font-size: 7px; font-weight: 900; letter-spacing: .15em; }
+  .brand-copy h3 { margin: 12px 0 16px; font-family: var(--font-display); font-size: clamp(56px, 6vw, 80px); font-weight: 400; line-height: .72; }
+  .brand-copy h3 i { color: #ffd36a; font-style: normal; }
+  .brand-copy p { max-width: 310px; margin: 0; color: #fff4dfad; font-size: 11px; line-height: 1.6; }
+  .brand-copy b { display: flex; justify-content: space-between; margin-top: 27px; padding-top: 17px; border-top: 1px solid #fff4df43; color: #ffd36a; font-size: 9px; text-transform: uppercase; }
+  .brand-copy b span { color: #f28c16; font-size: 18px; }
+  .values { display: grid; width: min(1180px, calc(100% - 64px)); grid-template-columns: .8fr 1.2fr; gap: 80px; margin: auto; padding: 125px 0 135px; color: #422018; }
+  .values-title > p { margin: 0 0 19px; color: #c51f2b; font-size: 8px; font-weight: 900; letter-spacing: .16em; }
+  .value-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #42201824; border-left: 1px solid #42201824; }
+  .value-grid article { min-height: 235px; padding: 29px; border-right: 1px solid #42201824; border-bottom: 1px solid #42201824; }
+  .value-grid article > span { color: #c51f2b; font-size: 8px; font-weight: 900; letter-spacing: .13em; }
+  .value-grid h3 { margin: 40px 0 10px; font-family: var(--font-display); font-size: 29px; font-weight: 400; }
+  .value-grid p { margin: 0; color: #79584a; font-size: 10px; line-height: 1.65; }
+  .about-cta { position: relative; display: grid; grid-template-columns: 1.15fr .7fr auto; gap: 60px; align-items: center; padding: 95px max(32px, calc((100vw - 1180px) / 2)); overflow: hidden; color: #fff4df; background: #c51f2b; isolation: isolate; }
+  .cta-word { position: absolute; z-index: -1; right: 10px; bottom: -35px; color: #ffd36a10; font-family: var(--font-display); font-size: 230px; line-height: .7; }
+  .about-cta > div > p { margin: 0 0 14px; color: #ffd36a; font-size: 8px; font-weight: 900; letter-spacing: .17em; }
+  .about-cta h2 { font-size: clamp(52px, 5.5vw, 76px); }
+  .about-cta h2 i { color: #ffd36a; }
+  .about-cta > p { margin: 0; color: #fff4dfbd; font-size: 11px; line-height: 1.7; }
+  .about-cta > a { padding: 18px 20px; color: #422018; background: #ffd36a; font-size: 10px; font-weight: 900; text-decoration: none; white-space: nowrap; text-transform: uppercase; }
+  .about-cta > a span { margin-left: 28px; color: #c51f2b; font-size: 18px; }
+  @keyframes hero-in { from { opacity: 0; transform: scale(1.07); } to { opacity: 1; transform: scale(1); } }
+  @media (max-width: 900px) {
+    .story, .values { grid-template-columns: 1fr; gap: 50px; }
+    .story-copy { padding-top: 0; }
+    .craft { grid-template-columns: 1fr; }
+    .craft-photo { min-height: 590px; }
+    .craft-content { padding: 80px 32px; }
+    .brands > header { grid-template-columns: 1fr; gap: 25px; }
+    .brand-card { min-height: 550px; }
+    .about-cta { grid-template-columns: 1fr 1fr; }
+    .about-cta > a { grid-column: 1 / -1; text-align: center; }
+  }
+  @media (max-width: 650px) {
+    .about-hero { min-height: 870px; }
+    .about-hero > img { object-position: 65% center; }
+    .hero-shade { background: linear-gradient(90deg, #210b06ee, #210b069c), linear-gradient(0deg, #210b06d9, transparent); }
+    .hero-inner { width: calc(100% - 36px); padding-top: 165px; }
+    .hero-inner h1 { font-size: 68px; }
+    .hero-bottom { align-items: flex-start; flex-direction: column; gap: 25px; margin-top: 33px; }
+    .hero-seal { right: 18px; bottom: 205px; width: 105px; height: 105px; }
+    .hero-seal strong { font-size: 15px; }
+    .hero-facts div { min-height: 110px; flex-direction: column; gap: 5px; text-align: center; }
+    .story { width: calc(100% - 36px); padding: 90px 0; }
+    .story h2, .craft h2, .brands h2, .values h2 { font-size: 51px; }
+    .story-copy .lead { font-size: 23px; }
+    .story-copy > div { grid-template-columns: 1fr; }
+    .craft-photo { min-height: 440px; }
+    .craft-content { padding: 70px 18px; }
+    .brands { padding: 85px 18px 95px; }
+    .brand-grid { grid-template-columns: 1fr; }
+    .brand-card { min-height: 530px; }
+    .values { width: calc(100% - 36px); padding: 90px 0; }
+    .value-grid { grid-template-columns: 1fr; }
+    .value-grid article { min-height: 205px; }
+    .about-cta { grid-template-columns: 1fr; gap: 27px; padding: 75px 18px; }
+    .about-cta > a { grid-column: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .about-hero { height: 100vh; min-height: 700px; }
+    .video-window { inset: 0 !important; border-radius: 0 !important; }
+    .video-window video { animation: none; }
+    .compact-caption { display: none; }
+  }
+</style>

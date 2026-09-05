@@ -1,0 +1,20 @@
+---
+const whatsappNumber = '524463869132';
+const message = 'Hola, quiero hacer un pedido de Pollo Fresa o Fresa Wings.';
+const whatsappUrl = whatsappNumber
+  ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
+  : `https://wa.me/?text=${encodeURIComponent(message)}`;
+---
+
+<a class="whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Enviar mensaje a Pollo Fresa por WhatsApp">
+  <span class="tooltip"><small>¿Tienes hambre?</small><strong>Escríbenos</strong></span>
+  <span class="icon">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M27.3 4.7A15.8 15.8 0 0 0 2.5 23.8L.3 31.7l8.1-2.1A15.7 15.7 0 0 0 16 31.5h.1A15.7 15.7 0 0 0 27.3 4.7ZM16.1 28.8a13 13 0 0 1-6.6-1.8l-.5-.3-4.8 1.2 1.3-4.7-.3-.5a13 13 0 1 1 10.9 6.1Zm7.1-9.7c-.4-.2-2.3-1.1-2.7-1.3-.4-.1-.6-.2-.9.2-.3.4-1 1.3-1.3 1.5-.2.3-.5.3-.9.1-2.3-1.1-3.8-2-5.3-4.6-.4-.7.4-.7 1.1-2.2.1-.3 0-.6-.1-.8l-1.2-3c-.3-.8-.7-.7-.9-.7h-.8c-.3 0-.7.1-1.1.5-.4.4-1.5 1.5-1.5 3.7s1.6 4.3 1.8 4.6c.2.3 3.1 4.8 7.6 6.7 2.8 1.2 3.9 1.3 5.3 1.1.9-.1 2.3-.9 2.6-1.8.3-.9.3-1.7.2-1.8-.2-.2-.5-.3-.9-.5Z"></path></svg>
+  </span>
+</a>
+
+<style>
+  .whatsapp { position: fixed; z-index: 45; right: 25px; bottom: 25px; display: flex; align-items: center; gap: 11px; color: #fff; text-decoration: none; }.icon { position: relative; display: grid; width: 62px; height: 62px; place-items: center; border: 3px solid #fff; border-radius: 50%; background: #25d366; box-shadow: 0 10px 28px #133b2366; transition: transform .25s ease, box-shadow .25s ease; }.icon::before { position: absolute; inset: -8px; border: 1px solid #25d36688; border-radius: 50%; content: ''; animation: whatsapp-ring 2s ease-out infinite; }.icon svg { width: 32px; height: 32px; fill: #fff; }.tooltip { display: grid; padding: 10px 14px; border: 1px solid #ffd36a35; border-radius: 9px; background: #422018ee; box-shadow: 0 9px 25px #210b0640; opacity: 0; transform: translateX(12px); transition: opacity .25s ease, transform .25s ease; pointer-events: none; }.tooltip small { color: #ffd36a; font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }.tooltip strong { margin-top: 2px; font-size: 11px; }.whatsapp:hover .icon { box-shadow: 0 14px 34px #133b2388; transform: scale(1.08) rotate(-4deg); }.whatsapp:hover .tooltip { opacity: 1; transform: translateX(0); }@keyframes whatsapp-ring { 0% { opacity: .8; transform: scale(.8); } 75%, 100% { opacity: 0; transform: scale(1.3); } }
+  @media (max-width: 600px) { .whatsapp { right: 16px; bottom: 16px; }.icon { width: 55px; height: 55px; }.icon svg { width: 28px; height: 28px; }.tooltip { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .icon::before { animation: none; } }
+</style>

@@ -1,0 +1,309 @@
+---
+import alitasImg from '../assets/fresa-wings-alitas.png';
+import comboImg from '../assets/fresa-wings-combo.png';
+import alitasLogo from '../assets/alitas_logo.png';
+
+const presentaciones = [
+  { piezas: '6 piezas', precio: '$80' },
+  { piezas: '12 piezas', precio: '$150' },
+  { piezas: '15 piezas', precio: '$180' },
+  { piezas: '24 piezas', precio: '$285' },
+];
+
+const sabores = ['BBQ', 'Mango', 'Mango habanero', 'Tamarindo', 'Búfalo', 'Valentina', 'Habanero', 'Parmesano', 'Lemon pepper', 'Takis fuego'];
+
+const complementos = [
+  ['Papas a la francesa', '$50'],
+  ['Gajos de papa', '$50'],
+  ['10 aros de cebolla', '$50'],
+  ['5 dedos de queso', '$75'],
+  ['Refresco', '$25'],
+];
+
+const extras = [
+  ['Salsa', '$10'],
+  ['Aderezo', '$12'],
+  ['Chimichurri', '$12'],
+  ['Ensalada', '$10'],
+];
+
+const combos = [
+  { numero: '01', nombre: 'Combo alitas', incluye: ['6 alitas', '1 malteada', '1 papas'], precio: '$135' },
+  { numero: '02', nombre: 'Combo burger', incluye: ['1 hamburguesa', '1 malteada', '1 papas'], precio: '$120' },
+  { numero: '03', nombre: 'Combo doble', incluye: ['12 alitas', '2 malteadas'], precio: '$225' },
+  { numero: '04', nombre: 'Combo familiar', incluye: ['25 alitas', '4 hamburguesas', '2 malteadas', '1 papas'], precio: '$630', destacado: true },
+];
+
+const whatsappUrl = `https://wa.me/524463869132?text=${encodeURIComponent('Hola, quiero hacer un pedido de Fresa Wings.')}`;
+---
+
+<section class="wings-menu" id="fresa-wings" aria-labelledby="wings-title">
+  <div class="wings-noise" aria-hidden="true"></div>
+  <header class="wings-intro">
+    <div class="wings-copy">
+      <p class="eyebrow"><span>02</span> El lado más atrevido del antojo</p>
+      <div class="wings-brand">
+        <small>POLLO FRESA PRESENTA</small>
+        <span class="wings-logo"><img src={alitasLogo.src} alt="Fresa Wings" /></span>
+      </div>
+      <h2 id="wings-title">Crujientes.<br />Bañadas. <em>Adictivas.</em></h2>
+      <p class="intro-text">Alitas y boneless para elegir, bañar en tu sabor favorito y compartir… si es que alcanzan.</p>
+      <div class="wings-actions">
+        <a href={whatsappUrl} target="_blank" rel="noreferrer">Pedir Fresa Wings <span>↗</span></a>
+        <span>Servicio a domicilio · costo extra</span>
+      </div>
+    </div>
+
+    <div class="wings-photo">
+      <img src={alitasImg.src} alt="Plato con alitas bañadas y crujientes de Fresa Wings" loading="lazy" />
+      <span class="hot-badge"><small>ELIGE ENTRE</small><strong>10</strong><b>sabores</b></span>
+      <span class="photo-caption">Bañadas al momento</span>
+    </div>
+  </header>
+
+  <div class="sizes-grid">
+    <article class="size-card alitas" id="alitas">
+      <div class="card-title"><span>🔥</span><div><small>CON HUESITO</small><h3>Alitas</h3></div></div>
+      <div class="size-list">
+        {presentaciones.map((item) => <div><span>{item.piezas}</span><strong>{item.precio}</strong></div>)}
+      </div>
+      <p>El clásico que nunca falla: piel crujiente y mucho sabor.</p>
+    </article>
+
+    <article class="size-card boneless" id="boneless">
+      <div class="card-title"><span>✦</span><div><small>SIN HUESO</small><h3>Boneless</h3></div></div>
+      <div class="size-list">
+        {presentaciones.map((item) => <div><span>{item.piezas}</span><strong>{item.precio}</strong></div>)}
+      </div>
+      <p>Bocados suaves por dentro, doraditos por fuera y listos para dippear.</p>
+    </article>
+
+    <aside class="flavor-board">
+      <p><span></span> Primero elige tu favorito</p>
+      <h3>¿Con qué sabor<br /><i>te atreves?</i></h3>
+      <div class="flavor-list">
+        {sabores.map((sabor, index) => <span class:list={{ hot: ['Mango habanero', 'Habanero', 'Takis fuego'].includes(sabor) }}><b>{String(index + 1).padStart(2, '0')}</b>{sabor}</span>)}
+      </div>
+      <small class="heat-key"><b>●</b> Opciones con más picante</small>
+    </aside>
+  </div>
+
+  <div class="street-menu">
+    <div class="street-photo">
+      <img src={comboImg.src} alt="Hamburguesa, papas, alitas y malteada de Fresa Wings" loading="lazy" />
+      <div class="street-stamp"><small>NO TODO</small><strong>son alitas</strong></div>
+    </div>
+
+    <div class="street-products">
+      <p class="section-kicker">Para cambiarle, pero no bajarle</p>
+      <h3>Más antojos,<br /><i>más Fresa.</i></h3>
+      <div class="street-product-list">
+        <div><span><b>Hamburguesa clásica</b><small>Agrega papas por $20</small></span><strong>$60</strong></div>
+        <div><span><b>Hamburguesa hawaiana</b><small>Agrega papas por $20</small></span><strong>$70</strong></div>
+        <div><span><b>Palomitas de pollo</b><small>Crujientes y doraditas</small></span><strong>$60</strong></div>
+        <div><span><b>Malteada</b><small>Fresa, vainilla u Oreo</small></span><strong>$40</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sides-row">
+    <article class="list-panel">
+      <p>Para acompañar</p><h3>Complementos</h3>
+      <div>{complementos.map(([nombre, precio]) => <p><span>{nombre}</span><strong>{precio}</strong></p>)}</div>
+    </article>
+    <article class="list-panel extras-panel">
+      <p>Hazlo todavía mejor</p><h3>Extras</h3>
+      <div>{extras.map(([nombre, precio]) => <p><span>{nombre}</span><strong>{precio}</strong></p>)}</div>
+    </article>
+    <div class="side-message"><span>+</span><p>Pide tus complementos al centro y arma la mesa completa.</p></div>
+  </div>
+
+  <div class="combos-section" id="combos-wings">
+    <header><div><p><span></span> Para uno, para dos o para toda la banda</p><h3>Combos que <i>sí llenan.</i></h3></div><p>Precios y contenido tomados del menú de Fresa Wings. Elige el que mejor le quede a tu antojo.</p></header>
+    <div class="combo-grid-wings">
+      {combos.map((item) => (
+        <article class:list={['wing-combo', { featured: item.destacado }]}>
+          <span class="combo-number">{item.numero}</span>
+          {item.destacado && <small class="family-label">PARA TODA LA BANDA</small>}
+          <h4>{item.nombre}</h4>
+          <ul>{item.incluye.map((producto) => <li>{producto}</li>)}</ul>
+          <div><strong>{item.precio}</strong><a href={whatsappUrl} target="_blank" rel="noreferrer" aria-label={`Pedir ${item.nombre}`}>Pedir <span>↗</span></a></div>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <footer class="wings-contact">
+    <div class="contact-brand"><span class="contact-logo"><img src={alitasLogo.src} alt="Fresa Wings" /></span><strong>¿Ya elegiste tu sabor?</strong></div>
+    <p><span>📍</span> Av. Independencia 1823, Col. Miguel Hidalgo</p>
+    <p><span>◷</span> Todos los días · 3:00 a 10:00 p.m.</p>
+    <a href={whatsappUrl} target="_blank" rel="noreferrer"><small>INFORMES Y PEDIDOS</small><strong>446 386 9132</strong><span>↗</span></a>
+  </footer>
+</section>
+
+<style>
+  .wings-menu { position: relative; overflow: hidden; padding: 120px 32px 0; color: #fff4df; background: #000; isolation: isolate; scroll-margin-top: 70px; }
+  .wings-menu::before { position: absolute; z-index: -2; top: -180px; right: -180px; width: 650px; height: 650px; border-radius: 50%; background: #c51f2b22; filter: blur(2px); content: ''; }
+  .wings-menu::after { position: absolute; z-index: -2; top: 550px; left: -220px; width: 520px; height: 520px; border-radius: 50%; background: #f28c1618; content: ''; }
+  .wings-noise { position: absolute; z-index: -1; inset: 0; opacity: .17; background-image: radial-gradient(#ffd36a 0.5px, transparent 0.5px); background-size: 7px 7px; mask-image: linear-gradient(90deg, transparent, #000 45%, transparent); pointer-events: none; }
+  .wings-intro { display: grid; width: min(1220px, 100%); grid-template-columns: 43% 57%; gap: 60px; align-items: center; margin: auto; }
+  .eyebrow, .section-kicker { margin: 0 0 25px; color: #ffd36a; font-size: 9px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+  .eyebrow span { display: inline-grid; width: 31px; height: 31px; place-items: center; margin-right: 12px; border: 1px solid #ffd36a66; border-radius: 50%; color: #f28c16; }
+  .wings-brand { display: flex; align-items: center; gap: 13px; margin-bottom: 33px; }
+  .flame { display: grid; width: 53px; height: 53px; place-items: center; border: 2px solid #f28c16; border-radius: 50% 50% 45% 45%; background: #c51f2b; transform: rotate(-5deg); }
+  .flame svg { width: 31px; height: 31px; fill: #ffd36a; }
+  .wings-brand small { display: block; color: #f28c16; font-size: 7px; font-weight: 900; letter-spacing: .18em; }
+  .wings-brand strong { display: block; margin-top: 3px; font-family: var(--font-display); font-size: 28px; font-weight: 400; line-height: 1; }
+  .wings-brand strong i { color: #ffd36a; font-style: normal; }
+  .wings-brand { position: relative; display: flex; width: 295px; align-items: flex-start; flex-direction: column; gap: 5px; margin-left: 0; padding: 0; overflow: visible; border: 0; background: transparent; box-shadow: none; isolation: isolate; }
+  .wings-brand::before, .wings-brand::after { display: none; }
+  .wings-brand > small { position: relative; z-index: 2; padding: 0; color: #f28c16; background: transparent; }
+  .wings-logo { position: relative; display: block; width: 240px; height: 195px; overflow: hidden; background: transparent; filter: none; }
+  .wings-logo img { position: absolute; top: 50%; left: 50%; width: auto; max-width: none; height: 100%; object-fit: contain; mix-blend-mode: screen; transform: translate(-50%, -50%); }
+  .wings-copy h2 { margin: 0; font-family: var(--font-display); font-size: clamp(58px, 6.8vw, 93px); font-weight: 400; letter-spacing: -.035em; line-height: .79; }
+  .wings-copy h2 em { color: #f28c16; font-style: normal; }
+  .intro-text { max-width: 440px; margin: 29px 0 0; color: #fff4dfb7; font-size: 14px; line-height: 1.75; }
+  .wings-actions { display: flex; gap: 21px; align-items: center; margin-top: 30px; }
+  .wings-actions a { padding: 16px 18px; color: #11100f; background: #ffd36a; font-size: 10px; font-weight: 900; text-decoration: none; transition: background .2s, transform .2s; }
+  .wings-actions a:hover { background: #f28c16; transform: translateY(-2px); }
+  .wings-actions a span { margin-left: 24px; color: #c51f2b; font-size: 16px; }
+  .wings-actions > span { max-width: 130px; color: #fff4df7c; font-size: 8px; font-weight: 800; letter-spacing: .08em; line-height: 1.5; text-transform: uppercase; }
+  .wings-photo { position: relative; min-height: 590px; }
+  .wings-photo::before { position: absolute; top: -24px; right: -24px; width: 73%; height: 75%; border: 1px solid #f28c1650; content: ''; }
+  .wings-photo img { position: absolute; inset: 25px 0 0 0; width: 100%; height: 520px; object-fit: cover; border-radius: 210px 0 0 0; box-shadow: 24px 24px 0 #c51f2b; filter: saturate(1.06) contrast(1.03); }
+  .hot-badge { position: absolute; top: 0; left: -32px; display: grid; width: 115px; height: 115px; place-content: center; border: 1px solid #ffd36a; border-radius: 50%; color: #ffd36a; background: #c51f2bf2; text-align: center; transform: rotate(-8deg); }
+  .hot-badge small, .hot-badge b { font-size: 7px; letter-spacing: .12em; }
+  .hot-badge strong { font-family: var(--font-display); font-size: 40px; font-weight: 400; line-height: .9; }
+  .photo-caption { position: absolute; right: 19px; bottom: 55px; padding: 9px 11px; color: #11100f; background: #ffd36a; font-size: 8px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+  .sizes-grid { display: grid; width: min(1220px, 100%); grid-template-columns: .8fr .8fr 1.4fr; gap: 18px; margin: 115px auto 0; }
+  .size-card { position: relative; overflow: hidden; padding: 31px; color: #422018; background: #ffd36a; }
+  .size-card.boneless { color: #fff4df; background: #c51f2b; }
+  .size-card::after { position: absolute; right: -25px; bottom: -55px; color: #4220180d; font-family: var(--font-display); font-size: 160px; content: '6'; }
+  .boneless::after { color: #ffd36a12; content: 'B'; }
+  .card-title { display: flex; gap: 13px; align-items: center; padding-bottom: 23px; border-bottom: 1px solid currentColor; }
+  .card-title > span { display: grid; width: 43px; height: 43px; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-size: 17px; }
+  .card-title small { font-size: 7px; font-weight: 900; letter-spacing: .15em; }
+  .card-title h3 { margin: 1px 0 0; font-family: var(--font-display); font-size: 36px; font-weight: 400; line-height: 1; }
+  .size-list { position: relative; z-index: 1; display: grid; gap: 0; margin-top: 16px; }
+  .size-list div { display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px dashed currentColor; font-size: 12px; }
+  .size-list strong { font-size: 14px; }
+  .size-card > p { position: relative; z-index: 1; margin: 23px 0 0; font-size: 10px; line-height: 1.55; opacity: .7; }
+  .flavor-board { padding: 35px; border: 1px solid #f28c1655; background: #201714; }
+  .flavor-board > p { margin: 0; color: #f28c16; font-size: 8px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+  .flavor-board > p span, .combos-section header > div > p span { display: inline-block; width: 23px; height: 1px; margin: 0 8px 3px 0; background: currentColor; }
+  .flavor-board h3 { margin: 14px 0 24px; font-family: var(--font-display); font-size: 43px; font-weight: 400; line-height: .87; }
+  .flavor-board h3 i { color: #ffd36a; font-style: normal; }
+  .flavor-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+  .flavor-list span { display: flex; align-items: center; gap: 9px; padding: 10px; border: 1px solid #fff4df18; color: #fff4dfcf; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+  .flavor-list b { color: #f28c16; font-size: 7px; }
+  .flavor-list .hot { border-color: #c51f2b77; background: #c51f2b21; }
+  .flavor-list .hot b { color: #ffd36a; }
+  .heat-key { display: block; margin-top: 17px; color: #fff4df62; font-size: 7px; letter-spacing: .08em; text-transform: uppercase; }
+  .heat-key b { color: #c51f2b; }
+  .street-menu { display: grid; width: min(1220px, 100%); grid-template-columns: 58% 42%; min-height: 570px; margin: 110px auto 0; background: #fff4df; }
+  .street-photo { position: relative; min-height: 570px; overflow: hidden; }
+  .street-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s ease; }
+  .street-menu:hover .street-photo img { transform: scale(1.025); }
+  .street-stamp { position: absolute; right: 22px; bottom: 22px; padding: 16px 18px; color: #fff4df; background: #c51f2be8; transform: rotate(-2deg); }
+  .street-stamp small { display: block; color: #ffd36a; font-size: 7px; font-weight: 900; letter-spacing: .15em; }
+  .street-stamp strong { font-family: var(--font-display); font-size: 26px; font-weight: 400; }
+  .street-products { padding: 52px 45px; color: #422018; }
+  .street-products .section-kicker { color: #c51f2b; }
+  .street-products h3 { margin: 0 0 30px; font-family: var(--font-display); font-size: clamp(45px, 5vw, 66px); font-weight: 400; line-height: .85; }
+  .street-products h3 i { color: #c51f2b; font-style: normal; }
+  .street-product-list > div { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding: 17px 0; border-bottom: 1px solid #4220182c; }
+  .street-product-list span { display: grid; gap: 4px; }
+  .street-product-list b { font-size: 12px; }
+  .street-product-list small { color: #79584a; font-size: 9px; }
+  .street-product-list > div > strong { color: #c51f2b; font-family: var(--font-display); font-size: 25px; font-weight: 400; }
+  .sides-row { display: grid; width: min(1220px, 100%); grid-template-columns: 1fr 1fr .65fr; gap: 18px; margin: 18px auto 0; }
+  .list-panel { padding: 38px; color: #422018; background: #f28c16; }
+  .list-panel.extras-panel { background: #ffd36a; }
+  .list-panel > p { margin: 0 0 5px; font-size: 8px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+  .list-panel h3 { margin: 0 0 22px; font-family: var(--font-display); font-size: 38px; font-weight: 400; }
+  .list-panel > div p { display: flex; justify-content: space-between; margin: 0; padding: 11px 0; border-top: 1px solid #42201835; font-size: 10px; }
+  .list-panel > div strong { color: #c51f2b; font-size: 12px; }
+  .side-message { display: grid; align-content: center; padding: 35px; border: 1px solid #f28c1640; background: #201714; }
+  .side-message span { color: #f28c16; font-family: var(--font-display); font-size: 50px; }
+  .side-message p { margin: 6px 0 0; color: #fff4df9c; font-size: 11px; line-height: 1.65; }
+  .combos-section { width: min(1220px, 100%); margin: 120px auto 0; }
+  .combos-section header { display: grid; grid-template-columns: 1fr 360px; gap: 40px; align-items: end; margin-bottom: 40px; }
+  .combos-section header > div > p { margin: 0 0 13px; color: #f28c16; font-size: 8px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+  .combos-section header h3 { margin: 0; font-family: var(--font-display); font-size: clamp(50px, 6vw, 77px); font-weight: 400; line-height: .85; }
+  .combos-section header h3 i { color: #ffd36a; font-style: normal; }
+  .combos-section header > p { margin: 0; color: #fff4df75; font-size: 11px; line-height: 1.7; }
+  .combo-grid-wings { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
+  .wing-combo { position: relative; display: flex; min-height: 330px; flex-direction: column; padding: 29px; border: 1px solid #fff4df1d; background: #201714; transition: border-color .2s, transform .2s; }
+  .wing-combo:hover { border-color: #f28c16; transform: translateY(-5px); }
+  .wing-combo.featured { color: #422018; background: #ffd36a; }
+  .combo-number { color: #f28c16; font-size: 9px; font-weight: 900; letter-spacing: .15em; }
+  .featured .combo-number { color: #c51f2b; }
+  .family-label { position: absolute; top: 19px; right: -4px; padding: 7px 9px; color: #fff4df; background: #c51f2b; font-size: 6px; font-weight: 900; letter-spacing: .1em; transform: rotate(2deg); }
+  .wing-combo h4 { margin: 31px 0 18px; font-family: var(--font-display); font-size: 31px; font-weight: 400; line-height: .95; text-transform: capitalize; }
+  .wing-combo ul { flex: 1; margin: 0; padding: 0; color: #fff4df96; font-size: 10px; line-height: 1.9; list-style: none; }
+  .wing-combo li::before { margin-right: 7px; color: #f28c16; content: '✦'; }
+  .featured ul { color: #422018aa; }
+  .featured li::before { color: #c51f2b; }
+  .wing-combo > div { display: flex; justify-content: space-between; align-items: end; margin-top: 23px; padding-top: 18px; border-top: 1px solid currentColor; }
+  .wing-combo > div > strong { color: #ffd36a; font-family: var(--font-display); font-size: 36px; font-weight: 400; }
+  .featured > div > strong { color: #c51f2b; }
+  .wing-combo a { color: inherit; font-size: 8px; font-weight: 900; text-decoration: none; text-transform: uppercase; }
+  .wing-combo a span { margin-left: 6px; color: #f28c16; font-size: 15px; }
+  .featured a span { color: #c51f2b; }
+  .wings-contact { display: grid; width: calc(100% + 64px); grid-template-columns: 1.1fr 1fr .8fr 1.1fr; gap: 30px; align-items: center; margin: 120px 0 0 -32px; padding: 42px max(32px, calc((100vw - 1220px) / 2)); color: #422018; background: #f28c16; }
+  .wings-contact div { display: grid; }
+  .wings-contact div small { color: #c51f2b; font-size: 7px; font-weight: 900; letter-spacing: .17em; }
+  .wings-contact div strong { margin-top: 5px; font-family: var(--font-display); font-size: 24px; font-weight: 400; }
+  .wings-contact > p { display: flex; gap: 9px; align-items: center; margin: 0; font-size: 9px; font-weight: 800; line-height: 1.5; }
+  .wings-contact > p span { font-size: 17px; }
+  .wings-contact > a { position: relative; display: grid; padding: 15px 45px 15px 17px; color: #fff4df; background: #c51f2b; text-decoration: none; }
+  .wings-contact > a small { color: #ffd36a; font-size: 7px; font-weight: 900; letter-spacing: .12em; }
+  .wings-contact > a strong { margin-top: 3px; font-size: 15px; }
+  .wings-contact > a > span { position: absolute; top: 17px; right: 17px; color: #ffd36a; font-size: 20px; }
+  .wings-contact .contact-brand { display: flex; align-items: center; gap: 11px; }
+  .contact-logo { position: relative; display: block; width: 82px; height: 72px; overflow: hidden; flex: 0 0 auto; background: #000; }
+  .contact-logo img { position: absolute; top: 50%; left: 50%; width: auto; max-width: none; height: 100%; transform: translate(-50%, -50%); }
+  .contact-brand strong { max-width: 145px; }
+  @media (max-width: 1000px) {
+    .wings-intro { grid-template-columns: 1fr; }
+    .wings-copy { max-width: 680px; }
+    .wings-photo { min-height: 560px; }
+    .sizes-grid { grid-template-columns: 1fr 1fr; }
+    .flavor-board { grid-column: 1 / -1; }
+    .flavor-list { grid-template-columns: repeat(5, 1fr); }
+    .street-menu { grid-template-columns: 1fr; }
+    .street-photo { min-height: 520px; }
+    .sides-row { grid-template-columns: 1fr 1fr; }
+    .side-message { grid-column: 1 / -1; }
+    .combo-grid-wings { grid-template-columns: repeat(2, 1fr); }
+    .wings-contact { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 650px) {
+    .wings-menu { padding: 85px 18px 0; }
+    .wings-intro { gap: 38px; }
+    .wings-brand { width: min(295px, 100%); margin-bottom: 25px; padding-inline: 17px; }
+    .wings-logo { width: 100%; height: 180px; }
+    .wings-copy h2 { font-size: 58px; }
+    .wings-actions { align-items: stretch; flex-direction: column; }
+    .wings-actions a { text-align: center; }
+    .wings-actions > span { max-width: none; text-align: center; }
+    .wings-photo { min-height: 390px; }
+    .wings-photo img { height: 350px; border-radius: 120px 0 0 0; box-shadow: 12px 12px 0 #c51f2b; }
+    .hot-badge { left: -3px; width: 88px; height: 88px; }
+    .hot-badge strong { font-size: 31px; }
+    .photo-caption { bottom: 19px; }
+    .sizes-grid { grid-template-columns: 1fr; margin-top: 75px; }
+    .flavor-board { grid-column: auto; padding: 28px 22px; }
+    .flavor-list { grid-template-columns: 1fr 1fr; }
+    .street-menu { margin-top: 75px; }
+    .street-photo { min-height: 360px; }
+    .street-products { padding: 40px 24px; }
+    .sides-row { grid-template-columns: 1fr; }
+    .side-message { grid-column: auto; }
+    .combos-section { margin-top: 85px; }
+    .combos-section header { grid-template-columns: 1fr; gap: 18px; }
+    .combo-grid-wings { grid-template-columns: 1fr; }
+    .wing-combo { min-height: 290px; }
+    .wings-contact { width: calc(100% + 36px); grid-template-columns: 1fr; gap: 22px; margin: 85px 0 0 -18px; padding: 38px 18px; }
+  }
+</style>

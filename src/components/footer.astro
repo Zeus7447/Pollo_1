@@ -1,0 +1,82 @@
+---
+import polloLogo from '../assets/logo_pollo.png';
+
+const year = new Date().getFullYear();
+const navigation = [
+  { label: 'Inicio', href: '/' },
+  { label: 'Menú', href: '/menu' },
+  { label: 'Nosotros', href: '/nosotros' },
+  { label: 'Pedir', href: '/pedir' },
+  { label: 'Ubicaciones', href: '/ubicaciones' },
+];
+---
+
+<footer class="footer">
+  <div class="footer-top">
+    <p><span>✦</span> SABOR DE CASA · TODOS LOS DÍAS</p>
+    <a href="/pedir">Pedir ahora <span>↗</span></a>
+  </div>
+
+  <div class="footer-main">
+    <div class="brand-column">
+      <a class="brand" href="/" aria-label="Pollo Fresa, inicio"><span class="footer-brand-logo"><img src={polloLogo.src} alt="" /></span><span>POLLO<br /><em>FRESA</em></span></a>
+      <p>Pollo doradito, jugoso y preparado para reunir a todos alrededor de la mesa.</p>
+    </div>
+
+    <div class="link-column"><small>Explora</small>{navigation.map((link) => <a href={link.href}>{link.label}</a>)}</div>
+    <div class="link-column"><small>Información</small><a href="/politica-de-privacidad">Política de privacidad</a><a href="/cookies">Política de cookies</a><a href="/terminos">Términos y condiciones</a><button type="button" data-cookie-open>Configurar cookies</button></div>
+    <div class="contact-column"><small>Hablemos</small><p>¿Tienes dudas sobre tu pedido?</p><a href="/pedir">Contáctanos <span>↗</span></a><p class="schedule">Lunes a domingo<br /><strong>11:00 — 22:00</strong></p></div>
+  </div>
+
+  <section class="social-showcase" aria-labelledby="social-title">
+    <header><p><span></span> La parte más sabrosa del feed</p><h2 id="social-title">Síguenos y<br /><i>abre el apetito.</i></h2></header>
+    <div class="social-grid">
+      <a class="social-card instagram" href="#" aria-label="Seguir a Pollo Fresa en Instagram">
+        <span class="social-index">01</span><span class="social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1" class="fill"></circle></svg></span><div><small>@POLLOFRESA</small><strong>Instagram</strong><p>Fotos, antojos y mucho pollo doradito.</p></div><span class="social-arrow">↗</span>
+      </a>
+      <a class="social-card facebook" href="#" aria-label="Seguir a Pollo Fresa en Facebook">
+        <span class="social-index">02</span><span class="social-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M14.2 22v-8h2.7l.4-3.1h-3.1v-2c0-.9.3-1.5 1.6-1.5h1.7V4.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.1H8V14h2.8v8h3.4Z"></path></svg></span><div><small>POLLO FRESA</small><strong>Facebook</strong><p>Promociones, novedades y sucursales.</p></div><span class="social-arrow">↗</span>
+      </a>
+      <a class="social-card tiktok" href="#" aria-label="Seguir a Pollo Fresa en TikTok">
+        <span class="social-index">03</span><span class="social-icon tiktok-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M16.6 3c.4 2.3 1.7 3.7 4 3.9v3.2c-1.5.1-2.8-.3-4-1.2v6.3a6.2 6.2 0 1 1-5.4-6.1v3.3a3 3 0 1 0 2.1 2.8V3h3.3Z"></path></svg></span><div><small>@POLLOFRESA</small><strong>TikTok</strong><p>El rosticero, detrás de cámaras y sabor.</p></div><span class="social-arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="wordmark" aria-hidden="true">POLLO FRESA</div>
+
+  <div class="footer-bottom"><p>© {year} Pollo Fresa. Todos los derechos reservados.</p><p>Hecho con fuego, sazón y mucho cariño <span>♥</span></p><a href="#top">Volver arriba ↑</a></div>
+
+  <dialog class="cookie-dialog" data-cookie-dialog>
+    <form method="dialog"><button class="close" value="close" aria-label="Cerrar">×</button><span class="cookie-icon">◉</span><h2>Preferencias de cookies</h2><p>Utilizamos cookies para mejorar tu experiencia. Puedes elegir cuáles permitir.</p><label><span><strong>Cookies esenciales</strong><small>Necesarias para que el sitio funcione.</small></span><input type="checkbox" checked disabled /></label><label><span><strong>Cookies de análisis</strong><small>Nos ayudan a entender cómo se utiliza el sitio.</small></span><input type="checkbox" /></label><div class="dialog-actions"><button value="essential">Solo esenciales</button><button class="accept" value="all">Aceptar todas</button></div></form>
+  </dialog>
+</footer>
+
+<script>
+  const dialog = document.querySelector('[data-cookie-dialog]');
+  document.querySelector('[data-cookie-open]')?.addEventListener('click', () => {
+    if (dialog instanceof HTMLDialogElement) dialog.showModal();
+  });
+</script>
+
+<style>
+  .footer { position: relative; overflow: hidden; color: #fff4df; background: #2c100b; }.footer-top { display: flex; justify-content: space-between; align-items: center; padding: 17px max(32px, calc((100vw - 1160px) / 2)); color: #422018; background: #f28c16; }.footer-top p { margin: 0; font-size: 9px; font-weight: 800; letter-spacing: .16em; }.footer-top p span { margin-right: 10px; color: #c51f2b; }.footer-top > a { color: #422018; font-size: 10px; font-weight: 800; text-decoration: none; }.footer-top > a span { margin-left: 10px; font-size: 16px; }.footer-main { display: grid; width: min(1160px, calc(100% - 64px)); grid-template-columns: 1.5fr .65fr 1fr .9fr; gap: 65px; margin: auto; padding: 77px 0 66px; border-bottom: 1px solid #ffd36a2e; }.brand { display: flex; align-items: center; gap: 12px; color: #fff4df; font-size: 17px; font-weight: 800; line-height: .88; letter-spacing: .12em; text-decoration: none; }.brand em { color: #ffd36a; font-style: normal; }.brand-mark { display: grid; width: 42px; height: 42px; place-items: center; color: #fff; background: #c51f2b; border-radius: 50% 50% 50% 8px; font-size: 22px; transform: rotate(-20deg); }.brand-column > p { max-width: 290px; margin: 24px 0 27px; color: #fff4df8f; font-size: 12px; line-height: 1.7; }.socials { display: flex; gap: 8px; }.socials a { display: grid; width: 39px; height: 39px; place-items: center; border: 1px solid #ffd36a50; border-radius: 50%; color: #ffd36a; font-size: 9px; font-weight: 800; text-decoration: none; transition: .2s ease; }.socials a:hover { color: #422018; background: #ffd36a; transform: translateY(-3px); }.link-column, .contact-column { display: flex; flex-direction: column; align-items: start; }.footer-main small { margin-bottom: 23px; color: #f28c16; font-size: 8px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }.link-column a, .link-column button { margin-bottom: 12px; padding: 0; border: 0; color: #fff4dfb5; background: none; font-size: 11px; text-align: left; text-decoration: none; cursor: pointer; transition: color .2s ease, transform .2s ease; }.link-column a:hover, .link-column button:hover { color: #ffd36a; transform: translateX(3px); }.contact-column > p { max-width: 180px; margin: 0 0 19px; color: #fff4dfb5; font-size: 12px; line-height: 1.55; }.contact-column > a { padding-bottom: 7px; border-bottom: 1px solid #c51f2b; color: #ffd36a; font-size: 11px; font-weight: 800; text-decoration: none; }.contact-column > a span { margin-left: 8px; font-size: 16px; }.contact-column .schedule { margin-top: 27px; color: #fff4df6e; font-size: 9px; line-height: 1.6; }.schedule strong { color: #fff4dfbd; font-size: 11px; }.wordmark { width: min(1160px, calc(100% - 64px)); height: clamp(98px, 14vw, 185px); margin: auto; overflow: hidden; color: #ffd36a; font-family: var(--font-display); font-size: clamp(82px, 14.6vw, 194px); letter-spacing: -.07em; line-height: .88; text-align: center; white-space: nowrap; }.footer-bottom { display: grid; grid-template-columns: 1fr auto 1fr; gap: 25px; align-items: center; padding: 20px max(32px, calc((100vw - 1160px) / 2)); color: #422018; background: #ffd36a; }.footer-bottom p { margin: 0; font-size: 8px; font-weight: 700; letter-spacing: .05em; }.footer-bottom p:nth-child(2) { text-align: center; }.footer-bottom p span { color: #c51f2b; }.footer-bottom a { justify-self: end; color: #422018; font-size: 8px; font-weight: 800; text-decoration: none; text-transform: uppercase; }.cookie-dialog { width: min(480px, calc(100% - 36px)); padding: 0; border: 0; color: #422018; background: #fff4df; box-shadow: 0 25px 80px #16070488; }.cookie-dialog::backdrop { background: #210b06b8; backdrop-filter: blur(5px); }.cookie-dialog form { position: relative; padding: 34px; }.close { position: absolute; top: 15px; right: 17px; border: 0; color: #422018; background: transparent; font-size: 25px; cursor: pointer; }.cookie-icon { display: grid; width: 45px; height: 45px; place-items: center; margin-bottom: 19px; color: #ffd36a; background: #c51f2b; border-radius: 50%; }.cookie-dialog h2 { margin: 0 0 10px; font-family: var(--font-display); font-size: 31px; font-weight: 400; }.cookie-dialog > form > p { margin: 0 0 25px; color: #79584a; font-size: 12px; line-height: 1.6; }.cookie-dialog label { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding: 16px 0; border-top: 1px solid #42201822; }.cookie-dialog label span { display: grid; gap: 4px; }.cookie-dialog label strong { font-size: 11px; }.cookie-dialog label small { color: #80695b; font-size: 9px; }.cookie-dialog input { accent-color: #c51f2b; }.dialog-actions { display: flex; gap: 10px; margin-top: 20px; }.dialog-actions button { flex: 1; padding: 13px 10px; border: 1px solid #c51f2b; color: #c51f2b; background: transparent; font-size: 10px; font-weight: 800; cursor: pointer; }.dialog-actions .accept { color: #fff; background: #c51f2b; }
+  .footer-brand-logo { position: relative; display: block; width: 92px; height: 82px; overflow: hidden; flex: 0 0 auto; filter: drop-shadow(0 9px 15px #16070475); }
+  .footer-brand-logo img { position: absolute; top: 50%; left: 50%; width: 205px; max-width: none; height: auto; transform: translate(-50%, -50%); }
+  .brand-column .brand { gap: 2px; }
+  @media (max-width: 850px) { .footer-main { grid-template-columns: 1.2fr 1fr 1fr; }.contact-column { grid-column: 2 / -1; }.brand-column { grid-row: span 2; }.footer-bottom { grid-template-columns: 1fr 1fr; }.footer-bottom p:nth-child(2) { display: none; } }
+  @media (max-width: 560px) { .footer-top { padding-inline: 18px; }.footer-main { width: calc(100% - 36px); grid-template-columns: 1fr 1fr; gap: 43px 25px; padding: 59px 0 50px; }.brand-column { grid-column: 1 / -1; grid-row: auto; }.contact-column { grid-column: 1 / -1; }.wordmark { width: calc(100% - 36px); height: 72px; font-size: 73px; text-align: left; }.footer-bottom { padding-inline: 18px; }.cookie-dialog form { padding: 29px 22px; } }
+  .social-showcase { width: min(1160px, calc(100% - 64px)); margin: 0 auto; padding: 75px 0 85px; }.social-showcase header { display: flex; justify-content: space-between; align-items: end; margin-bottom: 35px; }.social-showcase header p { margin: 0 0 7px; color: #f28c16; font-size: 9px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }.social-showcase header p span { display: inline-block; width: 27px; height: 2px; margin: 0 10px 3px 0; background: #f28c16; }.social-showcase h2 { margin: 0; font-family: var(--font-display); font-size: clamp(43px, 5vw, 67px); font-weight: 400; letter-spacing: -.025em; line-height: .86; text-align: right; }.social-showcase h2 i { color: #ffd36a; font-style: normal; }.social-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }.social-card { position: relative; display: flex; min-height: 260px; flex-direction: column; justify-content: space-between; padding: 24px; overflow: hidden; color: #422018; background: #ffd36a; text-decoration: none; transition: color .35s ease, background .35s ease, transform .35s ease; }.social-card::before { position: absolute; right: -75px; bottom: -95px; width: 240px; height: 240px; border: 1px solid currentColor; border-radius: 50%; opacity: .17; content: ''; transition: transform .5s ease; }.social-card::after { position: absolute; right: -25px; bottom: -45px; width: 130px; height: 130px; border: 1px solid currentColor; border-radius: 50%; opacity: .17; content: ''; }.social-card:hover { color: #fff4df; background: #c51f2b; transform: translateY(-8px); }.social-card.facebook:hover { background: #f28c16; }.social-card.tiktok:hover { background: #422018; }.social-card:hover::before { transform: scale(1.18); }.social-index { font-family: var(--font-display); font-size: 13px; font-style: italic; opacity: .55; }.social-icon { position: absolute; top: 19px; right: 20px; display: grid; width: 49px; height: 49px; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-size: 11px; font-weight: 800; }.social-card > div { position: relative; z-index: 1; }.social-card small { display: block; margin-bottom: 8px; font-size: 8px; font-weight: 800; letter-spacing: .17em; }.social-card strong { display: block; font-family: var(--font-display); font-size: clamp(32px, 3.3vw, 46px); font-weight: 400; letter-spacing: -.035em; line-height: .9; }.social-card p { max-width: 210px; margin: 13px 0 0; font-size: 10px; line-height: 1.5; opacity: .72; }.social-arrow { position: absolute; z-index: 2; right: 24px; bottom: 23px; font-size: 27px; transition: transform .3s ease; }.social-card:hover .social-arrow { transform: rotate(45deg) scale(1.1); }
+  @media (max-width: 800px) { .social-grid { grid-template-columns: 1fr; }.social-card { min-height: 220px; }.social-card strong { font-size: 44px; } }
+  @media (max-width: 560px) { .social-showcase { width: calc(100% - 36px); padding: 60px 0 68px; }.social-showcase header { display: block; }.social-showcase h2 { margin-top: 15px; text-align: left; }.social-card { min-height: 205px; padding: 20px; } }
+  .social-card.instagram, .social-card.instagram:hover { color: #fff; background: linear-gradient(135deg, #833ab4 0%, #c13584 34%, #fd1d1d 68%, #fcaf45 100%); }
+  .social-card.facebook, .social-card.facebook:hover { color: #fff; background: #1877f2; }
+  .social-card.tiktok, .social-card.tiktok:hover { color: #fff; background: linear-gradient(135deg, #111 0%, #000 100%); }
+  .social-card:hover { filter: brightness(1.08) saturate(1.08); }
+  .social-icon svg { width: 23px; height: 23px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 2; }
+  .social-icon svg .fill { fill: currentColor; stroke: none; }
+  .tiktok-logo svg { filter: drop-shadow(2px 1px 0 #fe2c55) drop-shadow(-2px -1px 0 #25f4ee); }
+  .facebook .social-icon { background: #fff; color: #1877f2; border-color: #fff; }
+  .instagram .social-icon { background: #ffffff1f; }
+  .tiktok .social-icon { border-color: #25f4ee; }
+</style>

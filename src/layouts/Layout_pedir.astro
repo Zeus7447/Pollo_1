@@ -1,0 +1,32 @@
+---
+import '../styles/global.css';
+import polloLogo from '../assets/logo_pollo.png';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Pedir | Pollo Fresa & Fresa Wings',
+  description = 'Arma tu pedido de pollo rostizado, alitas, boneless, combos y complementos, y envíalo directamente por WhatsApp.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#2c100b" />
+    <link rel="icon" type="image/png" href={polloLogo.src} />
+    <title>{title}</title>
+  </head>
+  <body><slot /></body>
+</html>
+
+<style is:global>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; min-width: 320px; overflow-x: hidden; background: #fff4df; }
+</style>
