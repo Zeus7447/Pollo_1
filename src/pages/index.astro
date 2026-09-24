@@ -20,3 +20,88 @@ import WhatsappFlotante from '../components/whatsapp_flotante.astro';
   <Footer />
   <WhatsappFlotante />
 </Layout>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduceMotion) {
+    const scope = document.querySelector('main#top')?.parentElement ?? document;
+    const ctx = gsap.context(() => {
+      const hero = document.querySelector('.hero');
+      const heroVideo = document.querySelector('.hero-video video');
+
+      if (hero && heroVideo) {
+        gsap.to(heroVideo, {
+          yPercent: 12,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: hero,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          },
+        });
+      }
+
+      const sections = gsap.utils.toArray<HTMLElement>('.featured, .essence, .locations, .final-cta');
+      sections.forEach((section) => {
+        gsap.from(section, {
+          y: 48,
+          autoAlpha: 0,
+          duration: 0.9,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 82%',
+            once: true,
+          },
+        });
+      });
+
+      gsap.utils.toArray<HTMLElement>('.featured .heading, .locations .heading, .final-cta .cta-copy').forEach((element) => {
+        gsap.from(element, {
+          x: -34,
+          autoAlpha: 0,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: element, start: 'top 84%', once: true },
+        });
+      });
+
+      gsap.from('.essence .story-image', {
+        x: -55,
+        autoAlpha: 0,
+        duration: 1,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: '.essence', start: 'top 75%', once: true },
+      });
+
+      gsap.from('.essence .story-copy', {
+        x: 55,
+        autoAlpha: 0,
+        duration: 1,
+        delay: 0.12,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: '.essence', start: 'top 75%', once: true },
+      });
+
+      gsap.to('.final-cta .cta-visual img', {
+        yPercent: -8,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.final-cta',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    }, scope);
+
+    document.addEventListener('astro:before-swap', () => ctx.revert(), { once: true });
+  }
+</script>
