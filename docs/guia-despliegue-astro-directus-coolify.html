@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Guía rápida — Astro + Directus + Coolify</title>
+  <style>
+    @page { size: letter; margin: 16mm; }
+    :root { --ink:#2f1914; --red:#ee472f; --yellow:#ffc945; --cream:#fff7e9; --line:#e7d5bd; --muted:#735f59; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:#fff; font:10.5pt/1.5 Arial, sans-serif; }
+    h1,h2,h3 { font-family:Georgia,serif; line-height:1.05; margin:0 0 10px; }
+    h1 { font-size:34pt; letter-spacing:-1px; } h2 { font-size:21pt; margin-top:24px; } h3 { font-size:14pt; margin-top:16px; }
+    p { margin:7px 0; } ul,ol { margin:7px 0 7px 20px; padding:0; } li { margin:4px 0; }
+    .cover { min-height:238mm; display:flex; flex-direction:column; justify-content:center; padding:25mm 16mm; background:linear-gradient(135deg,#fff8e9 0%,#fff0cc 100%); border:1px solid var(--line); }
+    .eyebrow { color:var(--red); font-size:9pt; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; }
+    .accent { color:var(--red); } .lead { font:16pt/1.35 Georgia,serif; max-width:520px; }
+    .badge { display:inline-block; margin-top:22px; padding:7px 12px; border-radius:99px; color:#fff; background:var(--red); font-weight:bold; }
+    .page { page-break-before:always; }
+    .diagram { margin:14px 0; padding:15px; border-radius:12px; background:var(--cream); border:1px solid var(--line); text-align:center; font-weight:bold; }
+    .diagram span { color:var(--red); padding:0 7px; }
+    .card { margin:12px 0; padding:13px 15px; border:1px solid var(--line); border-radius:10px; background:#fffdf9; }
+    .ok { border-left:5px solid #4c9b59; } .warn { border-left:5px solid var(--yellow); }
+    code { padding:1px 4px; color:#8c2f23; background:#fff0e9; border-radius:3px; font:9pt Consolas,monospace; }
+    pre { margin:9px 0; padding:11px; overflow-wrap:anywhere; white-space:pre-wrap; color:#f9eee3; background:#251713; border-radius:8px; font:8.5pt/1.45 Consolas,monospace; }
+    table { width:100%; border-collapse:collapse; margin:10px 0; font-size:9.5pt; }
+    th { color:#fff; background:var(--ink); text-align:left; } th,td { padding:8px; border:1px solid var(--line); vertical-align:top; }
+    tr:nth-child(even) { background:#fffaf1; }
+    .footer { margin-top:25px; color:var(--muted); font-size:8.5pt; text-align:center; }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <p class="eyebrow">Documento reutilizable</p>
+    <h1>Despliegue rápido de una web con <span class="accent">Astro + Directus + Coolify</span></h1>
+    <p class="lead">Cómo convertir una web estática en una aplicación que lee un catálogo desde Directus de forma segura y se despliega sin depender de datos compilados.</p>
+    <span class="badge">Caso aplicado: Pollo Fresa · septiembre 2026</span>
+  </section>
+
+  <section class="page">
+    <p class="eyebrow">1 · La idea</p>
+    <h2>Arquitectura que se usó</h2>
+    <div class="diagram">Visitante <span>→</span> Coolify Proxy (Caddy/Traefik) <span>→</span> Astro SSR / Node :4321 <span>→</span> Directus API</div>
+    <p>La clave es <strong>SSR</strong> (renderizado en servidor). La página consulta Directus cuando alguien entra al sitio, no cuando se compila la imagen. Por ello se pueden actualizar productos, precios y categorías en Directus sin volver a construir la web.</p>
+    <div class="card ok"><strong>Qué se logra.</strong> El token de Directus nunca llega al navegador; vive únicamente como variable de entorno del servidor. El visitante recibe HTML ya renderizado con los productos.</div>
+    <div class="card warn"><strong>Qué no funciona para este caso.</strong> Un build estático servido por Nginx genera el HTML una sola vez. Los cambios posteriores en Directus no se ven y las variables de runtime no sirven para volver a consultar el catálogo.</div>
+
+    <h3>Variables que debe tener cada sitio</h3>
+    <table>
+      <tr><th>Variable</th><th>Uso</th><th>Ejemplo</th></tr>
+      <tr><td><code>DIRECTUS_URL</code></td><td>URL base accesible desde la aplicación.</td><td><code>https://cms.midominio.com</code></td></tr>
+      <tr><td><code>DIRECTUS_TOKEN</code></td><td>Token estático de un usuario con permisos de lectura.</td><td>Secreto; no se incluye en Git.</td></tr>
+      <tr><td><code>DIRECTUS_BUSINESS_ID</code></td><td>Identificador de la marca/sucursal a filtrar.</td><td><code>8</code></td></tr>
+      <tr><td><code>HOST</code></td><td>Interfaz donde escucha Node dentro del contenedor.</td><td><code>0.0.0.0</code></td></tr>
+      <tr><td><code>PORT</code></td><td>Puerto interno de Astro Node.</td><td><code>4321</code></td></tr>
+    </table>
+  </section>
+
+  <section class="page">
+    <p class="eyebrow">2 · Preparar Astro</p>
+    <h2>Configuración SSR mínima</h2>
+    <p>Instalar el adaptador:</p>
+    <pre>pnpm add @astrojs/node</pre>
+    <p>En <code>astro.config.mjs</code>, configurar salida de servidor y declarar los secretos:</p>
+    <pre>import { defineConfig, envField } from 'astro/config';
+import node from '@astrojs/node';
+
+export default defineConfig({
+  output: 'server',
+  adapter: node({ mode: 'standalone' }),
+  env: { schema: {
+    DIRECTUS_URL: envField.string({ context: 'server', access: 'secret' }),
+    DIRECTUS_TOKEN: envField.string({ context: 'server', access: 'secret' }),
+    DIRECTUS_BUSINESS_ID: envField.string({ context: 'server', access: 'secret' }),
+  }},
+});</pre>
+    <p>Agregar estos scripts y fijar pnpm en <code>package.json</code>:</p>
+    <pre>{
+  "packageManager": "pnpm@10.15.1",
+  "scripts": {
+    "build": "astro build",
+    "start": "node ./dist/server/entry.mjs"
+  }
+}</pre>
+    <div class="card"><strong>Por qué fijar pnpm:</strong> Railpack puede elegir una versión reciente con políticas de seguridad que rechazan dependencias recién publicadas. Al definir <code>packageManager</code>, Corepack descarga la versión esperada y el build es reproducible.</div>
+
+    <h3>Leer secretos exclusivamente desde servidor</h3>
+    <pre>import { DIRECTUS_URL, DIRECTUS_TOKEN, DIRECTUS_BUSINESS_ID }
+  from 'astro:env/server';
+
+const response = await fetch(
+  `${DIRECTUS_URL}/items/products?filter[business][_eq]=${DIRECTUS_BUSINESS_ID}`,
+  { headers: { Authorization: `Bearer ${DIRECTUS_TOKEN}` } }
+);</pre>
+    <p>Nunca uses prefijos públicos como <code>PUBLIC_</code> para el token. No pongas el token en scripts del navegador, HTML, commits ni capturas.</p>
+  </section>
+
+  <section class="page">
+    <p class="eyebrow">3 · Directus</p>
+    <h2>Usuario y permisos de solo lectura</h2>
+    <ol>
+      <li>Crea una política/rol exclusivo para el sitio web, por ejemplo <em>Website Read</em>.</li>
+      <li>Da únicamente <strong>Read</strong> en las colecciones que se mostrarán, por ejemplo <code>products</code>, <code>categories</code> y <code>directus_files</code>.</li>
+      <li>Asigna la política a un usuario técnico y genera un token estático.</li>
+      <li>Prueba el token con una consulta de lectura antes de desplegar.</li>
+    </ol>
+    <div class="card warn"><strong>Imágenes.</strong> Si el campo de producto contiene el ID de <code>directus_files</code>, la imagen se obtiene por <code>/assets/&lt;id&gt;</code>. La política necesita acceso de lectura a esos archivos, o el producto cargará sin imagen.</div>
+    <h3>URL correcta desde Coolify</h3>
+    <p><code>DIRECTUS_URL</code> debe ser una URL real y resolvible. El error <code>getaddrinfo EAI_AGAIN tu-dominio-directus</code> significa que quedó un placeholder o un host inexistente.</p>
+    <ul>
+      <li>Con dominio público: <code>https://cms.midominio.com</code>.</li>
+      <li>Con Directus en el mismo servidor/red de Coolify: <code>http://HOSTNAME-INTERNO:8055</code> (usa el Internal Hostname real de Directus).</li>
+    </ul>
+  </section>
+
+  <section class="page">
+    <p class="eyebrow">4 · Coolify</p>
+    <h2>Checklist de despliegue funcional</h2>
+    <ol>
+      <li>Selecciona <strong>Railpack</strong> y sitio <strong>Dynamic</strong>.</li>
+      <li>Usa los comandos:<br><code>corepack enable && pnpm install --frozen-lockfile</code><br><code>pnpm run build</code><br><code>pnpm start</code></li>
+      <li>Agrega las cinco variables de entorno en <strong>Runtime</strong>. Las tres variables de Directus también pueden estar disponibles durante build, pero lo indispensable es Runtime.</li>
+      <li>La aplicación escucha en <code>4321</code>. No es necesario publicar un puerto del host; el proxy de Coolify la alcanza por la red Docker.</li>
+      <li>Haz redeploy sin caché al cambiar dependencias, build o configuración de proxy.</li>
+    </ol>
+    <h3>Cuando se usan etiquetas manuales de proxy</h3>
+    <p>Todos los destinos del proxy deben indicar el mismo puerto interno que Node:</p>
+    <pre># Traefik
+traefik.http.services.&lt;nombre&gt;.loadbalancer.server.port=4321
+
+# Caddy
+caddy_0.handle_path.0_reverse_proxy={{upstreams 4321}}</pre>
+    <p>Si hay dos dominios (por ejemplo, con y sin <code>www</code>), actualiza ambas etiquetas Caddy. Mantén las reglas, TLS, dominios y middlewares existentes.</p>
+  </section>
+
+  <section class="page">
+    <p class="eyebrow">5 · Diagnóstico rápido</p>
+    <h2>Errores comunes y solución</h2>
+    <table>
+      <tr><th>Señal</th><th>Causa probable</th><th>Acción</th></tr>
+      <tr><td><strong>Bad Gateway</strong></td><td>El proxy apunta a 80, pero Astro escucha en 4321.</td><td>Cambia el upstream Caddy/Traefik a 4321; confirma <code>HOST=0.0.0.0</code>.</td></tr>
+      <tr><td>“El catálogo se está actualizando”</td><td>La consulta SSR falló y la interfaz muestra el estado de respaldo.</td><td>Recarga la página y revisa Runtime Logs para la línea <code>[Directus]</code>.</td></tr>
+      <tr><td><code>EAI_AGAIN</code></td><td>DNS/host de Directus inválido.</td><td>Corrige <code>DIRECTUS_URL</code>; no uses placeholders.</td></tr>
+      <tr><td><code>401</code> o <code>403</code></td><td>Token inválido o política sin permiso.</td><td>Regenera token y habilita Read en productos, categorías y archivos.</td></tr>
+      <tr><td><code>ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION</code></td><td>Railpack instaló una versión de pnpm con política de antigüedad.</td><td>Fija <code>packageManager: pnpm@10.15.1</code> y vuelve a subir el commit.</td></tr>
+      <tr><td>Se ven productos localmente pero no en producción</td><td>El sitio se compiló estático o las variables solo están disponibles durante build.</td><td>Usa SSR, adaptador Node y variables Runtime.</td></tr>
+    </table>
+    <h3>Prueba final antes de entregar</h3>
+    <ol>
+      <li>Cambiar o añadir un producto en Directus.</li>
+      <li>Recargar el sitio publicado.</li>
+      <li>Comprobar que aparece sin ejecutar otro build.</li>
+      <li>Revisar que la consola del navegador no contiene el token.</li>
+    </ol>
+    <p class="footer">Guía interna · Astro + Directus + Coolify · Mantener actualizada al reutilizar la arquitectura.</p>
+  </section>
+</body>
+</html>
