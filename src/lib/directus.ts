@@ -1,3 +1,5 @@
+import { DIRECTUS_BUSINESS_ID, DIRECTUS_TOKEN, DIRECTUS_URL } from 'astro:env/server';
+
 type DirectusResponse<T> = { data: T[] };
 
 type DirectusProduct = {
@@ -35,32 +37,17 @@ export type CatalogProduct = {
   brand: 'Pollo Fresa';
 };
 
-const readLocalEnv = () => {
-  try {
-    return Object.fromEntries(
-      readFileSync(resolve(process.cwd(), '.env'), 'utf8')
-        .split(/\r?\n/)
-        .filter((line) => /^[A-Za-z_][A-Za-z0-9_]*=/.test(line))
-        .map((line) => {
-          const separator = line.indexOf('=');
-          const key = line.slice(0, separator).trim();
-          const value = line.slice(separator + 1).trim().replace(/^(['"])(.*)\1$/, '$2');
-          return [key, value];
-        }),
-    );
-  } catch {
-    return {} as Record<string, string>;
-  }
-};
+// `astro:env/server` reads secrets when the SSR server receives the request.
+// Thus Coolify runtime variables do not get baked into the generated HTML.
+const directusUrl = DIRECTUS_URL?.replace(/\/$/, '');
+const directusToken = DIRECTUS_TOKEN;
+const businessId = DIRECTUS_BUSINESS_ID;
 
-const localEnv = readLocalEnv();
-const directusUrl = (import.meta.env.DIRECTUS_URL || process.env.DIRECTUS_URL || localEnv.DIRECTUS_URL)?.replace(/\/$/, '');
-const directusToken = import.meta.env.DIRECTUS_TOKEN || process.env.DIRECTUS_TOKEN || localEnv.DIRECTUS_TOKEN;
-const businessId = import.meta.env.DIRECTUS_BUSINESS_ID || process.env.DIRECTUS_BUSINESS_ID || localEnv.DIRECTUS_BUSINESS_ID || '8';
+if (!directusUrl) throw new Error('Falta DIRECTUS_URL.');
+if (!directusToken) throw new Error('Falta DIRECTUS_TOKEN.');
+if (!businessId) throw new Error('Falta DIRECTUS_BUSINESS_ID.');
 
 const getItems = async <T>(collection: string, params: URLSearchParams) => {
-  if (!directusUrl || !directusToken) throw new Error('Falta DIRECTUS_URL o DIRECTUS_TOKEN.');
-
   const response = await fetch(`${directusUrl}/items/${collection}?${params}`, {
     headers: { Authorization: `Bearer ${directusToken}` },
   });

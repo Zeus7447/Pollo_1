@@ -9,19 +9,18 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-# Coolify injects the application Build Variables through these arguments.
-ARG DIRECTUS_URL
-ARG DIRECTUS_TOKEN
-ARG DIRECTUS_BUSINESS_ID=8
-
-ENV DIRECTUS_URL=${DIRECTUS_URL}
-ENV DIRECTUS_TOKEN=${DIRECTUS_TOKEN}
-ENV DIRECTUS_BUSINESS_ID=${DIRECTUS_BUSINESS_ID}
-
 RUN pnpm run build
 
-FROM nginx:1.31-alpine
+FROM node:22-alpine AS runtime
 
-COPY --from=build /app/dist /usr/share/nginx/html
+WORKDIR /app
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
 
-EXPOSE 80
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+
+EXPOSE 4321
+
+CMD ["node", "./dist/server/entry.mjs"]
