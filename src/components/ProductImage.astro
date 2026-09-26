@@ -1,0 +1,8 @@
+---
+interface Props { src?: string | { src: string }; alt: string; class?: string }
+const { src, alt, class: className = '' } = Astro.props;
+const imageSrc = typeof src === 'string' ? src : src?.src;
+---
+<div class={`safe-image ${className}`} role="img" aria-label={alt}>
+  {imageSrc ? <img src={imageSrc} alt={alt} loading="lazy" /> : <span class="image-placeholder" aria-hidden="true">✦</span>}
+</div>
