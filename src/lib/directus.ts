@@ -21,6 +21,25 @@ type DirectusCategory = {
   sort_order: number | null;
 };
 
+type DirectusStorefrontSettings = {
+  id: number;
+  show_promotions: boolean;
+};
+
+type DirectusStorefrontPromotion = {
+  id: number;
+  directus_files_id: string | null;
+  badge: string | null;
+  title: string | null;
+  subtitle: string | null;
+  price: string | null;
+  secondary_text: string | null;
+  cta_label: string | null;
+  destination_url: string | null;
+  terms_text: string | null;
+  product_ids: number[] | null;
+};
+
 export type CatalogCategory = {
   id: number;
   name: string;
@@ -37,6 +56,21 @@ export type CatalogProduct = {
   category: string;
   featured: boolean;
   brand: 'Pollo Fresa' | 'Fresa Wings';
+};
+
+export type CatalogPromotion = {
+  id: number;
+  brand: 'Pollo Fresa' | 'Fresa Wings';
+  image?: string;
+  badge: string;
+  title: string;
+  subtitle: string;
+  price?: string;
+  secondaryText?: string;
+  ctaLabel: string;
+  destination: string;
+  terms?: string;
+  productIds: number[];
 };
 
 // `astro:env/server` reads secrets when the SSR server receives the request.
@@ -63,6 +97,46 @@ const getItems = async <T>(collection: string, params: URLSearchParams) => {
   return ((await response.json()) as DirectusResponse<T>).data;
 };
 
+const getStorefrontPromotions = async (businessId: string, brand: CatalogPromotion['brand']): Promise<CatalogPromotion[]> => {
+  try {
+    const settingsQuery = new URLSearchParams({
+      fields: 'id,show_promotions',
+      'filter[business][_eq]': businessId,
+      limit: '1',
+    });
+    const settings = await getItems<DirectusStorefrontSettings>('business_storefront_setting', settingsQuery);
+    const setting = settings[0];
+    if (!setting?.show_promotions) return [];
+
+    const promotionQuery = new URLSearchParams({
+      fields: 'id,directus_files_id,badge,title,subtitle,price,secondary_text,cta_label,destination_url,terms_text,product_ids',
+      'filter[business_storefront_setting_id][_eq]': String(setting.id),
+      sort: 'id',
+      limit: '6',
+    });
+    const promotions = await getItems<DirectusStorefrontPromotion>('business_storefront_setting_files', promotionQuery);
+    return promotions
+      .filter((promotion) => Boolean(promotion.directus_files_id))
+      .map((promotion) => ({
+        id: promotion.id,
+        brand,
+        image: promotion.directus_files_id ? `${directusUrl}/assets/${promotion.directus_files_id}?width=1400&quality=85` : undefined,
+        badge: promotion.badge?.trim() || 'PROMO ESPECIAL',
+        title: promotion.title?.trim() || brand,
+        subtitle: promotion.subtitle?.trim() || 'Descubre una opción especial de nuestro menú.',
+        price: promotion.price?.trim() || undefined,
+        secondaryText: promotion.secondary_text?.trim() || undefined,
+        ctaLabel: promotion.cta_label?.trim() || 'Ver promoción',
+        destination: promotion.destination_url?.trim() || '#destacados',
+        terms: promotion.terms_text?.trim() || undefined,
+        productIds: Array.isArray(promotion.product_ids) ? promotion.product_ids.map(Number).filter(Number.isFinite) : [],
+      }));
+  } catch (error) {
+    console.warn(`[Directus] No se pudieron cargar las promociones de ${brand}.`, error);
+    return [];
+  }
+};
+
 export const getCatalog = async () => {
   try {
     const catalogResults = await Promise.all(catalogs.map(async ({ id, brand }) => {
@@ -79,11 +153,12 @@ export const getCatalog = async () => {
         'filter[active][_eq]': 'true',
         'filter[business][_eq]': id,
       });
-      const [products, categories] = await Promise.all([
+      const [products, categories, promotions] = await Promise.all([
         getItems<DirectusProduct>('products', productQuery),
         getItems<DirectusCategory>('categories', categoryQuery),
+        getStorefrontPromotions(id, brand),
       ]);
-      return { brand, products, categories };
+      return { brand, products, categories, promotions };
     }));
 
     const products: CatalogProduct[] = catalogResults.flatMap(({ brand, products: rawProducts, categories }) => {
@@ -101,10 +176,11 @@ export const getCatalog = async () => {
       }));
     });
     const catalogCategories: CatalogCategory[] = catalogResults.flatMap(({ brand, categories }) => categories.map(({ id, name }) => ({ id, name, brand })));
-    return { products, promotions: products.filter((product) => product.featured), categories: catalogCategories };
+    const promotions = catalogResults.flatMap((catalog) => catalog.promotions);
+    return { products, promotions, categories: catalogCategories };
   } catch (error) {
     console.warn('[Directus] No se pudo cargar el catálogo.', error);
-    return { products: [] as CatalogProduct[], promotions: [] as CatalogProduct[], categories: [] as CatalogCategory[] };
+    return { products: [] as CatalogProduct[], promotions: [] as CatalogPromotion[], categories: [] as CatalogCategory[] };
   }
 };
 import { readFileSync } from 'node:fs';

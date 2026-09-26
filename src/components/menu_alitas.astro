@@ -49,7 +49,7 @@ const whatsappUrl = `https://wa.me/524463869132?text=${encodeURIComponent('Hola,
       <h2 id="wings-title">Crujientes.<br />Bañadas. <em>Adictivas.</em></h2>
       <p class="intro-text">Alitas y boneless para elegir, bañar en tu sabor favorito y compartir… si es que alcanzan.</p>
       <div class="wings-actions">
-        <a href={whatsappUrl} target="_blank" rel="noreferrer">Pedir Fresa Wings <span>↗</span></a>
+        <a href={whatsappUrl} target="_blank" rel="noreferrer">Pedir Fresa Wings</a>
         <span>Servicio a domicilio · costo extra</span>
       </div>
     </div>
@@ -127,7 +127,7 @@ const whatsappUrl = `https://wa.me/524463869132?text=${encodeURIComponent('Hola,
           {item.destacado && <small class="family-label">PARA TODA LA BANDA</small>}
           <h4>{item.nombre}</h4>
           <ul>{item.incluye.map((producto) => <li>{producto}</li>)}</ul>
-          <div><strong>{item.precio}</strong><a href={whatsappUrl} target="_blank" rel="noreferrer" aria-label={`Pedir ${item.nombre}`}>Pedir <span>↗</span></a></div>
+          <div><strong>{item.precio}</strong><a href={whatsappUrl} target="_blank" rel="noreferrer" aria-label={`Pedir ${item.nombre}`}>Pedir</a></div>
         </article>
       ))}
     </div>
@@ -137,7 +137,7 @@ const whatsappUrl = `https://wa.me/524463869132?text=${encodeURIComponent('Hola,
     <div class="contact-brand"><span class="contact-logo"><img src={alitasLogo.src} alt="Fresa Wings" /></span><strong>¿Ya elegiste tu sabor?</strong></div>
     <p><span>📍</span> Av. Independencia 1823, Col. Miguel Hidalgo</p>
     <p><span>◷</span> Todos los días · 3:00 a 10:00 p.m.</p>
-    <a href={whatsappUrl} target="_blank" rel="noreferrer"><small>INFORMES Y PEDIDOS</small><strong>446 386 9132</strong><span>↗</span></a>
+    <a href={whatsappUrl} target="_blank" rel="noreferrer"><small>INFORMES Y PEDIDOS</small><strong>446 386 9132</strong></a>
   </footer>
 </section>
 

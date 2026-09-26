@@ -24,7 +24,7 @@ const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.st
     </div>
 
     <div class="nav-actions">
-      <a class="order-link" href="/pedir"><span class="order-dot"></span>Pedir ahora <b>↗</b></a>
+      <a class="order-link" href="/pedir"><span class="order-dot"></span>Pedir ahora</a>
       <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" data-menu-toggle><span></span><span></span></button>
     </div>
   </nav>
@@ -32,8 +32,8 @@ const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.st
   <div class="mobile-menu" data-mobile-menu aria-hidden="true">
     <div class="mobile-menu-inner">
       <p>MENÚ PRINCIPAL</p>
-      <div>{links.map((link, index) => <a class:list={{ active: isActive(link.href) }} href={link.href}><small>0{index + 1}</small><span>{link.label}</span><b>↗</b></a>)}</div>
-      <a class="mobile-order" href="/pedir">Hacer mi pedido <span>↗</span></a>
+      <div>{links.map((link, index) => <a class:list={{ active: isActive(link.href) }} href={link.href}><small>0{index + 1}</small><span>{link.label}</span></a>)}</div>
+      <a class="mobile-order" href="/pedir">Hacer mi pedido</a>
       <p class="mobile-note">Pollo doradito · Recién hecho · Para compartir</p>
     </div>
   </div>

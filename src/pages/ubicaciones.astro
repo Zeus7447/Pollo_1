@@ -105,7 +105,7 @@ const directions = (query: string) => `https://www.google.com/maps/dir/?api=1&de
           <span class="hero-description">Del rosticero a tu mesa. Explora nuestros puntos, elige el más cercano y abre la ruta en un solo toque.</span>
           <div class="hero-actions">
             <a class="hero-primary" href="#sucursales">Ver ubicaciones <b>↓</b></a>
-            <a class="hero-secondary" href={directions(locations[0].query)} target="_blank" rel="noreferrer">Abrir Google Maps <b>↗</b></a>
+            <a class="hero-secondary" href={directions(locations[0].query)} target="_blank" rel="noreferrer">Abrir Google Maps</a>
           </div>
           <div class="hero-facts">
             <div><strong>{locations.length}</strong><span>Puntos<br />encontrados</span></div>
@@ -177,7 +177,7 @@ const directions = (query: string) => `https://www.google.com/maps/dir/?api=1&de
             >
               <span class="location-number">{String(index + 1).padStart(2, '0')}</span>
               <span class="location-main">
-                <span class="location-top"><small>{location.badge}</small><i>↗</i></span>
+                <span class="location-top"><small>{location.badge}</small></span>
                 <strong>{location.zone}</strong>
                 <span>{location.address}</span>
                 <em>{location.detail}</em>
@@ -188,7 +188,7 @@ const directions = (query: string) => `https://www.google.com/maps/dir/?api=1&de
               {location.phone && <a href={location.phoneHref} aria-label={`Llamar a la sucursal ${location.zone}`}><small>LLAMAR</small>{location.phone}{location.secondPhone && <em> / {location.secondPhone}</em>}</a>}
             </div>
             <a class="directions-link" href={directions(location.query)} target="_blank" rel="noreferrer">
-              <span>Cómo llegar</span><b>↗</b>
+              <span>Cómo llegar</span>
             </a>
           </article>
         ))}
@@ -199,7 +199,7 @@ const directions = (query: string) => `https://www.google.com/maps/dir/?api=1&de
       <span class="note-icon">!</span>
       <div><small>ANTES DE VISITARNOS</small><h2>Que el antojo no<br /><i>te haga dar vueltas.</i></h2></div>
       <p>Algunas fichas comerciales no publican número exterior, teléfono u horario. En esos casos, abre la ruta y confirma que el punto siga operando.</p>
-      <a href="/pedir">Pedir ahora <span>↗</span></a>
+      <a href="/pedir">Pedir ahora</a>
     </section>
   </main>
   <Footer />
