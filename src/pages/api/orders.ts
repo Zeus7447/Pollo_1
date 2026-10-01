@@ -1,7 +1,9 @@
 import type { APIRoute } from 'astro';
 import { DIRECTUS_BUSINESS_ID, DIRECTUS_FRESA_WINGS_BUSINESS_ID, DIRECTUS_TOKEN, DIRECTUS_URL } from 'astro:env/server';
 
-type CartItem = { id?: unknown; quantity?: unknown };
+type CartItem = { id?: unknown; quantity?: unknown; selectedOptions?: unknown };
+type SelectedOptionInput = { groupId: number; optionId: number };
+type ParsedCartItem = { id: number; quantity: number; selectedOptions: SelectedOptionInput[] };
 type OrderRequest = {
   items?: CartItem[];
   customer?: { name?: unknown; phone?: unknown; notes?: unknown };
@@ -11,6 +13,9 @@ type OrderRequest = {
 type DirectusResponse<T> = { data: T };
 type Product = { id: number; name: string; price: number | string; business: number };
 type Location = { id: number; name: string; address: string | null; ordering_enabled: boolean };
+type ProductOptionGroup = { id: number; product: number; business: number; name: string; required: boolean; min_select: number | null; max_select: number | null };
+type ProductOption = { id: number; option_group: number; business: number; name: string; price_delta: number | string };
+type OrderItemOption = { group_id: number; group_name: string; option_id: number; option_name: string; price_delta: number };
 
 const directusUrl = DIRECTUS_URL?.replace(/\/$/, '');
 const directusToken = DIRECTUS_TOKEN;
@@ -64,12 +69,29 @@ export const POST: APIRoute = async ({ request }) => {
   if (fulfillmentType === 'delivery' && !address) return response({ error: 'Escribe la dirección para el pedido a domicilio.' }, 400);
   if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 25) return response({ error: 'Revisa los productos del pedido.' }, 400);
 
+  const cartItems: ParsedCartItem[] = [];
   const quantities = new Map<number, number>();
   for (const item of body.items) {
     const id = Number(item.id);
     const quantity = Number(item.quantity);
     if (!Number.isInteger(id) || !Number.isInteger(quantity) || quantity < 1 || quantity > 20) return response({ error: 'Hay una cantidad de producto no válida.' }, 400);
-    quantities.set(id, Math.min((quantities.get(id) ?? 0) + quantity, 20));
+    if (!Array.isArray(item.selectedOptions) && item.selectedOptions !== undefined) return response({ error: 'Las opciones del producto no son válidas.' }, 400);
+    if ((item.selectedOptions?.length ?? 0) > 30) return response({ error: 'Hay demasiadas opciones en un producto.' }, 400);
+    const selectedOptions: SelectedOptionInput[] = [];
+    const selectedOptionKeys = new Set<string>();
+    for (const selection of item.selectedOptions ?? []) {
+      if (!selection || typeof selection !== 'object') return response({ error: 'Una opción de producto no es válida.' }, 400);
+      const groupId = Number((selection as { groupId?: unknown }).groupId);
+      const optionId = Number((selection as { optionId?: unknown }).optionId);
+      const key = `${groupId}:${optionId}`;
+      if (!Number.isInteger(groupId) || !Number.isInteger(optionId) || selectedOptionKeys.has(key)) return response({ error: 'Una opción de producto no es válida.' }, 400);
+      selectedOptionKeys.add(key);
+      selectedOptions.push({ groupId, optionId });
+    }
+    const totalQuantity = (quantities.get(id) ?? 0) + quantity;
+    if (totalQuantity > 20) return response({ error: 'No puedes pedir más de 20 unidades del mismo producto.' }, 400);
+    quantities.set(id, totalQuantity);
+    cartItems.push({ id, quantity, selectedOptions });
   }
 
   try {
@@ -86,14 +108,69 @@ export const POST: APIRoute = async ({ request }) => {
     const products = new Map(productsResponse.data.map((product) => [product.id, product]));
     if (products.size !== ids.length) return response({ error: 'Uno o más productos ya no están disponibles.' }, 409);
 
-    const itemsByBusiness = new Map<number, Array<{ product: Product; quantity: number; unitPrice: number; subtotal: number }>>();
-    for (const id of ids) {
-      const product = products.get(id)!;
+    const groupQuery = new URLSearchParams({
+      fields: 'id,product,business,name,required,min_select,max_select',
+      'filter[product][_in]': ids.join(','),
+      'filter[business][_in]': `${polloBusinessId},${wingsBusinessId}`,
+      'filter[active][_eq]': 'true',
+      limit: '-1',
+    });
+    const groupsResponse = await directusFetch<ProductOptionGroup[]>(`/items/product_option_groups?${groupQuery}`);
+    const groups = groupsResponse.data;
+    const optionsByGroup = new Map<number, ProductOption[]>();
+    if (groups.length) {
+      const optionQuery = new URLSearchParams({
+        fields: 'id,option_group,business,name,price_delta',
+        'filter[option_group][_in]': groups.map((group) => group.id).join(','),
+        'filter[business][_in]': `${polloBusinessId},${wingsBusinessId}`,
+        'filter[active][_eq]': 'true',
+        limit: '-1',
+      });
+      const optionsResponse = await directusFetch<ProductOption[]>(`/items/product_options?${optionQuery}`);
+      for (const option of optionsResponse.data) optionsByGroup.set(option.option_group, [...(optionsByGroup.get(option.option_group) ?? []), option]);
+    }
+    const groupsByProduct = new Map<number, ProductOptionGroup[]>();
+    const productsWithIncompleteOptions = new Set<number>();
+    for (const group of groups) {
+      const product = products.get(group.product);
+      if (!product || product.business !== group.business) continue;
+      if (!optionsByGroup.get(group.id)?.some((option) => option.business === group.business) && group.required) {
+        productsWithIncompleteOptions.add(product.id);
+        continue;
+      }
+      groupsByProduct.set(group.product, [...(groupsByProduct.get(group.product) ?? []), group]);
+    }
+
+    const itemsByBusiness = new Map<number, Array<{ product: Product; quantity: number; unitPrice: number; subtotal: number; selectedOptions: OrderItemOption[] }>>();
+    for (const cartItem of cartItems) {
+      const product = products.get(cartItem.id)!;
       const brand = brands.get(product.business);
       if (!brand) return response({ error: 'Uno o más productos no pertenecen a una marca disponible.' }, 409);
-      const quantity = quantities.get(id)!;
-      const unitPrice = Number(product.price);
-      const item = { product, quantity, unitPrice, subtotal: Number((unitPrice * quantity).toFixed(2)) };
+      if (productsWithIncompleteOptions.has(product.id)) return response({ error: `${product.name} no tiene opciones disponibles en este momento.` }, 409);
+      const productGroups = groupsByProduct.get(product.id) ?? [];
+      const groupById = new Map(productGroups.map((group) => [group.id, group]));
+      const selectedByGroup = new Map<number, ProductOption[]>();
+      const selectedOptions: OrderItemOption[] = [];
+      for (const selection of cartItem.selectedOptions) {
+        const group = groupById.get(selection.groupId);
+        const option = group && (optionsByGroup.get(group.id) ?? []).find((candidate) => candidate.id === selection.optionId && candidate.business === group.business);
+        if (!group || !option) return response({ error: `Una opción seleccionada para ${product.name} ya no está disponible.` }, 409);
+        const priceDelta = Number(option.price_delta);
+        if (!Number.isFinite(priceDelta)) return response({ error: `Una opción seleccionada para ${product.name} no tiene precio válido.` }, 409);
+        selectedByGroup.set(group.id, [...(selectedByGroup.get(group.id) ?? []), option]);
+        selectedOptions.push({ group_id: group.id, group_name: group.name, option_id: option.id, option_name: option.name, price_delta: priceDelta });
+      }
+      for (const group of productGroups) {
+        const selectedCount = (selectedByGroup.get(group.id) ?? []).length;
+        const minSelect = Math.max(group.required ? 1 : 0, Number(group.min_select) || 0);
+        const configuredMax = Number(group.max_select);
+        const maxSelect = Number.isFinite(configuredMax) && configuredMax > 0 ? Math.max(minSelect, configuredMax) : null;
+        if (selectedCount < minSelect || (maxSelect !== null && selectedCount > maxSelect)) return response({ error: `Revisa las opciones de ${product.name}: ${group.name}.` }, 400);
+      }
+      const basePrice = Number(product.price);
+      if (!Number.isFinite(basePrice)) return response({ error: `El precio de ${product.name} no está disponible.` }, 409);
+      const unitPrice = Number((basePrice + selectedOptions.reduce((sum, option) => sum + option.price_delta, 0)).toFixed(2));
+      const item = { product, quantity: cartItem.quantity, unitPrice, subtotal: Number((unitPrice * cartItem.quantity).toFixed(2)), selectedOptions };
       itemsByBusiness.set(product.business, [...(itemsByBusiness.get(product.business) ?? []), item]);
     }
 
@@ -145,7 +222,7 @@ export const POST: APIRoute = async ({ request }) => {
           product_name: item.product.name,
           unit_price: item.unitPrice,
           quantity: item.quantity,
-          notes: null,
+          notes: item.selectedOptions.length ? JSON.stringify({ selected_options: item.selectedOptions }) : null,
           subtotal: item.subtotal,
         }))),
       });

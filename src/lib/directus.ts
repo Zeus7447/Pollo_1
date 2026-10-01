@@ -21,6 +21,26 @@ type DirectusCategory = {
   sort_order: number | null;
 };
 
+type DirectusProductOptionGroup = {
+  id: number;
+  product: number;
+  name: string;
+  required: boolean;
+  min_select: number | null;
+  max_select: number | null;
+  sort_order: number | null;
+  active: boolean;
+};
+
+type DirectusProductOption = {
+  id: number;
+  option_group: number;
+  name: string;
+  price_delta: number | string;
+  sort_order: number | null;
+  active: boolean;
+};
+
 type DirectusStorefrontSettings = {
   id: number;
   show_promotions: boolean;
@@ -56,6 +76,22 @@ export type CatalogProduct = {
   category: string;
   featured: boolean;
   brand: 'Pollo Fresa' | 'Fresa Wings';
+  optionGroups: CatalogProductOptionGroup[];
+};
+
+export type CatalogProductOptionGroup = {
+  id: number;
+  name: string;
+  required: boolean;
+  minSelect: number;
+  maxSelect: number | null;
+  options: CatalogProductOption[];
+};
+
+export type CatalogProductOption = {
+  id: number;
+  name: string;
+  priceDelta: number;
 };
 
 export type CatalogPromotion = {
@@ -137,6 +173,67 @@ const getStorefrontPromotions = async (businessId: string, brand: CatalogPromoti
   }
 };
 
+const getProductOptionGroups = async (businessId: string, productIds: number[]) => {
+  if (!productIds.length) return new Map<number, CatalogProductOptionGroup[]>();
+
+  try {
+    const groupQuery = new URLSearchParams({
+      fields: 'id,product,name,required,min_select,max_select,sort_order,active',
+      sort: 'sort_order,name',
+      'filter[business][_eq]': businessId,
+      'filter[product][_in]': productIds.join(','),
+      'filter[active][_eq]': 'true',
+      limit: '-1',
+    });
+    const groups = await getItems<DirectusProductOptionGroup>('product_option_groups', groupQuery);
+    if (!groups.length) return new Map<number, CatalogProductOptionGroup[]>();
+
+    const optionQuery = new URLSearchParams({
+      fields: 'id,option_group,name,price_delta,sort_order,active',
+      sort: 'sort_order,name',
+      'filter[business][_eq]': businessId,
+      'filter[option_group][_in]': groups.map((group) => group.id).join(','),
+      'filter[active][_eq]': 'true',
+      limit: '-1',
+    });
+    const options = await getItems<DirectusProductOption>('product_options', optionQuery);
+    const optionsByGroup = new Map<number, CatalogProductOption[]>();
+    for (const option of options) {
+      const priceDelta = Number(option.price_delta);
+      if (!Number.isFinite(priceDelta)) continue;
+      optionsByGroup.set(option.option_group, [...(optionsByGroup.get(option.option_group) ?? []), {
+        id: option.id,
+        name: option.name,
+        priceDelta,
+      }]);
+    }
+
+    const groupsByProduct = new Map<number, CatalogProductOptionGroup[]>();
+    for (const group of groups) {
+      const optionsForGroup = optionsByGroup.get(group.id) ?? [];
+      // A required group without choices cannot be fulfilled, so do not offer that product configuration.
+      if (group.required && !optionsForGroup.length) continue;
+      const minSelect = Math.max(group.required ? 1 : 0, Number(group.min_select) || 0);
+      const configuredMax = Number(group.max_select);
+      const maxSelect = Number.isFinite(configuredMax) && configuredMax > 0
+        ? Math.max(minSelect, configuredMax)
+        : null;
+      groupsByProduct.set(group.product, [...(groupsByProduct.get(group.product) ?? []), {
+        id: group.id,
+        name: group.name,
+        required: group.required,
+        minSelect,
+        maxSelect,
+        options: optionsForGroup,
+      }]);
+    }
+    return groupsByProduct;
+  } catch (error) {
+    console.warn('[Directus] No se pudieron cargar las opciones de producto.', error);
+    return new Map<number, CatalogProductOptionGroup[]>();
+  }
+};
+
 export const getCatalog = async () => {
   try {
     const catalogResults = await Promise.all(catalogs.map(async ({ id, brand }) => {
@@ -158,10 +255,11 @@ export const getCatalog = async () => {
         getItems<DirectusCategory>('categories', categoryQuery),
         getStorefrontPromotions(id, brand),
       ]);
-      return { brand, products, categories, promotions };
+      const optionGroups = await getProductOptionGroups(id, products.map((product) => product.id));
+      return { brand, products, categories, promotions, optionGroups };
     }));
 
-    const products: CatalogProduct[] = catalogResults.flatMap(({ brand, products: rawProducts, categories }) => {
+    const products: CatalogProduct[] = catalogResults.flatMap(({ brand, products: rawProducts, categories, optionGroups }) => {
       const categoryNames = new Map(categories.map((category) => [category.id, category.name]));
       return rawProducts.map((product) => ({
         id: product.id,
@@ -173,6 +271,7 @@ export const getCatalog = async () => {
         category: product.category ? categoryNames.get(product.category) ?? brand : brand,
         featured: product.featured,
         brand,
+        optionGroups: optionGroups.get(product.id) ?? [],
       }));
     });
     const catalogCategories: CatalogCategory[] = catalogResults.flatMap(({ brand, categories }) => categories.map(({ id, name }) => ({ id, name, brand })));
