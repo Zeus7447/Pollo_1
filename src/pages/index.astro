@@ -14,7 +14,7 @@ import { getCatalog } from '../lib/directus';
 const { products: directusProducts, promotions, categories } = await getCatalog();
 ---
 <Layout>
-<header class="site-header"><a class="brand" href="#inicio"><img src={logo.src} alt="Pollo Fresa" /></a><button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false">☰</button><nav class="main-nav"><a href="#inicio">Inicio</a><a href="#marcas">Pollo Fresa</a><a href="#marcas">Fresa Wings</a><a href="#promociones">Promociones</a><a href="#ubicacion">Ubicación</a><a href="#contacto">Contacto</a><a class="button button-small" href="#menu">Pedir ahora</a></nav></header>
+<header class="site-header"><a class="brand" href="#inicio"><img src={logo.src} alt="Pollo Fresa" /></a><button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false">☰</button><nav class="main-nav"><a href="#inicio">Inicio</a><a href="#marcas">Pollo Fresa</a><a href="#marcas">Fresa Wings</a><a href="#promociones">Promociones</a><a href="#ubicacion">Ubicación</a><a href="#contacto">Contacto</a><a class="button button-small" href="#destacados">Pedir ahora</a></nav></header>
 <Hero />
 <main id="inicio">
 <section class="status-strip section-wrap" id="estado"><div><p class="eyebrow">Ahora mismo</p><h2>¿Qué se te antoja?</h2></div><div class="status-grid"><article class="status-card pollo-status"><span class="status-dot"></span><div><strong>Pollo Fresa</strong><small>9 AM — 6 PM</small></div><b class="status-label">Consultando…</b></article><article class="status-card wings-status"><span class="status-dot"></span><div><strong>Fresa Wings</strong><small>3 PM — 10 PM</small></div><b class="status-label">Consultando…</b></article></div></section>
