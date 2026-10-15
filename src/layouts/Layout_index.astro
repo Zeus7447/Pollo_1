@@ -89,6 +89,9 @@ import polloLogo from '../assets/pollo_fresa.webp';
 	:global(body.theme-wings .brand-pollo), :global(body.theme-wings .product-pollo), :global(body.theme-wings .tab[data-brand='pollo']), :global(body.theme-wings [data-menu='pollo']) { display:none; }
 	:global(body.theme-pollo .brand-grid), :global(body.theme-wings .brand-grid) { grid-template-columns:minmax(0,1fr); }
 	:global(body.theme-pollo .product-grid), :global(body.theme-wings .product-grid) { grid-template-columns:repeat(3,minmax(0,1fr)); }
+	@media (max-width: 800px) {
+		:global(body.theme-pollo .product-grid), :global(body.theme-wings .product-grid) { grid-template-columns:minmax(0,1fr); }
+	}
 	@keyframes fire-glow { from { transform:scaleY(.82) translateX(-1%); opacity:.55; } to { transform:scaleY(1.08) translateX(1%); opacity:.86; } }
 	:global(#contacto .footer-main > img) { width:125px; height:112px; object-fit:contain; object-position:center; filter:none; }
 	:global(.footer-socials) { grid-column:1 / -1; display:grid; grid-template-columns:repeat(3,1fr); width:min(900px,100%); margin:0 auto 22px; gap:0; counter-reset:social; }

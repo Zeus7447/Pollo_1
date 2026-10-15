@@ -115,5 +115,8 @@ const products = [
     .category-nav div { width: 100%; }
     .category-nav div a { flex: 1; padding: 9px 8px; text-align: center; }
     .chicken-subnav span { width: 100%; }
+    .product-grid { grid-template-columns: minmax(0, 1fr); }
+    .product-card,
+    .product-card.wide { grid-column: 1 / -1; }
   }
 </style>
