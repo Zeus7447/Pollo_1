@@ -112,13 +112,14 @@ export type CatalogPromotion = {
 
 const withWingsFlavors = (brand: CatalogProduct['brand'], product: DirectusProduct, groups: CatalogProductOptionGroup[]) => {
   if (brand !== 'Fresa Wings' || !/\b(alitas|boneless)\b/i.test(product.name)) return groups;
-  if (groups.some((group) => /sabor|salsa/i.test(group.name) || group.options.some((option) => wingsFlavors.some((flavor) => flavor.toLowerCase() === option.name.toLowerCase())))) return groups;
+  const flavorGroup = groups.find((group) => /sabor|salsa/i.test(group.name) || group.options.some((option) => wingsFlavors.some((flavor) => flavor.toLowerCase() === option.name.toLowerCase())));
+  if (flavorGroup) return groups.map((group) => group === flavorGroup ? { ...group, required: true, minSelect: 1, maxSelect: 2 } : group);
   return [...groups, {
     id: -product.id,
     name: 'Sabor',
     required: true,
     minSelect: 1,
-    maxSelect: 1,
+    maxSelect: 2,
     options: wingsFlavors.map((name, index) => ({ id: -(index + 1), name, priceDelta: 0 })),
   }];
 };
