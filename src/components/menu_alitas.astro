@@ -2,6 +2,7 @@
 import alitasImg from '../assets/fresa-wings-alitas.png';
 import comboImg from '../assets/fresa-wings-combo.png';
 import alitasLogo from '../assets/alitas_logo.png';
+import { wingsFlavors } from '../lib/wings-flavors';
 
 const presentaciones = [
   { piezas: '6 piezas', precio: '$80' },
@@ -10,7 +11,7 @@ const presentaciones = [
   { piezas: '24 piezas', precio: '$285' },
 ];
 
-const sabores = ['BBQ', 'Mango', 'Mango habanero', 'Tamarindo', 'Búfalo', 'Valentina', 'Habanero', 'Parmesano', 'Lemon pepper', 'Takis fuego'];
+const sabores = wingsFlavors;
 
 const complementos = [
   ['Papas a la francesa', '$50'],

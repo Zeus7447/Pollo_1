@@ -51,7 +51,7 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
     </form>
     <footer class="cart-footer">
       <div class="cart-total"><span>Total</span><strong data-cart-total>$0.00</strong></div>
-      <button class="cart-checkout" type="button" data-cart-checkout>Confirmar pedido</button>
+      <button class="cart-checkout" type="button" data-cart-checkout>Enviar pedido por WhatsApp</button>
       <p class="cart-note" data-cart-note aria-live="polite">Agrega tus favoritos para empezar.</p>
     </footer>
   </aside>
@@ -236,15 +236,14 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
         const available = isOpen(brand);
         const selections = getLineOptions(product, item);
         const selectionLabel = selections.length ? `<p class="cart-item-options">${selections.map(({ group, option }) => `${group.name}: ${option.name}`).join(' · ')}</p>` : '';
-        return `<article class="cart-item ${available ? '' : 'is-closed'}"><div><small>${schedules[brand].label}</small><h3>${product.name}</h3>${selectionLabel}<b>${formatPrice(getLineUnitPrice(product, item))}</b>${available ? '' : `<em>${nextOpening(brand)}</em>`}</div><div class="cart-quantity"><button type="button" data-cart-change="${lineKey(item)}" data-change="-1" aria-label="Quitar una unidad">−</button><span>${quantity}</span><button type="button" data-cart-change="${lineKey(item)}" data-change="1" aria-label="Agregar una unidad" ${available ? '' : 'disabled'}>+</button></div></article>`;
+        return `<article class="cart-item ${available ? '' : 'is-closed'}"><div><small>${schedules[brand].label}</small><h3>${product.name}</h3>${selectionLabel}<b>${formatPrice(getLineUnitPrice(product, item))}</b>${available ? '' : `<em>${nextOpening(brand)}</em>`}</div><div class="cart-quantity"><button type="button" data-cart-change="${lineKey(item)}" data-change="-1" aria-label="Quitar una unidad">−</button><span>${quantity}</span><button type="button" data-cart-change="${lineKey(item)}" data-change="1" aria-label="Agregar una unidad">+</button></div></article>`;
       }).join('') : '<p class="cart-empty">Tu carrito está esperando algo delicioso.</p>';
     }
-    const closedItem = hydratedItems.find(({ product }) => !isOpen(getBrandKey(product)));
-    const canCheckout = hydratedItems.length > 0 && !closedItem;
+    const canCheckout = hydratedItems.length > 0;
     syncPickupLocation(hydratedItems);
     if (checkoutForm instanceof HTMLElement) checkoutForm.hidden = !hydratedItems.length;
     if (checkoutButton instanceof HTMLButtonElement) checkoutButton.disabled = !canCheckout;
-    if (cartNoteElement) cartNoteElement.textContent = !hydratedItems.length ? 'Agrega tus favoritos para empezar.' : closedItem ? `${schedules[getBrandKey(closedItem.product)].label} está cerrado. ${nextOpening(getBrandKey(closedItem.product))}.` : 'Tu pedido se registrará directamente con cada marca.';
+    if (cartNoteElement) cartNoteElement.textContent = !hydratedItems.length ? 'Agrega tus favoritos para empezar.' : 'Revisa tu pedido y envíalo por WhatsApp para confirmar disponibilidad.';
   };
 
   const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
@@ -294,13 +293,6 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
   const addToCart = (productId, selectedOptions = []) => {
     const product = getProduct(productId);
     if (!product) return false;
-    const brand = getBrandKey(product);
-    if (!isOpen(brand)) {
-      setDrawer(true);
-      if (cartNoteElement) cartNoteElement.textContent = `Aún no podemos tomar pedidos de ${schedules[brand].label}. ${nextOpening(brand)}.`;
-      renderCart();
-      return false;
-    }
     const itemKey = `${product.id}:${selectionKey(selectedOptions) || 'standard'}`;
     const existing = cart.find((item) => lineKey(item) === itemKey);
     if (existing) existing.quantity += 1;
@@ -395,14 +387,14 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
     if (!(button instanceof HTMLButtonElement)) return;
     const item = cart.find((entry) => lineKey(entry) === button.dataset.cartChange);
     const change = Number(button.dataset.change);
-    if (!item || !change || (change > 0 && !isOpen(getBrandKey(getProduct(item.id))))) return;
+    if (!item || !change) return;
     item.quantity += change;
     cart = cart.filter((entry) => entry.quantity > 0);
     saveCart(); renderCart();
   });
-  checkoutButton?.addEventListener('click', async () => {
+  checkoutButton?.addEventListener('click', () => {
     const hydratedItems = cart.map((item) => ({ ...item, product: getProduct(item.id) })).filter((item) => item.product);
-    if (!hydratedItems.length || hydratedItems.some(({ product }) => !isOpen(getBrandKey(product)))) { renderCart(); return; }
+    if (!hydratedItems.length) { renderCart(); return; }
     const name = customerName instanceof HTMLInputElement ? customerName.value.trim() : '';
     const phone = customerPhone instanceof HTMLInputElement ? customerPhone.value.trim() : '';
     const notes = customerNotes instanceof HTMLTextAreaElement ? customerNotes.value.trim() : '';
@@ -413,41 +405,13 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
     if (!phone) { showCheckoutError('Escribe un teléfono de contacto.'); customerPhone?.focus(); return; }
     if (orderType === 'delivery' && !address) { showCheckoutError('Escribe la dirección para el pedido a domicilio.'); deliveryAddress?.focus(); return; }
     showCheckoutError();
-    if (!(checkoutButton instanceof HTMLButtonElement)) return;
-    const originalLabel = checkoutButton.innerHTML;
-    checkoutButton.disabled = true;
-    checkoutButton.textContent = 'Registrando pedido…';
-    try {
-      const result = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cart.map((item) => ({ id: item.id, quantity: item.quantity, selectedOptions: item.selectedOptions ?? [] })),
-          customer: { name, phone, notes },
-          fulfillment: { type: orderType, address, pickupLocation: location },
-        }),
-      });
-      const payload = await result.json();
-      if (!result.ok || !payload.success || !Array.isArray(payload.orders) || !payload.orders.length) throw new Error(payload.error || 'No se pudo registrar el pedido.');
-      cart = [];
-      saveCart();
-      if (checkoutForm instanceof HTMLFormElement) checkoutForm.reset();
-      syncDeliveryFields();
-      renderCart();
-      const orderSummary = payload.orders.map((order) => `${order.brand} #${order.id}`).join(' y ');
-      if (cartNoteElement) cartNoteElement.textContent = `¡Listo! Registramos ${orderSummary}. Te confirmaremos disponibilidad en breve.`;
-      checkoutButton.innerHTML = payload.orders.length > 1 ? 'Pedidos registrados <span>✓</span>' : 'Pedido registrado <span>✓</span>';
-    } catch (error) {
-      showCheckoutError(error instanceof Error ? error.message : 'No pudimos registrar tu pedido. Intenta de nuevo.');
-      checkoutButton.innerHTML = originalLabel;
-      renderCart();
-    }
-    return;
-    const lines = hydratedItems.map(({ product, quantity }) => `• ${quantity} x ${product.name} — ${formatPrice(priceNumber(product.price) * quantity)}`);
-    const total = hydratedItems.reduce((sum, { product, quantity }) => sum + priceNumber(product.price) * quantity, 0);
+    const lines = hydratedItems.map((item) => {
+      const options = getLineOptions(item.product, item).map(({ group, option }) => `${group.name}: ${option.name}`);
+      return `• ${item.quantity} x ${item.product.name} (${schedules[getBrandKey(item.product)].label}) — ${formatPrice(getLineUnitPrice(item.product, item) * item.quantity)}${options.length ? `\n   ${options.join(', ')}` : ''}`;
+    });
+    const total = hydratedItems.reduce((sum, item) => sum + getLineUnitPrice(item.product, item) * item.quantity, 0);
     const fulfillment = orderType === 'delivery' ? ['📍 *Modalidad:* A domicilio', `*Dirección:* ${address}`] : ['🏪 *Modalidad:* Recoger en sucursal', `*Sucursal:* ${location}`];
     const orderMessage = ['Hola, quiero hacer este pedido:', '', ...lines, '', `*Total:* ${formatPrice(total)}`, '', ...fulfillment, '💵 *Pago:* Efectivo', `👤 *Cliente:* ${name}`, `📞 *Teléfono:* ${phone}`, ...(notes ? [`📝 *Notas:* ${notes}`] : []), '', '¿Me ayudan a confirmar disponibilidad y tiempo de entrega?'].join('\n');
-    const message = ['Hola, quiero hacer este pedido:', '', ...lines, '', `Total: ${formatPrice(total)}`, '', '¿Me ayudan a confirmar disponibilidad y tiempo de entrega?'].join('\n');
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderMessage)}`, '_blank', 'noopener');
   });
   syncDeliveryFields();

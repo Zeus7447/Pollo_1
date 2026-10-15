@@ -1,4 +1,5 @@
 import { DIRECTUS_BUSINESS_ID, DIRECTUS_FRESA_WINGS_BUSINESS_ID, DIRECTUS_TOKEN, DIRECTUS_URL } from 'astro:env/server';
+import { wingsFlavors } from './wings-flavors';
 
 type DirectusResponse<T> = { data: T[] };
 
@@ -107,6 +108,19 @@ export type CatalogPromotion = {
   destination: string;
   terms?: string;
   productIds: number[];
+};
+
+const withWingsFlavors = (brand: CatalogProduct['brand'], product: DirectusProduct, groups: CatalogProductOptionGroup[]) => {
+  if (brand !== 'Fresa Wings' || !/\b(alitas|boneless)\b/i.test(product.name)) return groups;
+  if (groups.some((group) => /sabor|salsa/i.test(group.name) || group.options.some((option) => wingsFlavors.some((flavor) => flavor.toLowerCase() === option.name.toLowerCase())))) return groups;
+  return [...groups, {
+    id: -product.id,
+    name: 'Sabor',
+    required: true,
+    minSelect: 1,
+    maxSelect: 1,
+    options: wingsFlavors.map((name, index) => ({ id: -(index + 1), name, priceDelta: 0 })),
+  }];
 };
 
 // `astro:env/server` reads secrets when the SSR server receives the request.
@@ -271,7 +285,7 @@ export const getCatalog = async () => {
         category: product.category ? categoryNames.get(product.category) ?? brand : brand,
         featured: product.featured,
         brand,
-        optionGroups: optionGroups.get(product.id) ?? [],
+        optionGroups: withWingsFlavors(brand, product, optionGroups.get(product.id) ?? []),
       }));
     });
     const catalogCategories: CatalogCategory[] = catalogResults.flatMap(({ brand, categories }) => categories.map(({ id, name }) => ({ id, name, brand })));
