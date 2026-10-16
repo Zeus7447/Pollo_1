@@ -11,7 +11,7 @@ import localPollo from '../assets/local_pollo.webp';
 import localFresaWings from '../assets/local_fresa_wings.webp';
 import ProductImage from '../components/ProductImage.astro';
 import { getCatalog } from '../lib/directus';
-const { products: directusProducts, promotions, categories } = await getCatalog();
+const { products: directusProducts, promotions, categories, catalogError } = await getCatalog();
 ---
 <Layout>
 <header class="site-header"><a class="brand" href="#inicio"><img src={logo.src} alt="Pollo Fresa" /></a><button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false">☰</button><nav class="main-nav"><a href="#inicio">Inicio</a><a href="#marcas">Pollo Fresa</a><a href="#marcas">Fresa Wings</a><a href="#promociones">Promociones</a><a href="#ubicacion">Ubicación</a><a href="#contacto">Contacto</a><a class="button button-small" href="#destacados">Pedir ahora</a></nav></header>
@@ -20,7 +20,7 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
 <section class="status-strip section-wrap" id="estado"><div><p class="eyebrow">Ahora mismo</p><h2>¿Qué se te antoja?</h2></div><div class="status-grid"><article class="status-card pollo-status"><span class="status-dot"></span><div><strong>Pollo Fresa</strong><small>9 AM — 6 PM</small></div><b class="status-label">Consultando…</b></article><article class="status-card wings-status"><span class="status-dot"></span><div><strong>Fresa Wings</strong><small>3 PM — 10 PM</small></div><b class="status-label">Consultando…</b></article></div></section>
 <section class="brands section-wrap" id="marcas"><div class="section-heading"><p class="eyebrow">Elige tu mood</p><h2>Dos formas de disfrutar<br /><em>el mismo sabor.</em></h2></div><div class="brand-grid"><article class="brand-card brand-pollo"><div class="card-content"><span class="pill">Clásicos que abrazan</span><h3>Pollo<br /><em>Fresa</em></h3><p>Frito, asado o rostizado. El sabor familiar que siempre se antoja.</p><div class="card-meta"><span>9 AM — 6 PM</span><a href="#menu">Ver menú</a></div></div><div class="brand-card-art"><img src={polloAsado.src} alt="Pollo asado" /></div></article><article class="brand-card brand-wings"><div class="card-content"><span class="pill">Sube el nivel</span><h3>Fresa<br /><em>Wings</em></h3><p>Alitas, boneless y hamburguesas para tu lado más intenso.</p><div class="card-meta"><span>3 PM — 10 PM</span><a href="#menu">Ver menú</a></div></div><div class="brand-card-art"><img src={wings.src} alt="Alitas Fresa Wings" /></div></article></div></section>
 {promotions.length > 0 && <section class="storefront-promotions section-wrap" id="promociones"><header class="storefront-promotions-heading"><div><p class="eyebrow">Directo desde la casa</p><h2>Promos que se<br /><em>antojan.</em></h2></div><p>{promotions.length} {promotions.length === 1 ? 'promoción activa' : 'promociones activas'}</p></header><div class="storefront-promotions-grid">{promotions.map((promotion) => { const external = /^https?:\/\//.test(promotion.destination); return <article class="storefront-promotion-card" data-promotion-brand={promotion.brand}><div class="storefront-promotion-image">{promotion.image && <img src={promotion.image} alt={`${promotion.title}, promoción de ${promotion.brand}`} loading="lazy" />}</div><div class="storefront-promotion-copy"><span>{promotion.brand} · {promotion.badge}</span><h3>{promotion.title}</h3><p>{promotion.subtitle}</p>{promotion.price && <strong>{promotion.price}</strong>}{promotion.secondaryText && <b>{promotion.secondaryText}</b>}<a href={promotion.destination} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>{promotion.ctaLabel}</a>{promotion.terms && <small>{promotion.terms}</small>}</div></article>})}</div></section>}
-<section class="featured section-wrap" id="destacados"><div class="section-heading split"><div><p class="eyebrow">Para empezar bien</p><h2>Los favoritos<br /><em>de la casa.</em></h2></div><a class="text-link" href="#menu">Ver todo el menú</a></div>{categories.length > 0 ? <div class="catalog-categories">{categories.map((category) => { const categoryProducts = directusProducts.filter((product) => product.categoryId === category.id); return <section class="catalog-category" data-catalog-brand={category.brand}><header><p><small>{category.brand}</small>{category.name}</p><span>{categoryProducts.length} {categoryProducts.length === 1 ? 'producto' : 'productos'}</span></header>{categoryProducts.length > 0 ? <div class="product-grid">{categoryProducts.map((product) => <article class:list={['product-card', product.brand === 'Fresa Wings' ? 'product-wings' : 'product-pollo']} data-product-id={product.id}><ProductImage src={product.image} alt={product.name} class="product-image" /><span class="product-brand">{product.brand} · {category.name}</span><div class="product-info"><div><h3>{product.name}</h3><p>{product.description}</p></div><strong>{product.price}</strong></div><button class="add-button">Agregar <span>+</span></button></article>)}</div> : <p class="category-empty">Próximamente tendremos opciones de {category.name}.</p>}</section>})}</div> : <p class="catalog-empty">El catálogo se está actualizando. Vuelve a intentarlo en unos momentos.</p>}</section>
+<section class="featured section-wrap" id="destacados"><div class="section-heading split"><div><p class="eyebrow">Para empezar bien</p><h2>Los favoritos<br /><em>de la casa.</em></h2></div><a class="text-link" href="#menu">Ver todo el menú</a></div>{catalogError ? <p class="catalog-empty" role="alert">No pudimos cargar el menú desde el sistema. Intenta de nuevo más tarde o contáctanos por WhatsApp.</p> : categories.length > 0 ? <div class="catalog-categories">{categories.map((category) => { const categoryProducts = directusProducts.filter((product) => product.categoryId === category.id); return <section class="catalog-category" data-catalog-brand={category.brand}><header><p><small>{category.brand}</small>{category.name}</p><span>{categoryProducts.length} {categoryProducts.length === 1 ? 'producto' : 'productos'}</span></header>{categoryProducts.length > 0 ? <div class="product-grid">{categoryProducts.map((product) => <article class:list={['product-card', product.brand === 'Fresa Wings' ? 'product-wings' : 'product-pollo']} data-product-id={product.id}><ProductImage src={product.image} alt={product.name} class="product-image" /><span class="product-brand">{product.brand} · {category.name}</span><div class="product-info"><div><h3>{product.name}</h3><p>{product.description}</p></div><strong>{product.price}</strong></div><button class="add-button">Agregar <span>+</span></button></article>)}</div> : <p class="category-empty">Próximamente tendremos opciones de {category.name}.</p>}</section>})}</div> : <p class="catalog-empty">El catálogo se está actualizando. Vuelve a intentarlo en unos momentos.</p>}</section>
 <section class="location section-wrap" id="ubicacion"><header class="location-heading"><p class="eyebrow">Encuéntranos</p><h2>Ven por tu <em>antojo.</em></h2></header><div class="location-map-panel"><div class="map-placeholder"><iframe id="location-map" title="Mapa de Pollo Fresa en Irapuato" src="https://www.google.com/maps?q=Av%20Mariano%20J.%20Garc%C3%ADa%201254%2C%20Los%20Alamos%2C%2036568%20Irapuato%2C%20Gto.&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="location-addresses"><a data-location="pollo" href="https://www.google.com/maps/search/?api=1&query=Av%20Mariano%20J.%20Garc%C3%ADa%201254%2C%20Los%20Alamos%2C%2036568%20Irapuato%2C%20Gto." target="_blank" rel="noopener"><span>01</span><div><strong>Pollo Fresa</strong><small>Av. Mariano J. García 1254, Los Álamos</small></div></a><a data-location="wings" href="https://www.google.com/maps/search/?api=1&query=Av%20Independencia%201811%2C%20Miguel%20Hidalgo%2C%2036550%20Irapuato%2C%20Gto." target="_blank" rel="noopener"><span>02</span><div><strong>Fresa Wings</strong><small>Av. Independencia 1811, Miguel Hidalgo</small></div></a></div></div><aside class="location-details"><div class="local-carousel" aria-label="Fotos de los locales"><figure class="local-photo is-active" data-location-photo="pollo"><img src={localPollo.src} alt="Local de Pollo Fresa" /><figcaption>Pollo Fresa</figcaption></figure><figure class="local-photo" data-location-photo="wings"><img src={localFresaWings.src} alt="Local de Fresa Wings" /><figcaption>Fresa Wings</figcaption></figure><div class="carousel-dots" aria-hidden="true"><span class="is-active"></span><span></span></div></div><div class="daily-hours"><p class="eyebrow">Horarios</p><h3>Todos los días</h3><div><p><strong>Pollo Fresa</strong><span>9 AM — 6 PM</span></p><p><strong>Fresa Wings</strong><span>3 PM — 10 PM</span></p></div></div></aside></section>
 </main><footer id="contacto"><div class="footer-main"><img src={logo.src} alt="Pollo Fresa" /><p>Dos marcas, un solo lugar<br />para comer delicioso.</p><a class="button button-light" href="#menu">Pedir ahora</a></div><div class="footer-bottom"><span>© 2026 Pollo Fresa</span><nav class="footer-socials" aria-label="Redes sociales"><a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4h-3c-3 0-5 2-5 5v3H6v4h3v6h4v-6h3l1-4h-4V9c0-.7.3-1 1-1Z" /></svg></a><a href="#" aria-label="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4a9 9 0 0 0-14 11L4 20l5-2a9 9 0 0 0 11-14Zm-8 15a7 7 0 0 1-4-1l-3 1 1-3a7 7 0 1 1 6 3Zm4-5c-.2.4-1 .8-1.4.8-.4.1-1 .1-1.6-.2a8 8 0 0 1-3.2-2.8c-.3-.5-.8-1.4-.8-2.1 0-.7.4-1.2.7-1.4.2-.2.5-.2.7-.2h.5c.2 0 .3.1.4.4l.6 1.4c.1.3.1.4-.1.6l-.4.5c-.1.1-.2.2-.1.4.2.4.6 1 1.1 1.4.6.5 1.1.7 1.5.8.2.1.3 0 .4-.1l.5-.6c.2-.2.3-.2.6-.1l1.4.7c.3.1.4.2.2.4Z" /></svg></a><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" class="fill" /></svg></a></nav><span>Hecho para compartir.</span></div></footer>
 </Layout>
@@ -58,14 +58,23 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
 </div>
 <div class="product-options-modal" data-product-options-modal hidden>
   <div class="product-options-backdrop" data-product-options-close></div>
-  <section class="product-options-dialog" role="dialog" aria-modal="true" aria-labelledby="product-options-title">
-    <button type="button" class="product-options-close" data-product-options-close aria-label="Cerrar opciones">×</button>
-    <p class="eyebrow">Personaliza tu pedido</p>
-    <h2 id="product-options-title" data-product-options-title></h2>
-    <p class="product-options-base" data-product-options-base></p>
+  <section class="product-options-dialog" role="dialog" aria-modal="true" aria-labelledby="product-options-title" aria-describedby="product-options-description" tabindex="-1">
+    <header class="product-options-header">
+      <img class="product-options-image" data-product-options-image alt="" />
+      <div class="product-options-heading-copy">
+        <h2 id="product-options-title" data-product-options-title></h2>
+        <p class="product-options-description" id="product-options-description" data-product-options-description>Personaliza tu pedido</p>
+        <p class="product-options-base" data-product-options-base></p>
+      </div>
+      <button type="button" class="product-options-close" data-product-options-close aria-label="Cerrar opciones">×</button>
+    </header>
+    <div class="product-options-selection-status" data-product-options-summary aria-live="polite"></div>
     <div class="product-options-groups" data-product-options-groups></div>
     <p class="product-options-error" data-product-options-error role="alert" hidden></p>
-    <button type="button" class="product-options-add" data-product-options-add>Agregar al pedido <span>+</span></button>
+    <footer class="product-options-footer">
+      <div class="product-options-total"><small>Total por producto</small><strong data-product-options-total>$0.00</strong></div>
+      <button type="button" class="product-options-add" data-product-options-add disabled>Agregar al pedido</button>
+    </footer>
   </section>
 </div>
 <div class="theme-switcher" aria-label="Selector de tema para pruebas">
@@ -140,11 +149,18 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
   const productOptionsModal = document.querySelector('[data-product-options-modal]');
   const productOptionsTitle = document.querySelector('[data-product-options-title]');
   const productOptionsBase = document.querySelector('[data-product-options-base]');
+  const productOptionsImage = document.querySelector('[data-product-options-image]');
+  const productOptionsDescription = document.querySelector('[data-product-options-description]');
+  const productOptionsSummary = document.querySelector('[data-product-options-summary]');
+  const productOptionsTotal = document.querySelector('[data-product-options-total]');
   const productOptionsGroups = document.querySelector('[data-product-options-groups]');
   const productOptionsError = document.querySelector('[data-product-options-error]');
   const productOptionsAdd = document.querySelector('[data-product-options-add]');
   let productBeingConfigured = null;
   let configuredSelections = [];
+  let editingLineKey = null;
+  let focusReturnElement = null;
+  let confirmPending = false;
 
   const getHour = () => new Date().getHours();
   const isOpen = (brand) => {
@@ -235,8 +251,10 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
         const brand = getBrandKey(product);
         const available = isOpen(brand);
         const selections = getLineOptions(product, item);
-        const selectionLabel = selections.length ? `<p class="cart-item-options">${selections.map(({ group, option }) => `${group.name}: ${option.name}`).join(' · ')}</p>` : '';
-        return `<article class="cart-item ${available ? '' : 'is-closed'}"><div><small>${schedules[brand].label}</small><h3>${product.name}</h3>${selectionLabel}<b>${formatPrice(getLineUnitPrice(product, item))}</b>${available ? '' : `<em>${nextOpening(brand)}</em>`}</div><div class="cart-quantity"><button type="button" data-cart-change="${lineKey(item)}" data-change="-1" aria-label="Quitar una unidad">−</button><span>${quantity}</span><button type="button" data-cart-change="${lineKey(item)}" data-change="1" aria-label="Agregar una unidad">+</button></div></article>`;
+        const selectionLabel = selections.length ? `<p class="cart-item-options">${selections.map(({ group, option }) => `${escapeHtml(group.name)}: ${escapeHtml(option.name)}`).join(' · ')}</p>` : '';
+        const key = escapeHtml(lineKey(item));
+        const editButton = getOptionGroups(product).length || item.selectedOptions?.length ? `<button type="button" class="cart-item-edit" data-cart-edit="${key}">Editar opciones</button>` : '';
+        return `<article class="cart-item ${available ? '' : 'is-closed'}"><div><small>${schedules[brand].label}</small><h3>${escapeHtml(product.name)}</h3>${selectionLabel}${editButton}<b>${formatPrice(getLineUnitPrice(product, item))}</b>${available ? '' : `<em>${nextOpening(brand)}</em>`}</div><div class="cart-quantity"><button type="button" data-cart-change="${key}" data-change="-1" aria-label="Quitar una unidad">−</button><span>${quantity}</span><button type="button" data-cart-change="${key}" data-change="1" aria-label="Agregar una unidad">+</button><button type="button" class="cart-item-remove" data-cart-remove="${key}" aria-label="Eliminar ${escapeHtml(product.name)} del pedido">Eliminar</button></div></article>`;
       }).join('') : '<p class="cart-empty">Tu carrito está esperando algo delicioso.</p>';
     }
     const canCheckout = hydratedItems.length > 0;
@@ -253,7 +271,13 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
     productOptionsError.hidden = !message;
   };
   const getOptionSelectionError = (product, selections) => {
+    if ((selections ?? []).some((selection) => {
+      const group = getOptionGroups(product).find((candidate) => Number(candidate.id) === Number(selection.groupId));
+      return !group || !group.options.some((option) => Number(option.id) === Number(selection.optionId));
+    })) return `Las opciones de ${product.name} cambiaron. Edítalas antes de enviar el pedido.`;
     for (const group of getOptionGroups(product)) {
+      if (group.maxSelect && group.minSelect > group.maxSelect) return `La configuración de ${group.name} no es válida. Intenta más tarde o contáctanos.`;
+      if (group.minSelect > 0 && group.options.length < group.minSelect) return `No hay suficientes opciones activas para ${group.name}. Intenta más tarde o contáctanos.`;
       const count = selections.filter((selection) => Number(selection.groupId) === Number(group.id)).length;
       if (count < group.minSelect) return `Elige ${group.minSelect === 1 ? 'una opción' : `${group.minSelect} opciones`} para ${group.name}.`;
       if (group.maxSelect && count > group.maxSelect) return `Puedes elegir hasta ${group.maxSelect} opciones para ${group.name}.`;
@@ -264,30 +288,59 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
     const product = productBeingConfigured;
     if (!product || !(productOptionsGroups instanceof HTMLElement)) return;
     if (productOptionsTitle) productOptionsTitle.textContent = product.name;
-    if (productOptionsBase) productOptionsBase.textContent = `Base ${product.price}`;
-    productOptionsGroups.innerHTML = getOptionGroups(product).map((group) => {
+    if (productOptionsDescription) productOptionsDescription.textContent = 'Personaliza tu pedido';
+    if (productOptionsImage instanceof HTMLImageElement) {
+      productOptionsImage.hidden = !product.image;
+      productOptionsImage.src = product.image ?? '';
+      productOptionsImage.alt = product.image ? product.name : '';
+    }
+    if (productOptionsBase) productOptionsBase.textContent = `Precio base · ${formatPrice(priceNumber(product.price))}`;
+    const optionGroups = getOptionGroups(product);
+    productOptionsGroups.innerHTML = optionGroups.map((group) => {
       const selected = new Set(configuredSelections.filter((selection) => Number(selection.groupId) === Number(group.id)).map((selection) => Number(selection.optionId)));
-      const oneRequiredChoice = group.minSelect > 0 && group.maxSelect === 1;
-      const help = group.required ? `Obligatorio · elige ${group.minSelect === 1 ? '1 opción' : `${group.minSelect} opciones`}${group.maxSelect && group.maxSelect > group.minSelect ? `, hasta ${group.maxSelect}` : ''}` : `Opcional${group.maxSelect ? ` · hasta ${group.maxSelect}` : ''}`;
-      return `<fieldset data-option-group="${group.id}"><legend>${escapeHtml(group.name)} <small>${help}</small></legend>${group.options.map((option) => `<label><input type="${oneRequiredChoice ? 'radio' : 'checkbox'}" name="option-group-${group.id}" value="${option.id}" ${selected.has(Number(option.id)) ? 'checked' : ''} /><span>${escapeHtml(option.name)}${priceNumber(option.priceDelta) ? `<b>+${formatPrice(priceNumber(option.priceDelta))}</b>` : ''}</span></label>`).join('')}</fieldset>`;
+      const selectedCount = selected.size;
+      const oneRequiredChoice = group.minSelect === 1 && group.maxSelect === 1;
+      const help = group.minSelect > 0 && group.maxSelect ? `Elige de ${group.minSelect} a ${group.maxSelect}` : group.minSelect > 0 ? `Elige al menos ${group.minSelect}` : group.maxSelect ? `Opcional · hasta ${group.maxSelect}` : 'Opcional';
+      const count = group.maxSelect ? `${selectedCount} de ${group.maxSelect} seleccionados` : `${selectedCount} seleccionados`;
+      const emptyMessage = group.options.length ? '' : '<p class="option-group-empty">No hay opciones activas disponibles en este momento.</p>';
+      return `<fieldset data-option-group="${group.id}"><legend><span>${escapeHtml(group.name)}</span><small>${help}</small><b class="product-option-count">${count}</b></legend>${emptyMessage}<div class="product-option-grid">${group.options.map((option) => `<label><input type="${oneRequiredChoice ? 'radio' : 'checkbox'}" name="option-group-${group.id}" value="${option.id}" ${selected.has(Number(option.id)) ? 'checked' : ''} /><span><span class="product-option-name">${escapeHtml(option.name)}</span>${priceNumber(option.priceDelta) > 0 ? `<b>+${formatPrice(priceNumber(option.priceDelta))}</b>` : ''}</span></label>`).join('')}</div></fieldset>`;
     }).join('');
     const unitPrice = priceNumber(product.price) + getLineOptions(product, { selectedOptions: configuredSelections }).reduce((sum, selection) => sum + priceNumber(selection.option.priceDelta), 0);
-    if (productOptionsAdd instanceof HTMLButtonElement) productOptionsAdd.innerHTML = `Agregar al pedido <span>${formatPrice(unitPrice)}</span>`;
+    const validationError = getOptionSelectionError(product, configuredSelections);
+    if (productOptionsSummary) {
+      const hasFlavorGroup = optionGroups.some((group) => /sabor|salsa/i.test(group.name));
+      const selectedCount = configuredSelections.length;
+      productOptionsSummary.textContent = `${optionGroups.length === 1 && hasFlavorGroup ? 'Elige tus sabores' : 'Elige tus opciones'} · ${selectedCount} seleccionado${selectedCount === 1 ? '' : 's'}`;
+    }
+    if (productOptionsTotal) productOptionsTotal.textContent = formatPrice(unitPrice);
+    if (productOptionsAdd instanceof HTMLButtonElement) {
+      productOptionsAdd.textContent = editingLineKey ? 'Guardar cambios' : 'Agregar al pedido';
+      productOptionsAdd.disabled = Boolean(validationError) || confirmPending;
+    }
   };
-  const openProductOptions = (product) => {
+  const openProductOptions = (product, selectedOptions = [], lineKeyToEdit = null, source = document.activeElement) => {
     productBeingConfigured = product;
-    configuredSelections = [];
-    showProductOptionsError();
+    configuredSelections = selectedOptions.filter((selection) => {
+      const group = getOptionGroups(product).find((candidate) => Number(candidate.id) === Number(selection.groupId));
+      return group?.options.some((option) => Number(option.id) === Number(selection.optionId));
+    }).map((selection) => ({ ...selection }));
+    editingLineKey = lineKeyToEdit;
+    focusReturnElement = source instanceof HTMLElement ? source : null;
+    showProductOptionsError(configuredSelections.length < selectedOptions.length ? 'Algunas opciones cambiaron y ya no están disponibles. Revisa la selección actualizada.' : '');
     renderProductOptions();
     if (productOptionsModal instanceof HTMLElement) productOptionsModal.hidden = false;
     document.body.classList.add('product-options-open');
-    window.setTimeout(() => productOptionsGroups?.querySelector('input')?.focus(), 0);
+    window.setTimeout(() => productOptionsModal?.querySelector('.product-options-close')?.focus(), 0);
   };
   const closeProductOptions = () => {
     if (productOptionsModal instanceof HTMLElement) productOptionsModal.hidden = true;
     document.body.classList.remove('product-options-open');
     productBeingConfigured = null;
     configuredSelections = [];
+    editingLineKey = null;
+    confirmPending = false;
+    if (focusReturnElement?.isConnected) focusReturnElement.focus();
+    focusReturnElement = null;
   };
 
   const addToCart = (productId, selectedOptions = []) => {
@@ -347,7 +400,7 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
     button.innerHTML = hasOptions ? '<span class="add-button-label">Personalizar</span><span>+</span>' : '<span class="add-button-label">Agregar</span><span>+</span>';
     button.dataset.addProduct = String(product.id);
     button.setAttribute('aria-label', `${hasOptions ? 'Personalizar' : 'Agregar'} ${product.name} al pedido`);
-    button.addEventListener('click', () => { if (hasOptions) openProductOptions(product); else if (addToCart(product.id)) celebrateAdd(button, card); });
+    button.addEventListener('click', () => { if (hasOptions) openProductOptions(product, [], null, button); else if (addToCart(product.id)) celebrateAdd(button, card); });
   });
   document.querySelectorAll('[data-product-options-close]').forEach((button) => button.addEventListener('click', closeProductOptions));
   productOptionsGroups?.addEventListener('change', (event) => {
@@ -373,16 +426,54 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
   productOptionsAdd?.addEventListener('click', () => {
     if (!productBeingConfigured) return;
     const error = getOptionSelectionError(productBeingConfigured, configuredSelections);
-    if (error) { showProductOptionsError(error); return; }
+    if (error) { showProductOptionsError(error); productOptionsGroups?.querySelector('input')?.focus(); return; }
     const product = productBeingConfigured;
     const selections = configuredSelections;
-    if (addToCart(product.id, selections)) closeProductOptions();
+    if (confirmPending) return;
+    confirmPending = true;
+    if (productOptionsAdd instanceof HTMLButtonElement) productOptionsAdd.disabled = true;
+    if (editingLineKey) {
+      const editedLine = cart.find((item) => lineKey(item) === editingLineKey);
+      if (editedLine) {
+        editedLine.selectedOptions = selections;
+        const duplicate = cart.find((item) => item !== editedLine && lineKey(item) === lineKey(editedLine));
+        if (duplicate) { duplicate.quantity += editedLine.quantity; cart = cart.filter((item) => item !== editedLine); }
+        saveCart(); renderCart();
+        const resultingLine = cart.find((item) => String(item.id) === String(product.id) && lineKey(item) === lineKey({ ...item, selectedOptions: selections }));
+        const nextEditButton = Array.from(cartItemsElement?.querySelectorAll('[data-cart-edit]') ?? []).find((element) => element instanceof HTMLButtonElement && element.dataset.cartEdit === (resultingLine ? lineKey(resultingLine) : ''));
+        if (nextEditButton instanceof HTMLButtonElement) focusReturnElement = nextEditButton;
+      }
+      closeProductOptions();
+    } else if (addToCart(product.id, selections)) closeProductOptions();
+    confirmPending = false;
   });
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && productOptionsModal instanceof HTMLElement && !productOptionsModal.hidden) closeProductOptions(); });
+  document.addEventListener('keydown', (event) => {
+    if (!(productOptionsModal instanceof HTMLElement) || productOptionsModal.hidden) return;
+    if (event.key === 'Escape') { closeProductOptions(); return; }
+    if (event.key === 'Tab') {
+      const focusable = Array.from(productOptionsModal.querySelectorAll('button:not([disabled]), input:not([disabled]), [tabindex="0"]')).filter((element) => element instanceof HTMLElement && element.offsetParent !== null);
+      const first = focusable[0]; const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
+  });
   document.querySelectorAll('[data-cart-toggle]').forEach((button) => button.addEventListener('click', () => setDrawer(!cartUi?.classList.contains('is-open'))));
   document.querySelectorAll('[data-cart-close]').forEach((button) => button.addEventListener('click', () => setDrawer(false)));
   document.querySelectorAll('input[name="order-type"]').forEach((input) => input.addEventListener('change', () => { showCheckoutError(); syncDeliveryFields(); }));
   cartItemsElement?.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const removeButton = target?.closest('[data-cart-remove]');
+    if (removeButton instanceof HTMLButtonElement) {
+      cart = cart.filter((item) => lineKey(item) !== removeButton.dataset.cartRemove);
+      saveCart(); renderCart(); return;
+    }
+    const editButton = target?.closest('[data-cart-edit]');
+    if (editButton instanceof HTMLButtonElement) {
+      const item = cart.find((entry) => lineKey(entry) === editButton.dataset.cartEdit);
+      const product = item ? getProduct(item.id) : null;
+      if (item && product) openProductOptions(product, item.selectedOptions, lineKey(item), editButton);
+      return;
+    }
     const button = (event.target instanceof Element ? event.target.closest('[data-cart-change]') : null);
     if (!(button instanceof HTMLButtonElement)) return;
     const item = cart.find((entry) => lineKey(entry) === button.dataset.cartChange);
@@ -395,6 +486,15 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
   checkoutButton?.addEventListener('click', () => {
     const hydratedItems = cart.map((item) => ({ ...item, product: getProduct(item.id) })).filter((item) => item.product);
     if (!hydratedItems.length) { renderCart(); return; }
+    const invalidItem = hydratedItems.find((item) => getOptionSelectionError(item.product, item.selectedOptions ?? []));
+    if (invalidItem) {
+      const message = getOptionSelectionError(invalidItem.product, invalidItem.selectedOptions ?? []);
+      showCheckoutError(`Revisa ${invalidItem.product.name}: ${message}`);
+      const cartLine = lineKey(invalidItem);
+      const editControl = cartItemsElement?.querySelector(`[data-cart-edit="${CSS.escape(cartLine)}"]`);
+      if (editControl instanceof HTMLButtonElement) editControl.focus();
+      return;
+    }
     const name = customerName instanceof HTMLInputElement ? customerName.value.trim() : '';
     const phone = customerPhone instanceof HTMLInputElement ? customerPhone.value.trim() : '';
     const notes = customerNotes instanceof HTMLTextAreaElement ? customerNotes.value.trim() : '';
@@ -568,8 +668,10 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
   .cart-items { min-height:0; padding:5px 0; overflow:auto; }.cart-empty { margin:28px 0; padding:20px; border:1px dashed #d9c3a7; border-radius:12px; color:#796f6a; text-align:center; font-size:.82rem; }.cart-item { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:17px 0; border-bottom:1px solid #eadbcb; }.cart-item small { display:block; margin-bottom:4px; color:#e7472c; font-size:.6rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }.cart-item h3 { margin:0; font-family:var(--body); font-size:.9rem; font-weight:800; letter-spacing:0; line-height:1.2; }.cart-item b { display:block; margin-top:5px; color:#e7472c; font-size:.78rem; }.cart-item em { display:block; margin-top:5px; color:#9b4b30; font-size:.63rem; font-style:normal; }.cart-item.is-closed { opacity:.68; }.cart-quantity { display:flex; align-items:center; gap:9px; flex:none; }.cart-quantity button { display:grid; width:28px; height:28px; place-items:center; border:1px solid #d7c2ac; border-radius:50%; color:#352019; background:#fff; font-size:1.05rem; cursor:pointer; }.cart-quantity button:disabled { opacity:.35; cursor:not-allowed; }.cart-quantity span { min-width:12px; text-align:center; font-size:.78rem; font-weight:800; }
   .cart-drawer { grid-template-rows:auto auto minmax(110px,1fr) auto auto; }.cart-checkout-form { max-height:min(390px,46dvh); padding:18px 0 4px; overflow:auto; border-top:1px solid #e5d5c3; }.cart-checkout-heading { display:flex; align-items:center; gap:10px; margin-bottom:14px; }.cart-checkout-heading>span { display:grid; width:25px; height:25px; place-items:center; border-radius:50%; color:#fff; background:#e7472c; font-size:.62rem; font-weight:800; }.cart-checkout-heading p { margin:0 0 3px; color:#e7472c; font-size:.58rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }.cart-checkout-heading h3 { font-size:1.15rem; }.cart-fieldset { margin:0 0 14px; padding:0; border:0; }.cart-fieldset legend,.cart-field>span,.cart-payment>span { display:block; margin-bottom:7px; color:#4b3027; font-size:.68rem; font-weight:800; }.cart-fieldset legend b,.cart-field>span b { color:#e7472c; }.cart-options { display:grid; grid-template-columns:1fr 1fr; gap:8px; }.cart-options label { position:relative; }.cart-options input { position:absolute; opacity:0; }.cart-options label>span { display:grid; gap:3px; min-height:54px; padding:10px; border:1px solid #dcc8b4; border-radius:9px; cursor:pointer; }.cart-options b { font-size:.71rem; }.cart-options small { color:#796f6a; font-size:.6rem; }.cart-options input:checked+span { border-color:#e7472c; color:#e7472c; background:#fff0e9; box-shadow:inset 3px 0 #e7472c; }.cart-field { display:block; margin:0 0 12px; }.cart-field input,.cart-field textarea,.cart-field select { display:block; width:100%; border:1px solid #dcc8b4; border-radius:8px; color:#352019; background:#fff; padding:10px 11px; font:inherit; font-size:.73rem; outline:none; resize:vertical; }.cart-field select { cursor:pointer; }.cart-field input:focus,.cart-field textarea:focus,.cart-field select:focus { border-color:#e7472c; box-shadow:0 0 0 3px #e7472c1c; }.cart-field>small { display:block; margin-top:5px; color:#796f6a; font-size:.6rem; line-height:1.35; }.cart-payment { display:grid; grid-template-columns:1fr auto; gap:3px 10px; margin-bottom:11px; padding:11px; border-radius:9px; background:#f3e5d2; }.cart-payment>span { margin:0; }.cart-payment strong { color:#e7472c; font-size:.73rem; }.cart-payment small { grid-column:1 / -1; color:#796f6a; font-size:.6rem; }.cart-checkout-error { margin:0 0 10px; padding:9px 10px; border-radius:8px; color:#9b291b; background:#ffe4de; font-size:.66rem; line-height:1.35; }.cart-footer { padding-top:18px; border-top:1px solid #e5d5c3; }.cart-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:13px; }.cart-total span { color:#796f6a; font-size:.78rem; }.cart-total strong { color:#e7472c; font-size:1.3rem; }.cart-checkout { display:flex; justify-content:space-between; align-items:center; width:100%; min-height:50px; padding:0 16px; border:0; border-radius:10px; color:#fff; background:#e7472c; font:800 .74rem var(--body); cursor:pointer; }.cart-checkout:disabled { color:#887a73; background:#e8ddd0; cursor:not-allowed; }.cart-checkout span { font-size:1.1rem; }.cart-note { min-height:18px; margin:10px 0 0; color:#796f6a; font-size:.68rem; line-height:1.4; }
   .cart-field select:disabled { color:#5d4b42; background:#f3e5d2; cursor:default; }
-  .cart-item-options { margin:5px 0 0; color:#796f6a; font-size:.62rem; line-height:1.4; }
-  .product-options-modal { position:fixed; z-index:80; inset:0; display:grid; place-items:center; padding:18px; }.product-options-modal[hidden] { display:none; }.product-options-backdrop { position:absolute; inset:0; background:#1d120dcc; backdrop-filter:blur(3px); }.product-options-dialog { position:relative; width:min(470px,100%); max-height:min(720px,calc(100dvh - 36px)); overflow:auto; padding:28px; border-radius:18px; color:#352019; background:#fff8ed; box-shadow:0 18px 60px #1b0e0b55; }.product-options-dialog .eyebrow { margin:0 0 8px; }.product-options-dialog h2 { padding-right:34px; font-size:2rem; line-height:1.05; }.product-options-base { margin:8px 0 20px; color:#e7472c; font-size:.78rem; font-weight:800; }.product-options-close { position:absolute; top:18px; right:18px; display:grid; width:32px; height:32px; place-items:center; border:1px solid #dcc8b4; border-radius:50%; color:#352019; background:#fff; font-size:1.35rem; line-height:1; cursor:pointer; }.product-options-groups { display:grid; gap:16px; }.product-options-groups fieldset { display:grid; gap:7px; margin:0; padding:0; border:0; }.product-options-groups legend { margin-bottom:6px; color:#4b3027; font-size:.8rem; font-weight:800; }.product-options-groups legend small { display:block; margin-top:3px; color:#796f6a; font-size:.62rem; font-weight:500; }.product-options-groups label { position:relative; display:block; }.product-options-groups input { position:absolute; opacity:0; }.product-options-groups label span { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:10px 11px; border:1px solid #dcc8b4; border-radius:8px; background:#fff; font-size:.73rem; cursor:pointer; }.product-options-groups label span b { color:#e7472c; font-size:.68rem; }.product-options-groups input:checked + span { border-color:#e7472c; color:#e7472c; background:#fff0e9; box-shadow:inset 3px 0 #e7472c; }.product-options-error { margin:15px 0 0; padding:9px 10px; border-radius:8px; color:#9b291b; background:#ffe4de; font-size:.68rem; }.product-options-add { display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:20px; min-height:48px; padding:0 15px; border:0; border-radius:10px; color:#fff; background:#e7472c; font:800 .75rem var(--body); cursor:pointer; }.product-options-add span { font-size:.85rem; }.product-options-open { overflow:hidden; }
+  .cart-item-options { margin:5px 0 0; color:#796f6a; font-size:.62rem; line-height:1.4; }.cart-item-edit { margin-top:7px; padding:0; border:0; color:#9b3a24; background:none; font:700 .64rem var(--body); text-decoration:underline; cursor:pointer; }.cart-item-remove { border:0; color:#8a5848; background:none; font:600 .58rem var(--body); text-decoration:underline; cursor:pointer; }
+  .product-options-modal { position:fixed; z-index:80; inset:0; display:grid; place-items:center; padding:18px; }.product-options-modal[hidden] { display:none; }.product-options-backdrop { position:absolute; inset:0; background:#1d120dcc; backdrop-filter:blur(3px); }.product-options-dialog { position:relative; display:flex; width:min(560px,100%); max-height:min(800px,calc(100dvh - 36px)); flex-direction:column; overflow:hidden; padding:26px; border-radius:18px; color:#352019; background:#fff8ed; box-shadow:0 18px 60px #1b0e0b55; animation:options-enter .18s ease-out both; }.product-options-dialog .eyebrow { margin:0 0 8px; }.product-options-dialog h2 { padding-right:34px; font-size:2rem; line-height:1.05; }.product-options-image { display:block; width:100%; height:165px; margin:0 0 17px; border-radius:12px; object-fit:cover; background:#f0dfca; }.product-options-image[hidden] { display:none; }.product-options-description { margin:-6px 0 0; color:#796f6a; font-size:.74rem; line-height:1.45; }.product-options-base { margin:8px 0 16px; color:#e7472c; font-size:.78rem; font-weight:800; }.product-options-groups { display:grid; gap:16px; min-height:0; overflow:auto; overscroll-behavior:contain; padding:2px 2px 10px 0; }.product-options-groups fieldset { display:grid; gap:7px; margin:0; padding:0; border:0; }.product-options-groups legend { margin-bottom:6px; color:#4b3027; font-size:.8rem; font-weight:800; }.product-options-groups legend small { display:block; margin-top:3px; color:#796f6a; font-size:.62rem; font-weight:500; }.product-options-groups label { position:relative; display:block; }.product-options-groups input { position:absolute; width:1px; height:1px; opacity:0; }.product-options-groups input:focus-visible + span { outline:3px solid #a83724; outline-offset:2px; }.product-options-groups label span { display:flex; min-height:42px; align-items:center; justify-content:space-between; gap:14px; padding:10px 11px; border:1px solid #dcc8b4; border-radius:8px; background:#fff; font-size:.73rem; cursor:pointer; }.product-options-groups label span b { color:#e7472c; font-size:.68rem; }.product-options-groups input:checked + span { border-color:#e7472c; color:#e7472c; background:#fff0e9; box-shadow:inset 3px 0 #e7472c; }.option-group-empty { margin:0; color:#9b291b; font-size:.7rem; }.product-options-summary { flex:none; margin-top:10px; padding:12px; border-radius:10px; background:#f4e8d8; }.product-options-summary small { color:#796f6a; font-size:.6rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }.product-options-summary p { margin:5px 0; color:#4b3027; font-size:.68rem; line-height:1.4; }.product-options-summary strong { color:#e7472c; font-size:.76rem; }.product-options-error { margin:10px 0 0; padding:9px 10px; border-radius:8px; color:#9b291b; background:#ffe4de; font-size:.68rem; }.product-options-add { display:flex; flex:none; justify-content:space-between; align-items:center; width:100%; margin-top:12px; min-height:50px; padding:0 15px; border:0; border-radius:10px; color:#fff; background:#e7472c; font:800 .75rem var(--body); cursor:pointer; }.product-options-add:disabled { opacity:.5; cursor:not-allowed; }.product-options-add span { font-size:.85rem; }.product-options-open { overflow:hidden; }
+  @keyframes options-enter { from { opacity:0; transform:translateY(8px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
+  @media (prefers-reduced-motion: reduce) { .product-options-dialog { animation:none; } }
   .product-card .add-button { position:relative; z-index:0; overflow:hidden; transition:color .22s ease, background .22s ease, border-color .22s ease, transform .22s ease, box-shadow .22s ease; }.product-card .add-button::before { position:absolute; z-index:0; inset:0; content:''; background:#e7472c; transform:translateX(-102%); transition:transform .3s cubic-bezier(.2,.8,.2,1); }.product-card .add-button > span { position:relative; z-index:1; transition:transform .25s ease, color .22s ease; }.product-card .add-button:hover:not(.is-added) { color:#fff; border-color:#e7472c; transform:translateY(-2px); box-shadow:0 7px 16px #e7472c33; }.product-card .add-button:hover:not(.is-added)::before { transform:translateX(0); }.product-card .add-button:hover:not(.is-added) span:last-child { color:#fff; transform:rotate(90deg) scale(1.25); }.product-card .add-button.is-added { color:#fff; border-color:#2d211e; background:#2d211e; transform:scale(.98); }.product-card .add-button.is-added span { color:#ffc84b; transform:scale(1.25); }.product-card.is-adding { animation:product-added .42s cubic-bezier(.2,.85,.35,1); }.cart-fab.is-pulsing { animation:cart-pulse .48s ease-out; }.cart-fly-chip { position:fixed; z-index:70; display:grid; width:28px; height:28px; place-items:center; border-radius:50%; color:#2d211e; background:#ffc84b; box-shadow:0 5px 14px #2d211e3d; font:800 .68rem var(--body); pointer-events:none; transition:transform .48s cubic-bezier(.1,.8,.25,1), opacity .48s ease; }.product-card .add-button:focus-visible, .cart-fab:focus-visible { outline:3px solid #ffc84b; outline-offset:3px; } @keyframes product-added { 0% { transform:scale(1); } 45% { transform:scale(1.025) rotate(-.35deg); } 100% { transform:scale(1); } } @keyframes cart-pulse { 0% { transform:scale(1); } 45% { transform:scale(1.14); box-shadow:0 0 0 9px #ffc84b44,0 12px 30px #25171345; } 100% { transform:scale(1); } }
   @media (max-width: 800px) { .cart-fab { right:14px; bottom:14px; min-height:47px; }.theme-switcher { right:14px !important; bottom:73px !important; }.cart-drawer { padding:20px 18px; }.cart-header h2 { font-size:2rem; } }
   @media (max-width: 600px) {
@@ -593,6 +695,9 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
     .product-options-modal { padding:0; align-items:end; }
     .product-options-dialog { display:flex; flex-direction:column; width:100%; max-height:calc(100dvh - env(safe-area-inset-top) - 12px); padding:22px 18px calc(16px + env(safe-area-inset-bottom)); overflow:hidden; border-radius:18px 18px 0 0; }
     .product-options-dialog h2 { font-size:1.65rem; }
+    .product-options-image { height:125px; flex:none; }
+    .product-options-summary { flex:none; }
+    .product-options-add { flex:none; min-height:54px; }
     .product-options-base { margin-bottom:12px; }
     .product-options-groups { min-height:0; overflow:auto; overscroll-behavior:contain; }
     .product-options-groups label span { min-height:44px; align-items:center; font-size:.8rem; }
@@ -602,4 +707,59 @@ const { products: directusProducts, promotions, categories } = await getCatalog(
     .catalog-category .product-info { flex-wrap:wrap; }
     .cart-hours { grid-template-columns:1fr; gap:5px; }
   }
+  .product-options-modal { padding:20px; }
+  .product-options-backdrop { background:rgb(28 17 13 / 58%); backdrop-filter:blur(2px); }
+  .product-options-dialog { width:min(520px,calc(100vw - 32px)); max-height:min(760px,calc(100dvh - 32px)); padding:20px; border:1px solid #eee8e2; border-radius:18px; color:#302722; background:#fff; box-shadow:0 18px 54px rgb(28 17 13 / 18%); animation:options-enter .16s ease-out both; }
+  .product-options-header { display:flex; min-width:0; flex:none; align-items:center; gap:14px; padding-bottom:16px; }
+  .product-options-heading-copy { min-width:0; flex:1; }
+  .product-options-dialog h2 { overflow-wrap:anywhere; padding:0; color:#302722; font-family:var(--body); font-size:1.4rem; font-weight:800; letter-spacing:-.035em; line-height:1.15; }
+  .product-options-image { width:60px; height:60px; flex:none; margin:0; border:1px solid #eee8e2; border-radius:12px; object-fit:cover; background:#f7f5f2; }
+  .product-options-description { margin:4px 0 0; color:#80766f; font-size:.76rem; line-height:1.3; }
+  .product-options-base { margin:7px 0 0; color:#a63c27; font-size:.78rem; font-weight:750; }
+  .product-options-close { display:grid; width:38px; height:38px; flex:none; place-items:center; border:1px solid #eee8e2; border-radius:50%; color:#51463f; background:#fff; font-size:1.45rem; line-height:1; cursor:pointer; }
+  .product-options-close:hover { border-color:#d9c9bf; background:#faf8f6; }
+  .product-options-close:focus-visible,.product-options-add:focus-visible { outline:3px solid #e7472c; outline-offset:3px; }
+  .product-options-selection-status { flex:none; padding:12px 0 10px; border-top:1px solid #f0ece8; color:#4c4039; font-size:.86rem; font-weight:800; }
+  .product-options-groups { display:grid; min-height:0; flex:1 1 auto; gap:18px; overflow-x:hidden; overflow-y:auto; padding:0 3px 4px 0; overscroll-behavior:contain; scrollbar-gutter:stable; touch-action:pan-y; }
+  .product-options-groups fieldset { display:grid; min-width:0; gap:8px; }
+  .product-options-groups legend { display:grid; width:100%; grid-template-columns:minmax(0,1fr) auto; align-items:baseline; gap:3px 10px; margin-bottom:2px; color:#302722; font-size:.92rem; }
+  .product-options-groups legend > span { min-width:0; overflow-wrap:anywhere; }
+  .product-options-groups legend small { grid-column:1; margin:0; color:#80766f; font-size:.72rem; line-height:1.35; }
+  .product-option-count { grid-column:2; grid-row:2; color:#8b7f77; font-size:.67rem; font-weight:600; text-align:right; }
+  .product-option-grid { display:grid; min-width:0; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .product-options-groups label { min-width:0; }
+  .product-options-groups label > span { min-width:0; min-height:48px; justify-content:flex-start; padding:10px 11px; border-color:#e7e2de; border-radius:9px; color:#403832; background:#fff; font-size:.82rem; line-height:1.3; transition:border-color .14s ease,background-color .14s ease; }
+  .product-options-groups label > span .product-option-name { display:block; min-width:0; flex:1; overflow-wrap:anywhere; padding:0; border:0; border-radius:0; color:inherit; background:transparent; font-size:inherit; }
+  .product-options-groups label > span b { flex:none; color:#ae422b; font-size:.72rem; white-space:nowrap; }
+  .product-options-groups input:checked + span { border-color:#e7472c; color:#8f321e; background:#fff6f2; box-shadow:inset 0 0 0 1px #e7472c; }
+  .product-options-groups input:focus-visible + span { outline:3px solid #e7472c; outline-offset:2px; }
+  .option-group-empty { grid-column:1/-1; padding:10px 0; color:#8b5145; font-size:.76rem; }
+  .product-options-error { flex:none; margin:8px 0 0; padding:9px 11px; border:1px solid #f3d4cc; border-radius:9px; color:#8f321e; background:#fff7f4; font-size:.75rem; line-height:1.4; }
+  .product-options-footer { display:flex; flex:none; align-items:center; justify-content:space-between; gap:16px; margin-top:14px; padding:14px 0 0; border-top:1px solid #f0ece8; color:inherit; background:transparent; }
+  .product-options-total { display:grid; min-width:90px; gap:3px; }
+  .product-options-total small { color:#80766f; font-size:.68rem; }
+  .product-options-total strong { color:#302722; font-size:1.25rem; font-weight:850; letter-spacing:-.03em; }
+  .product-options-add { width:auto; min-width:190px; min-height:48px; justify-content:center; margin:0; padding:0 20px; border-radius:10px; background:#c93428; font-size:.82rem; transition:background-color .14s ease,transform .14s ease; }
+  .product-options-add:hover:not(:disabled) { background:#ad2a21; transform:translateY(-1px); }
+  .product-options-add:disabled { color:#756b64; background:#e9e4df; opacity:1; }
+  body.product-options-open { overflow:hidden; overscroll-behavior:none; }
+  @media (max-width:600px) {
+    .product-options-modal { padding:0; align-items:end; }
+    .product-options-dialog { width:100%; max-height:calc(100dvh - env(safe-area-inset-top) - 8px); padding:calc(14px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom)); border:0; border-radius:18px 18px 0 0; box-shadow:0 -12px 38px rgb(28 17 13 / 14%); }
+    .product-options-header { gap:11px; padding-bottom:12px; }
+    .product-options-dialog h2 { font-size:1.2rem; }
+    .product-options-image { width:56px; height:56px; border-radius:11px; }
+    .product-options-close { width:36px; height:36px; }
+    .product-options-selection-status { padding:10px 0 9px; font-size:.82rem; }
+    .product-options-groups { gap:15px; }
+    .product-options-groups label > span { min-height:48px; padding:10px; font-size:.8rem; }
+    .product-options-footer { gap:10px; margin-top:10px; padding-top:11px; }
+    .product-options-add { min-width:0; min-height:48px; flex:1; padding-inline:12px; font-size:.78rem; }
+  }
+  @media (max-width:359px) {
+    .product-option-grid { grid-template-columns:minmax(0,1fr); }
+    .product-options-dialog { padding-right:13px; padding-left:13px; }
+    .product-options-add { font-size:.74rem; }
+  }
+  @media (prefers-reduced-motion:reduce) { .product-options-dialog { animation:none; } }
 </style>

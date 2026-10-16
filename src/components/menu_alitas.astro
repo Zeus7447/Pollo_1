@@ -2,7 +2,7 @@
 import alitasImg from '../assets/fresa-wings-alitas.png';
 import comboImg from '../assets/fresa-wings-combo.png';
 import alitasLogo from '../assets/alitas_logo.png';
-import { wingsFlavors } from '../lib/wings-flavors';
+import { getCatalog } from '../lib/directus';
 
 const presentaciones = [
   { piezas: '6 piezas', precio: '$80' },
@@ -11,7 +11,8 @@ const presentaciones = [
   { piezas: '24 piezas', precio: '$285' },
 ];
 
-const sabores = wingsFlavors;
+const { products: catalogProducts, catalogError } = await getCatalog();
+const activeWingFlavors = Array.from(new Set(catalogProducts.filter((product) => product.brand === 'Fresa Wings').flatMap((product) => product.optionGroups.filter((group) => /sabor|salsa/i.test(group.name)).flatMap((group) => group.options.map((option) => option.name)))));
 
 const complementos = [
   ['Papas a la francesa', '$50'],
@@ -35,7 +36,7 @@ const combos = [
   { numero: '04', nombre: 'Combo familiar', incluye: ['25 alitas', '4 hamburguesas', '2 malteadas', '1 papas'], precio: '$630', destacado: true },
 ];
 
-const whatsappUrl = `https://wa.me/524463869132?text=${encodeURIComponent('Hola, quiero hacer un pedido de Fresa Wings.')}`;
+const whatsappUrl = '/#destacados';
 ---
 
 <section class="wings-menu" id="fresa-wings" aria-labelledby="wings-title">
@@ -50,14 +51,14 @@ const whatsappUrl = `https://wa.me/524463869132?text=${encodeURIComponent('Hola,
       <h2 id="wings-title">Crujientes.<br />Bañadas. <em>Adictivas.</em></h2>
       <p class="intro-text">Alitas y boneless para elegir, bañar en tu sabor favorito y compartir… si es que alcanzan.</p>
       <div class="wings-actions">
-        <a href={whatsappUrl} target="_blank" rel="noreferrer">Pedir Fresa Wings</a>
+        <a href="/#destacados">Pedir Fresa Wings</a>
         <span>Servicio a domicilio · costo extra</span>
       </div>
     </div>
 
     <div class="wings-photo">
       <img src={alitasImg.src} alt="Plato con alitas bañadas y crujientes de Fresa Wings" loading="lazy" />
-      <span class="hot-badge"><small>ELIGE ENTRE</small><strong>10</strong><b>sabores</b></span>
+      <span class="hot-badge"><small>OPCIONES ACTIVAS</small><strong>{activeWingFlavors.length}</strong><b>sabores</b></span>
       <span class="photo-caption">Bañadas al momento</span>
     </div>
   </header>
@@ -82,9 +83,7 @@ const whatsappUrl = `https://wa.me/524463869132?text=${encodeURIComponent('Hola,
     <aside class="flavor-board">
       <p><span></span> Primero elige tu favorito</p>
       <h3>¿Con qué sabor<br /><i>te atreves?</i></h3>
-      <div class="flavor-list">
-        {sabores.map((sabor, index) => <span class:list={{ hot: ['Mango habanero', 'Habanero', 'Takis fuego'].includes(sabor) }}><b>{String(index + 1).padStart(2, '0')}</b>{sabor}</span>)}
-      </div>
+      {catalogError ? <p role="alert">No pudimos consultar las opciones activas. Intenta más tarde.</p> : activeWingFlavors.length ? <div class="flavor-list">{activeWingFlavors.map((sabor, index) => <span><b>{String(index + 1).padStart(2, '0')}</b>{sabor}</span>)}</div> : <p>Las opciones se muestran al personalizar cada producto disponible.</p>}
       <small class="heat-key"><b>●</b> Opciones con más picante</small>
     </aside>
   </div>

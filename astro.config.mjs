@@ -13,6 +13,7 @@ export default defineConfig({
   env: {
     schema: {
       DIRECTUS_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      DIRECTUS_SERVICE_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
       DIRECTUS_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
       DIRECTUS_BUSINESS_ID: envField.string({ context: 'server', access: 'secret', optional: true }),
       DIRECTUS_FRESA_WINGS_BUSINESS_ID: envField.string({ context: 'server', access: 'secret', optional: true }),

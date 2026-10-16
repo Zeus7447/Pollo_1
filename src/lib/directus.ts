@@ -1,5 +1,4 @@
-import { DIRECTUS_BUSINESS_ID, DIRECTUS_FRESA_WINGS_BUSINESS_ID, DIRECTUS_TOKEN, DIRECTUS_URL } from 'astro:env/server';
-import { wingsFlavors } from './wings-flavors';
+import { DIRECTUS_BUSINESS_ID, DIRECTUS_FRESA_WINGS_BUSINESS_ID, DIRECTUS_SERVICE_TOKEN, DIRECTUS_TOKEN, DIRECTUS_URL } from 'astro:env/server';
 
 type DirectusResponse<T> = { data: T[] };
 
@@ -110,24 +109,12 @@ export type CatalogPromotion = {
   productIds: number[];
 };
 
-const withWingsFlavors = (brand: CatalogProduct['brand'], product: DirectusProduct, groups: CatalogProductOptionGroup[]) => {
-  if (brand !== 'Fresa Wings' || !/\b(alitas|boneless)\b/i.test(product.name)) return groups;
-  const flavorGroup = groups.find((group) => /sabor|salsa/i.test(group.name) || group.options.some((option) => wingsFlavors.some((flavor) => flavor.toLowerCase() === option.name.toLowerCase())));
-  if (flavorGroup) return groups.map((group) => group === flavorGroup ? { ...group, required: true, minSelect: 1, maxSelect: 2 } : group);
-  return [...groups, {
-    id: -product.id,
-    name: 'Sabor',
-    required: true,
-    minSelect: 1,
-    maxSelect: 2,
-    options: wingsFlavors.map((name, index) => ({ id: -(index + 1), name, priceDelta: 0 })),
-  }];
-};
-
 // `astro:env/server` reads secrets when the SSR server receives the request.
 // Thus Coolify runtime variables do not get baked into the generated HTML.
 const directusUrl = DIRECTUS_URL?.replace(/\/$/, '');
-const directusToken = DIRECTUS_TOKEN;
+// Prefer the server-only token with read access to the option collections.
+// DIRECTUS_TOKEN remains as a compatibility fallback for existing deployments.
+const directusToken = DIRECTUS_SERVICE_TOKEN || DIRECTUS_TOKEN;
 const polloBusinessId = DIRECTUS_BUSINESS_ID || '8';
 const wingsBusinessId = DIRECTUS_FRESA_WINGS_BUSINESS_ID || '10';
 
@@ -136,10 +123,9 @@ const catalogs = [
   { id: wingsBusinessId, brand: 'Fresa Wings' as const },
 ];
 
-if (!directusUrl) throw new Error('Falta DIRECTUS_URL.');
-if (!directusToken) throw new Error('Falta DIRECTUS_TOKEN.');
-
 const getItems = async <T>(collection: string, params: URLSearchParams) => {
+  if (!directusUrl) throw new Error('Falta DIRECTUS_URL.');
+  if (!directusToken) throw new Error('Falta DIRECTUS_TOKEN.');
   const response = await fetch(`${directusUrl}/items/${collection}?${params}`, {
     headers: { Authorization: `Bearer ${directusToken}` },
   });
@@ -191,17 +177,16 @@ const getStorefrontPromotions = async (businessId: string, brand: CatalogPromoti
 const getProductOptionGroups = async (businessId: string, productIds: number[]) => {
   if (!productIds.length) return new Map<number, CatalogProductOptionGroup[]>();
 
-  try {
-    const groupQuery = new URLSearchParams({
+  const groupQuery = new URLSearchParams({
       fields: 'id,product,name,required,min_select,max_select,sort_order,active',
       sort: 'sort_order,name',
       'filter[business][_eq]': businessId,
       'filter[product][_in]': productIds.join(','),
       'filter[active][_eq]': 'true',
       limit: '-1',
-    });
-    const groups = await getItems<DirectusProductOptionGroup>('product_option_groups', groupQuery);
-    if (!groups.length) return new Map<number, CatalogProductOptionGroup[]>();
+  });
+  const groups = await getItems<DirectusProductOptionGroup>('product_option_groups', groupQuery);
+  if (!groups.length) return new Map<number, CatalogProductOptionGroup[]>();
 
     const optionQuery = new URLSearchParams({
       fields: 'id,option_group,name,price_delta,sort_order,active',
@@ -210,43 +195,36 @@ const getProductOptionGroups = async (businessId: string, productIds: number[]) 
       'filter[option_group][_in]': groups.map((group) => group.id).join(','),
       'filter[active][_eq]': 'true',
       limit: '-1',
-    });
-    const options = await getItems<DirectusProductOption>('product_options', optionQuery);
-    const optionsByGroup = new Map<number, CatalogProductOption[]>();
-    for (const option of options) {
-      const priceDelta = Number(option.price_delta);
-      if (!Number.isFinite(priceDelta)) continue;
-      optionsByGroup.set(option.option_group, [...(optionsByGroup.get(option.option_group) ?? []), {
-        id: option.id,
-        name: option.name,
-        priceDelta,
-      }]);
-    }
-
-    const groupsByProduct = new Map<number, CatalogProductOptionGroup[]>();
-    for (const group of groups) {
-      const optionsForGroup = optionsByGroup.get(group.id) ?? [];
-      // A required group without choices cannot be fulfilled, so do not offer that product configuration.
-      if (group.required && !optionsForGroup.length) continue;
-      const minSelect = Math.max(group.required ? 1 : 0, Number(group.min_select) || 0);
-      const configuredMax = Number(group.max_select);
-      const maxSelect = Number.isFinite(configuredMax) && configuredMax > 0
-        ? Math.max(minSelect, configuredMax)
-        : null;
-      groupsByProduct.set(group.product, [...(groupsByProduct.get(group.product) ?? []), {
-        id: group.id,
-        name: group.name,
-        required: group.required,
-        minSelect,
-        maxSelect,
-        options: optionsForGroup,
-      }]);
-    }
-    return groupsByProduct;
-  } catch (error) {
-    console.warn('[Directus] No se pudieron cargar las opciones de producto.', error);
-    return new Map<number, CatalogProductOptionGroup[]>();
+  });
+  const options = await getItems<DirectusProductOption>('product_options', optionQuery);
+  const optionsByGroup = new Map<number, CatalogProductOption[]>();
+  for (const option of options) {
+    const priceDelta = Number(option.price_delta);
+    if (!Number.isFinite(priceDelta)) continue;
+    optionsByGroup.set(option.option_group, [...(optionsByGroup.get(option.option_group) ?? []), {
+      id: option.id,
+      name: option.name,
+      priceDelta,
+    }]);
   }
+
+  const groupsByProduct = new Map<number, CatalogProductOptionGroup[]>();
+  for (const group of groups) {
+    const optionsForGroup = optionsByGroup.get(group.id) ?? [];
+    const minSelect = Math.max(group.required ? 1 : 0, Number(group.min_select) || 0);
+    const configuredMax = Number(group.max_select);
+    const maxSelect = Number.isFinite(configuredMax) && configuredMax > 0 ? configuredMax : null;
+    // Preserve empty required groups so the storefront can explain and block an invalid configuration.
+    groupsByProduct.set(group.product, [...(groupsByProduct.get(group.product) ?? []), {
+      id: group.id,
+      name: group.name,
+      required: group.required,
+      minSelect,
+      maxSelect,
+      options: optionsForGroup,
+    }]);
+  }
+  return groupsByProduct;
 };
 
 export const getCatalog = async () => {
@@ -286,15 +264,15 @@ export const getCatalog = async () => {
         category: product.category ? categoryNames.get(product.category) ?? brand : brand,
         featured: product.featured,
         brand,
-        optionGroups: withWingsFlavors(brand, product, optionGroups.get(product.id) ?? []),
+        optionGroups: optionGroups.get(product.id) ?? [],
       }));
     });
     const catalogCategories: CatalogCategory[] = catalogResults.flatMap(({ brand, categories }) => categories.map(({ id, name }) => ({ id, name, brand })));
     const promotions = catalogResults.flatMap((catalog) => catalog.promotions);
-    return { products, promotions, categories: catalogCategories };
+    return { products, promotions, categories: catalogCategories, catalogError: false };
   } catch (error) {
     console.warn('[Directus] No se pudo cargar el catálogo.', error);
-    return { products: [] as CatalogProduct[], promotions: [] as CatalogPromotion[], categories: [] as CatalogCategory[] };
+    return { products: [] as CatalogProduct[], promotions: [] as CatalogPromotion[], categories: [] as CatalogCategory[], catalogError: true };
   }
 };
 import { readFileSync } from 'node:fs';

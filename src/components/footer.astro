@@ -6,7 +6,7 @@ const navigation = [
   { label: 'Inicio', href: '/' },
   { label: 'Menú', href: '/menu' },
   { label: 'Nosotros', href: '/nosotros' },
-  { label: 'Pedir', href: '/pedir' },
+  { label: 'Pedir', href: '/#destacados' },
   { label: 'Ubicaciones', href: '/ubicaciones' },
 ];
 ---
@@ -14,7 +14,7 @@ const navigation = [
 <footer class="footer">
   <div class="footer-top">
     <p><span>✦</span> SABOR DE CASA · TODOS LOS DÍAS</p>
-    <a href="/pedir">Pedir ahora</a>
+    <a href="/#destacados">Pedir ahora</a>
   </div>
 
   <div class="footer-main">
@@ -25,7 +25,7 @@ const navigation = [
 
     <div class="link-column"><small>Explora</small>{navigation.map((link) => <a href={link.href}>{link.label}</a>)}</div>
     <div class="link-column"><small>Información</small><a href="/politica-de-privacidad">Política de privacidad</a><a href="/cookies">Política de cookies</a><a href="/terminos">Términos y condiciones</a><button type="button" data-cookie-open>Configurar cookies</button></div>
-    <div class="contact-column"><small>Hablemos</small><p>¿Tienes dudas sobre tu pedido?</p><a href="/pedir">Contáctanos</a><p class="schedule">Lunes a domingo<br /><strong>11:00 — 22:00</strong></p></div>
+    <div class="contact-column"><small>Hablemos</small><p>¿Tienes dudas sobre tu pedido?</p><a href="/#destacados">Contáctanos</a><p class="schedule">Lunes a domingo<br /><strong>11:00 — 22:00</strong></p></div>
   </div>
 
   <section class="social-showcase" aria-labelledby="social-title">

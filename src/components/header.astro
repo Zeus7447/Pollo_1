@@ -6,7 +6,7 @@ const links = [
   { label: 'Inicio', href: '/' },
   { label: 'Menú', href: '/menu' },
   { label: 'Nosotros', href: '/nosotros' },
-  { label: 'Pedir', href: '/pedir' },
+  { label: 'Pedir', href: '/#destacados' },
   { label: 'Ubicaciones', href: '/ubicaciones' },
 ];
 const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -24,7 +24,7 @@ const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.st
     </div>
 
     <div class="nav-actions">
-      <a class="order-link" href="/pedir"><span class="order-dot"></span>Pedir ahora</a>
+      <a class="order-link" href="/#destacados"><span class="order-dot"></span>Pedir ahora</a>
       <button class="menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" data-menu-toggle><span></span><span></span></button>
     </div>
   </nav>
@@ -33,7 +33,7 @@ const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.st
     <div class="mobile-menu-inner">
       <p>MENÚ PRINCIPAL</p>
       <div>{links.map((link, index) => <a class:list={{ active: isActive(link.href) }} href={link.href}><small>0{index + 1}</small><span>{link.label}</span></a>)}</div>
-      <a class="mobile-order" href="/pedir">Hacer mi pedido</a>
+      <a class="mobile-order" href="/#destacados">Hacer mi pedido</a>
       <p class="mobile-note">Pollo doradito · Recién hecho · Para compartir</p>
     </div>
   </div>

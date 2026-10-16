@@ -25,7 +25,7 @@ const products = [
   <main>
     <HeroMenu />
 
-    <nav class="category-nav" aria-label="Negocios y categorías del menú"><span>DOS NEGOCIOS, UN ANTOJO</span><div><a class="chicken-tab" href="#pollo-fresa">Pollo rostizado</a><a class="wings-tab" href="#fresa-wings">Alitas & boneless</a></div><a class="order-nav" href="/pedir">Pedir ahora</a></nav>
+    <nav class="category-nav" aria-label="Negocios y categorías del menú"><span>DOS NEGOCIOS, UN ANTOJO</span><div><a class="chicken-tab" href="#pollo-fresa">Pollo rostizado</a><a class="wings-tab" href="#fresa-wings">Alitas & boneless</a></div><a class="order-nav" href="/#destacados">Pedir ahora</a></nav>
 
     <section class="menu-section" id="pollo-fresa" aria-labelledby="menu-title">
       <header class="menu-heading"><div><p><span></span> 01 · Recién salido del rosticero</p><h2 id="menu-title">Pollo <i>Fresa</i></h2></div><p>Elige tu favorito. Todos nuestros pollos se preparan durante el día para servirlos calientes y en su punto.</p></header>
@@ -35,7 +35,7 @@ const products = [
       <div class="product-grid">
         {products.map((product, index) => (
           <article class:list={['product-card', { wide: index === 0 || index === 3 }]} id={index === 0 ? 'pollos' : index === 2 ? 'combos' : index === 4 ? 'acompanamientos' : undefined}>
-            <a href="/pedir">
+            <a href="/#destacados">
               <div class="product-visual"><img src={product.image.src} alt={product.name} loading="lazy" /><span class="badge">{product.badge}</span><span class="number">0{index + 1}</span></div>
               <div class="product-info"><div><small>{product.category}</small><h3>{product.name}</h3><p>{product.description}</p></div><div class="price"><strong>{product.price}</strong><span>Agregar al pedido</span></div></div>
             </a>
@@ -46,7 +46,7 @@ const products = [
 
     <MenuAlitas />
 
-    <section class="order-banner"><div><p>¿Con cuál te quedas?</p><h2>Rostizado o bañado,<br /><i>el antojo manda.</i></h2></div><p>Elige Pollo Fresa para compartir en familia o Fresa Wings para una tarde cargada de sabor.</p><a href="https://wa.me/524463869132?text=Hola%2C%20quiero%20hacer%20un%20pedido." target="_blank" rel="noreferrer">Empezar mi pedido</a></section>
+    <section class="order-banner"><div><p>¿Con cuál te quedas?</p><h2>Rostizado o bañado,<br /><i>el antojo manda.</i></h2></div><p>Elige Pollo Fresa para compartir en familia o Fresa Wings para una tarde cargada de sabor.</p><a href="/#destacados">Empezar mi pedido</a></section>
   </main>
   <Footer />
   <WhatsappFlotante />
