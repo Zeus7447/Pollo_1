@@ -12,7 +12,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       <img class="scroll-canvas-poster" src={poster} alt="" width="1920" height="1080" fetchpriority="high" decoding="async" />
     </picture>
     <canvas class="scroll-canvas" aria-hidden="true"></canvas>
-    <video class="scroll-mobile-video" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+    <video class="scroll-mobile-video" autoplay loop muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
   </div>
   <p class="sr-only">Secuencia visual de Pollo Fresa. Desplázate para recorrerla. Los enlaces a ambas marcas están disponibles al terminar el hero y en la navegación principal.</p>
 </section>
@@ -58,8 +58,6 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
     let disposed = false;
     let switching = false;
     let sequenceReady = false;
-    let videoMode = false;
-    let videoSeekPending = false;
     let count = 0;
     let pattern = '';
     let digits = 3;
@@ -129,23 +127,6 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       lastDrawn = -1;
       drawNearest();
     };
-    const seekMobileVideo = (progress: number) => {
-      if (!videoMode || !mobileVideo || mobileVideo.readyState < HTMLMediaElement.HAVE_METADATA || mobileVideo.seeking) {
-        if (videoMode) videoSeekPending = true;
-        return;
-      }
-      const duration = mobileVideo.duration;
-      if (!Number.isFinite(duration) || duration <= 0) return;
-      const frameTime = 1 / 24;
-      const target = Math.min(duration - frameTime, Math.max(0, Math.round(progress * duration * 24) / 24));
-      if (Math.abs(mobileVideo.currentTime - target) > frameTime * 0.5) {
-        videoSeekPending = false;
-        mobileVideo.currentTime = target;
-      }
-    };
-    mobileVideo?.addEventListener('seeked', () => {
-      if (videoSeekPending && videoMode) seekMobileVideo(currentProgress);
-    });
     const draw = (index: number, image: FrameImage) => {
       if (lastDrawn === index || !canvas.width || !canvas.height || !activeVariant) return;
       const drawStartedAt = performance.now();
@@ -244,7 +225,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       }
     };
     const requestWindow = (index: number) => {
-      if (switching || videoMode || !activeVariant || !count) return;
+      if (switching || !activeVariant || !count) return;
       wanted = Math.max(0, Math.min(count - 1, index));
       for (let frame = Math.max(0, wanted - 4); frame <= Math.min(count - 1, wanted + 4); frame += 1) {
         if (!cache.has(frame) && !controllers.has(frame) && (failedUntil.get(frame) ?? 0) <= Date.now()) {
@@ -278,10 +259,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
           ease: 'none',
           onUpdate: () => {
             currentProgress = count > 1 ? playhead.frame / (count - 1) : 0;
-            if (!switching) {
-              if (videoMode) seekMobileVideo(currentProgress);
-              else requestWindow(Math.round(playhead.frame));
-            }
+            if (!switching) requestWindow(Math.round(playhead.frame));
           },
           scrollTrigger: {
             id: 'pollo-fresa-hero',
@@ -301,10 +279,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
             anticipatePin: 1,
             onRefresh: (trigger) => {
               currentProgress = trigger.progress;
-              if (!switching) {
-                if (videoMode) seekMobileVideo(currentProgress);
-                else requestWindow(Math.round(trigger.progress * (count - 1)));
-              }
+              if (!switching) requestWindow(Math.round(trigger.progress * (count - 1)));
             }
           }
         });
@@ -323,13 +298,11 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       currentProgress = appliedProgress;
       requestWindow(Math.round(appliedProgress * (count - 1)));
     };
-    const loadVariant = async (variant: HeroVariant, useMobileVideo = true) => {
+    const loadVariant = async (variant: HeroVariant) => {
       if (disposed || requestedVariant === variant || (sequenceReady && activeVariant === variant)) return;
       requestedVariant = variant;
       const generation = ++sequenceGeneration;
       switching = true;
-      videoMode = false;
-      videoSeekPending = false;
       section.classList.remove('is-video-ready');
       mobileVideo?.pause();
       if (variant !== 'mobile' && mobileVideo) {
@@ -340,7 +313,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       posterImage.classList.remove('is-covered');
       clearFrameResources();
       try {
-        if (variant === 'mobile' && useMobileVideo && mobileVideo) {
+        if (variant === 'mobile' && mobileVideo) {
           mobileVideo.preload = 'auto';
           mobileVideo.src = '/media/pollo-fresa-hero/hero-mobile.mp4';
           mobileVideo.load();
@@ -369,23 +342,25 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
           if (disposed || generation !== sequenceGeneration) return;
           if (selectedVariant() !== variant) {
             switching = false;
-            requestedVariant = activeVariant;
+            requestedVariant = null;
             void loadVariant(selectedVariant());
             return;
           }
-          const latestProgress = currentProgress;
           const previousTrigger = ScrollTrigger.getById('pollo-fresa-hero');
-          const preservePinnedPosition = Boolean(previousTrigger?.isActive || latestProgress >= 1);
+          const wasPinned = Boolean(previousTrigger?.isActive);
           pinContext?.revert();
           pinContext = undefined;
           activeVariant = 'mobile';
-          count = 2;
-          videoMode = true;
+          count = 0;
           sequenceReady = true;
           switching = false;
+          mobileVideo.loop = true;
+          mobileVideo.autoplay = true;
+          mobileVideo.muted = true;
+          mobileVideo.playsInline = true;
           section.classList.add('is-video-ready');
-          seekMobileVideo(latestProgress);
-          installScrollTrigger(latestProgress, preservePinnedPosition);
+          void mobileVideo.play().catch(() => {});
+          if (wasPinned) ScrollTrigger.refresh();
           return;
         }
         const response = await fetch(manifestUrl(variant) ?? '', { cache: 'force-cache' });
@@ -398,7 +373,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
         if (selectedVariant() !== variant) {
           closeImage(first);
           switching = false;
-          requestedVariant = activeVariant;
+          requestedVariant = null;
           void loadVariant(selectedVariant());
           return;
         }
@@ -425,20 +400,13 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
         installScrollTrigger(latestProgress, preservePinnedPosition);
       } catch {
         if (generation !== sequenceGeneration || disposed) return;
-        if (variant === 'mobile' && useMobileVideo) {
-          mobileVideo?.pause();
-          mobileVideo?.removeAttribute('src');
-          mobileVideo?.load();
-          requestedVariant = null;
-          switching = false;
-          void loadVariant('mobile', false);
-          return;
-        }
         switching = false;
         requestedVariant = null;
         pinContext?.revert();
         pinContext = undefined;
         clearFrameResources();
+        mobileVideo?.pause();
+        section.classList.remove('is-video-ready');
         sequenceReady = false;
         activeVariant = null;
         count = 0;
@@ -454,7 +422,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
         resizeRaf = 0;
         const nextVariant = selectedVariant();
         if (nextVariant !== activeVariant && nextVariant !== requestedVariant) void loadVariant(nextVariant);
-        else if (nextVariant === activeVariant) {
+        else if (nextVariant === activeVariant && nextVariant === 'desktop') {
           resizeCanvas();
           ScrollTrigger.refresh();
         }
@@ -473,6 +441,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       if (resizeRaf) cancelAnimationFrame(resizeRaf);
       resizeObserver?.disconnect();
       clearFrameResources();
+      mobileVideo?.pause();
       requestedAt.clear();
       pinContext?.revert();
       window.removeEventListener('resize', onResize);
