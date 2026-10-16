@@ -12,6 +12,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       <img class="scroll-canvas-poster" src={poster} alt="" width="1920" height="1080" fetchpriority="high" decoding="async" />
     </picture>
     <canvas class="scroll-canvas" aria-hidden="true"></canvas>
+    <video class="scroll-mobile-video" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
   </div>
   <p class="sr-only">Secuencia visual de Pollo Fresa. Desplázate para recorrerla. Los enlaces a ambas marcas están disponibles al terminar el hero y en la navegación principal.</p>
 </section>
@@ -41,6 +42,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
     const stage = section.querySelector<HTMLElement>('[data-pin-stage]');
     const canvas = section.querySelector<HTMLCanvasElement>('.scroll-canvas');
     const posterImage = section.querySelector<HTMLImageElement>('.scroll-canvas-poster');
+    const mobileVideo = section.querySelector<HTMLVideoElement>('.scroll-mobile-video');
     const context = canvas?.getContext('2d', { alpha: false });
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const mobileQuery = window.matchMedia('(max-width: 767px)');
@@ -56,6 +58,8 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
     let disposed = false;
     let switching = false;
     let sequenceReady = false;
+    let videoMode = false;
+    let videoSeekPending = false;
     let count = 0;
     let pattern = '';
     let digits = 3;
@@ -125,6 +129,23 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       lastDrawn = -1;
       drawNearest();
     };
+    const seekMobileVideo = (progress: number) => {
+      if (!videoMode || !mobileVideo || mobileVideo.readyState < HTMLMediaElement.HAVE_METADATA || mobileVideo.seeking) {
+        if (videoMode) videoSeekPending = true;
+        return;
+      }
+      const duration = mobileVideo.duration;
+      if (!Number.isFinite(duration) || duration <= 0) return;
+      const frameTime = 1 / 24;
+      const target = Math.min(duration - frameTime, Math.max(0, Math.round(progress * duration * 24) / 24));
+      if (Math.abs(mobileVideo.currentTime - target) > frameTime * 0.5) {
+        videoSeekPending = false;
+        mobileVideo.currentTime = target;
+      }
+    };
+    mobileVideo?.addEventListener('seeked', () => {
+      if (videoSeekPending && videoMode) seekMobileVideo(currentProgress);
+    });
     const draw = (index: number, image: FrameImage) => {
       if (lastDrawn === index || !canvas.width || !canvas.height || !activeVariant) return;
       const drawStartedAt = performance.now();
@@ -223,7 +244,7 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       }
     };
     const requestWindow = (index: number) => {
-      if (switching || !activeVariant || !count) return;
+      if (switching || videoMode || !activeVariant || !count) return;
       wanted = Math.max(0, Math.min(count - 1, index));
       for (let frame = Math.max(0, wanted - 4); frame <= Math.min(count - 1, wanted + 4); frame += 1) {
         if (!cache.has(frame) && !controllers.has(frame) && (failedUntil.get(frame) ?? 0) <= Date.now()) {
@@ -257,7 +278,10 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
           ease: 'none',
           onUpdate: () => {
             currentProgress = count > 1 ? playhead.frame / (count - 1) : 0;
-            if (!switching) requestWindow(Math.round(playhead.frame));
+            if (!switching) {
+              if (videoMode) seekMobileVideo(currentProgress);
+              else requestWindow(Math.round(playhead.frame));
+            }
           },
           scrollTrigger: {
             id: 'pollo-fresa-hero',
@@ -277,7 +301,10 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
             anticipatePin: 1,
             onRefresh: (trigger) => {
               currentProgress = trigger.progress;
-              if (!switching) requestWindow(Math.round(trigger.progress * (count - 1)));
+              if (!switching) {
+                if (videoMode) seekMobileVideo(currentProgress);
+                else requestWindow(Math.round(trigger.progress * (count - 1)));
+              }
             }
           }
         });
@@ -296,15 +323,71 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
       currentProgress = appliedProgress;
       requestWindow(Math.round(appliedProgress * (count - 1)));
     };
-    const loadVariant = async (variant: HeroVariant) => {
+    const loadVariant = async (variant: HeroVariant, useMobileVideo = true) => {
       if (disposed || requestedVariant === variant || (sequenceReady && activeVariant === variant)) return;
       requestedVariant = variant;
       const generation = ++sequenceGeneration;
       switching = true;
+      videoMode = false;
+      videoSeekPending = false;
+      section.classList.remove('is-video-ready');
+      mobileVideo?.pause();
+      if (variant !== 'mobile' && mobileVideo) {
+        mobileVideo.removeAttribute('src');
+        mobileVideo.load();
+      }
       canvas.classList.remove('is-ready');
       posterImage.classList.remove('is-covered');
       clearFrameResources();
       try {
+        if (variant === 'mobile' && useMobileVideo && mobileVideo) {
+          mobileVideo.preload = 'auto';
+          mobileVideo.src = '/media/pollo-fresa-hero/hero-mobile.mp4';
+          mobileVideo.load();
+          await new Promise<void>((resolve, reject) => {
+            if (mobileVideo.readyState >= HTMLMediaElement.HAVE_METADATA) { resolve(); return; }
+            const onMetadata = () => { cleanup(); resolve(); };
+            const onError = () => { cleanup(); reject(new Error('No se pudo cargar el video del hero mÃ³vil.')); };
+            const cleanup = () => {
+              mobileVideo.removeEventListener('loadedmetadata', onMetadata);
+              mobileVideo.removeEventListener('error', onError);
+            };
+            mobileVideo.addEventListener('loadedmetadata', onMetadata, { once: true });
+            mobileVideo.addEventListener('error', onError, { once: true });
+          });
+          await new Promise<void>((resolve, reject) => {
+            if (mobileVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) { resolve(); return; }
+            const onData = () => { cleanup(); resolve(); };
+            const onError = () => { cleanup(); reject(new Error('No se pudo decodificar el video del hero mÃ³vil.')); };
+            const cleanup = () => {
+              mobileVideo.removeEventListener('loadeddata', onData);
+              mobileVideo.removeEventListener('error', onError);
+            };
+            mobileVideo.addEventListener('loadeddata', onData, { once: true });
+            mobileVideo.addEventListener('error', onError, { once: true });
+          });
+          if (disposed || generation !== sequenceGeneration) return;
+          if (selectedVariant() !== variant) {
+            switching = false;
+            requestedVariant = activeVariant;
+            void loadVariant(selectedVariant());
+            return;
+          }
+          const latestProgress = currentProgress;
+          const previousTrigger = ScrollTrigger.getById('pollo-fresa-hero');
+          const preservePinnedPosition = Boolean(previousTrigger?.isActive || latestProgress >= 1);
+          pinContext?.revert();
+          pinContext = undefined;
+          activeVariant = 'mobile';
+          count = 2;
+          videoMode = true;
+          sequenceReady = true;
+          switching = false;
+          section.classList.add('is-video-ready');
+          seekMobileVideo(latestProgress);
+          installScrollTrigger(latestProgress, preservePinnedPosition);
+          return;
+        }
         const response = await fetch(manifestUrl(variant) ?? '', { cache: 'force-cache' });
         if (!response.ok) throw new Error('No se pudo cargar el manifiesto del hero.');
         const manifest = await response.json() as SequenceManifest;
@@ -342,6 +425,15 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
         installScrollTrigger(latestProgress, preservePinnedPosition);
       } catch {
         if (generation !== sequenceGeneration || disposed) return;
+        if (variant === 'mobile' && useMobileVideo) {
+          mobileVideo?.pause();
+          mobileVideo?.removeAttribute('src');
+          mobileVideo?.load();
+          requestedVariant = null;
+          switching = false;
+          void loadVariant('mobile', false);
+          return;
+        }
         switching = false;
         requestedVariant = null;
         pinContext?.revert();
@@ -397,12 +489,16 @@ const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
   .scroll-canvas-poster,.scroll-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;background:#080706}
   .scroll-canvas{opacity:0;transition:opacity .12s linear}.scroll-canvas.is-ready{opacity:1}
   .scroll-canvas-poster{transition:opacity .12s linear}.scroll-canvas-poster.is-covered{opacity:0}
+  .scroll-mobile-video{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;background:#d81727;transition:opacity .12s linear}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   :global(body.theme-pollo #inicio.scroll-canvas-hero),:global(body.theme-wings #inicio.scroll-canvas-hero),:global(body.theme-combined #inicio.scroll-canvas-hero),:global(body.theme-closed #inicio.scroll-canvas-hero){background:#080706}
   @media(max-width:767px){
     .scroll-canvas-hero,.scroll-canvas-stage{background:#d81727}
     .scroll-canvas-stage{height:calc(100svh - 73px);height:calc(100dvh - 73px);min-height:0}
     .scroll-canvas-poster{object-fit:cover;background:#d81727}
+    .scroll-mobile-video{display:block}
+    .is-video-ready .scroll-mobile-video{opacity:1}
+    .is-video-ready .scroll-canvas,.is-video-ready .scroll-canvas-poster{opacity:0}
   }
   @media(prefers-reduced-motion:reduce){.scroll-canvas,.scroll-canvas-poster{transition:none}}
 </style>
