@@ -22,7 +22,7 @@
       "mobile": 60212
     },
     "quality": {
-      "mobile": 82
+      "mobile": 74
     },
     "posterQuality": {
       "mobile": 86
@@ -30,10 +30,10 @@
   },
   "variants": {
     "mobile": {
-      "width": 810,
-      "height": 1440,
+      "width": 540,
+      "height": 960,
       "pattern": "/media/pollo-fresa-hero/mobile-vertical/frame-{index}.webp",
-      "bytes": 3469820
+      "bytes": 1640182
     }
   }
 }
