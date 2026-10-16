@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout_index.astro';
 import ScrollVideoHero from '../components/ScrollVideoHero.astro';
 import PolloFresaMenu from '../components/PolloFresaMenu.astro';
 import FresaWingsShowcase from '../components/FresaWingsShowcase.astro';
+import DarkLocation from '../components/DarkLocation.astro';
 import BrandTransition from '../components/BrandTransition.astro';
 import StorefrontHeader from '../components/StorefrontHeader.astro';
 import logo from '../assets/pollo_fresa.webp';
@@ -29,13 +30,31 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
 </nav>}
 <main id="contenido">
 {catalogError ? <section class="catalog-error section-wrap" id="destacados" role="alert"><p class="eyebrow">Menú temporalmente no disponible</p><h2>No pudimos cargar el catálogo.</h2><p>El servicio del catálogo no respondió. Puedes intentarlo de nuevo en unos momentos.</p><a class="catalog-retry" href="/">Intentar de nuevo</a></section> : <div id="menus-integrados"><PolloFresaMenu products={polloProducts} categories={categories.filter((category) => category.brand === 'Pollo Fresa')} promotions={polloPromotions} demo={false} /><FresaWingsShowcase products={wingsProducts} categories={categories.filter((category) => category.brand === 'Fresa Wings')} /></div>}
-<section class="location section-wrap" id="ubicacion"><header class="location-heading"><p class="eyebrow">Encuéntranos</p><h2>Ven por tu <em>antojo.</em></h2></header><div class="location-map-panel"><div class="map-placeholder"><iframe id="location-map" title="Mapa de Pollo Fresa en Irapuato" src="https://www.google.com/maps?q=Av%20Mariano%20J.%20Garc%C3%ADa%201254%2C%20Los%20Alamos%2C%2036568%20Irapuato%2C%20Gto.&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="location-addresses"><a data-location="pollo" href="https://www.google.com/maps/search/?api=1&query=Av%20Mariano%20J.%20Garc%C3%ADa%201254%2C%20Los%20Alamos%2C%2036568%20Irapuato%2C%20Gto." target="_blank" rel="noopener"><span>01</span><div><strong>Pollo Fresa</strong><small>Av. Mariano J. García 1254, Los Álamos</small></div></a><a data-location="wings" href="https://www.google.com/maps/search/?api=1&query=Av%20Independencia%201811%2C%20Miguel%20Hidalgo%2C%2036550%20Irapuato%2C%20Gto." target="_blank" rel="noopener"><span>02</span><div><strong>Fresa Wings</strong><small>Av. Independencia 1811, Miguel Hidalgo</small></div></a></div></div><aside class="location-details"><div class="local-carousel" aria-label="Fotos de los locales"><figure class="local-photo is-active" data-location-photo="pollo"><img src={localPollo.src} alt="Local de Pollo Fresa" /><figcaption>Pollo Fresa</figcaption></figure><figure class="local-photo" data-location-photo="wings"><img src={localFresaWings.src} alt="Local de Fresa Wings" /><figcaption>Fresa Wings</figcaption></figure><div class="carousel-dots" aria-hidden="true"><span class="is-active"></span><span></span></div></div><div class="daily-hours"><p class="eyebrow">Horarios</p><h3>Todos los días</h3><div><p><strong>Pollo Fresa</strong><span>9 AM — 6 PM</span></p><p><strong>Fresa Wings</strong><span>3 PM — 10 PM</span></p></div></div></aside></section>
+<DarkLocation localPollo={localPollo} localFresaWings={localFresaWings} />
 </main><footer id="contacto"><div class="footer-main"><img src={logo.src} alt="Pollo Fresa" /><p>Dos marcas, un solo lugar<br />para comer delicioso.</p><a class="button button-light" href="#pollo-menu">Pedir ahora</a></div><div class="footer-bottom"><span>© 2026 Pollo Fresa</span><nav class="footer-socials" aria-label="Redes sociales"><a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4h-3c-3 0-5 2-5 5v3H6v4h3v6h4v-6h3l1-4h-4V9c0-.7.3-1 1-1Z" /></svg></a><a href="#" aria-label="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4a9 9 0 0 0-14 11L4 20l5-2a9 9 0 0 0 11-14Zm-8 15a7 7 0 0 1-4-1l-3 1 1-3a7 7 0 1 1 6 3Zm4-5c-.2.4-1 .8-1.4.8-.4.1-1 .1-1.6-.2a8 8 0 0 1-3.2-2.8c-.3-.5-.8-1.4-.8-2.1 0-.7.4-1.2.7-1.4.2-.2.5-.2.7-.2h.5c.2 0 .3.1.4.4l.6 1.4c.1.3.1.4-.1.6l-.4.5c-.1.1-.2.2-.1.4.2.4.6 1 1.1 1.4.6.5 1.1.7 1.5.8.2.1.3 0 .4-.1l.5-.6c.2-.2.3-.2.6-.1l1.4.7c.3.1.4.2.2.4Z" /></svg></a><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" class="fill" /></svg></a></nav><span>Hecho para compartir.</span></div></footer>
 </Layout>
 <script>
   import { installFoodMotion } from '../lib/motion/foodMotion';
+  import { showToast } from '../lib/ui/notifications';
 
   installFoodMotion();
+  let cartToastBound = false;
+  const onCartProductAdded = (event: Event) => {
+    const detail = (event as CustomEvent<{ name?: string }>).detail;
+    showToast(detail?.name ? `${detail.name} se agregó a tu pedido.` : 'Producto agregado a tu pedido.');
+  };
+  const bindCartToast = () => {
+    if (cartToastBound) return;
+    document.addEventListener('cart:product-added', onCartProductAdded);
+    cartToastBound = true;
+  };
+  const unbindCartToast = () => {
+    document.removeEventListener('cart:product-added', onCartProductAdded);
+    cartToastBound = false;
+  };
+  bindCartToast();
+  document.addEventListener('astro:page-load', bindCartToast);
+  document.addEventListener('astro:before-swap', unbindCartToast);
 </script>
 <div class="cart-ui" data-cart-ui>
   <button class="cart-fab" type="button" data-cart-toggle aria-controls="cart-drawer" aria-expanded="false">
@@ -105,26 +124,6 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
   if (wingsCard && !wingsCard.querySelector('.promo-wings')) { const promo = document.createElement('div'); promo.className = 'promo-wings'; promo.innerHTML = '<p>Promociones</p><h3>Sube el nivel con<br><em>Fresa Wings.</em></h3><a href="#promociones">Ver promociones</a>'; wingsCard.append(promo); }
   const brandsSection = document.querySelector('.brands');
   if (brandsSection && !brandsSection.querySelector('.combined-video')) { const video = document.createElement('video'); video.className = 'combined-video'; video.src = todoPoderosoSrc; video.autoplay = true; video.muted = true; video.loop = true; video.playsInline = true; video.setAttribute('aria-hidden', 'true'); brandsSection.prepend(video); const powerTitle = document.createElement('div'); powerTitle.className = 'combined-power-title'; powerTitle.innerHTML = '<p>De 3 PM a 6 PM</p><h2>Tienes el poder de <em>pedirlo todo.</em></h2><span>Pollo Fresa y Fresa Wings, juntos en un solo pedido.</span>'; video.insertAdjacentElement('beforebegin', powerTitle); }
-</script>
-<script>
-  const mapUrls = {
-    pollo: 'https://www.google.com/maps?q=Av%20Mariano%20J.%20Garc%C3%ADa%201254%2C%20Los%20Alamos%2C%2036568%20Irapuato%2C%20Gto.&output=embed',
-    wings: 'https://www.google.com/maps?q=Av%20Independencia%201811%2C%20Miguel%20Hidalgo%2C%2036550%20Irapuato%2C%20Gto.&output=embed',
-    combined: 'https://www.google.com/maps?q=Pollo%20Fresa%20Irapuato%20Guanajuato&output=embed',
-  };
-  let carouselIndex = 0;
-  const refreshLocations = () => {
-    const mode = document.body.classList.contains('theme-combined') ? 'combined' : document.body.classList.contains('theme-wings') ? 'wings' : 'pollo';
-    const map = document.querySelector('#location-map');
-    if (map instanceof HTMLIFrameElement && map.getAttribute('src') !== mapUrls[mode]) map.src = mapUrls[mode];
-    document.querySelectorAll('[data-location]').forEach((item) => item.classList.toggle('is-visible', mode === 'combined' || item.getAttribute('data-location') === mode));
-    const photo = mode === 'combined' ? (carouselIndex % 2 === 0 ? 'pollo' : 'wings') : mode;
-    document.querySelectorAll('[data-location-photo]').forEach((item) => item.classList.toggle('is-active', item.getAttribute('data-location-photo') === photo));
-    document.querySelectorAll('.carousel-dots span').forEach((dot, index) => dot.classList.toggle('is-active', index === (photo === 'pollo' ? 0 : 1)));
-  };
-  refreshLocations();
-  new MutationObserver(refreshLocations).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-  setInterval(() => { if (document.body.classList.contains('theme-combined')) carouselIndex += 1; refreshLocations(); }, 4200);
 </script>
 <script define:vars={{ cartProducts: directusProducts }}>
   const CART_KEY = 'pollo-fresa-cart-v1';
@@ -337,6 +336,7 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
     saveCart();
     renderCart();
     setDrawer(true);
+    document.dispatchEvent(new CustomEvent('cart:product-added', { detail: { name: product.name } }));
     return true;
   };
 
@@ -872,4 +872,11 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
 <style is:global>
   [data-cart-ui] .cart-drawer{grid-template-rows:auto auto minmax(0,1fr) auto auto}
   @media(max-width:600px){[data-cart-ui] .cart-drawer{grid-template-rows:auto auto minmax(0,1fr) auto auto}}
+</style>
+<style is:global>
+  .ui-toast{position:fixed;z-index:120;right:max(20px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));width:min(360px,calc(100vw - 32px));padding:15px 18px;border:1px solid #3b302b;border-radius:8px;color:#fff8e9;background:#231b19;box-shadow:0 12px 32px #0003;font:700 .82rem/1.45 var(--body,Arial,sans-serif);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+  .ui-toast::before{display:inline-block;width:8px;height:8px;margin:0 10px 1px 0;border-radius:50%;background:#ffbe0b;content:''}
+  .ui-toast.is-visible{opacity:1;transform:translateY(0)}
+  @media(max-width:600px){.ui-toast{right:16px;bottom:max(16px,env(safe-area-inset-bottom));width:calc(100vw - 32px)}}
+  @media(prefers-reduced-motion:reduce){.ui-toast{transition:none;transform:none}}
 </style>

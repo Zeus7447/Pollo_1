@@ -1,141 +1,92 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import type { Context, TweenVars } from 'gsap';
+import type { Context } from 'gsap';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
 const parallaxQuery = '(min-width: 769px) and (hover: hover) and (prefers-reduced-motion: no-preference)';
 
-function storyReveal(scope: HTMLElement) {
-  scope.querySelectorAll<HTMLElement>('[data-motion-story]').forEach((story) => {
-    const steps = Array.from(story.children).filter(
-      (element): element is HTMLElement => element instanceof HTMLElement && element.hasAttribute('data-motion-step'),
-    );
-    if (!steps.length) return;
-
-    gsap.fromTo(
-      steps,
-      { autoAlpha: 0, y: 28 },
-      {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.72,
-        stagger: 0.085,
-        ease: 'power2.out',
-        immediateRender: false,
-        scrollTrigger: { trigger: story, start: 'top 86%', once: true },
-      },
-    );
-  });
-}
-
-function batchReveal(
-  scope: HTMLElement,
-  selector: string,
-  fromVars: TweenVars,
-  toVars: TweenVars,
-  trackAnimation: (animation: { kill: () => void }) => void,
-) {
-  const targets = Array.from(scope.querySelectorAll<HTMLElement>(selector)).filter((element) => !element.hidden);
-  if (!targets.length) return;
-
-  ScrollTrigger.batch(targets, {
-    start: 'top 88%',
-    once: true,
-    interval: 0.08,
-    batchMax: 8,
-    onEnter: (batch) => {
-      const animation = gsap.fromTo(batch, fromVars, { ...toVars, stagger: { each: 0.055, from: 'start' }, overwrite: 'auto' });
-      trackAnimation(animation);
-    },
-  });
-}
-
-function staggerReveal(scope: HTMLElement) {
-  scope.querySelectorAll<HTMLElement>('[data-motion-stagger]').forEach((group) => {
-    const items = Array.from(group.children).filter(
-      (element): element is HTMLElement => element instanceof HTMLElement && element.hasAttribute('data-motion-item'),
-    );
-    if (!items.length) return;
-
-    gsap.fromTo(
-      items,
-      { autoAlpha: 0, y: 14 },
-      {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.56,
-        stagger: 0.08,
-        ease: 'power2.out',
-        immediateRender: false,
-        scrollTrigger: { trigger: group, start: 'top 88%', once: true },
-      },
-    );
-  });
-}
-
-function photoParallax(scope: HTMLElement) {
-  scope.querySelectorAll<HTMLElement>('[data-motion-parallax]').forEach((image) => {
-    if (image.hidden) return;
-    gsap.fromTo(
-      image,
-      { yPercent: 1.5 },
-      {
-        yPercent: -1.5,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: image.parentElement ?? image,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 0.7,
-        },
-      },
-    );
-  });
-}
-
 function buildScope(scope: HTMLElement) {
-  const batchAnimations: Array<{ kill: () => void }> = [];
   const context: Context = gsap.context(() => {
-    storyReveal(scope);
-    staggerReveal(scope);
-    batchReveal(scope, '[data-motion-text]', { autoAlpha: 0, y: 24 }, {
-      autoAlpha: 1,
-      y: 0,
-      duration: 0.68,
-      ease: 'power2.out',
-      immediateRender: false,
-    }, (animation) => batchAnimations.push(animation));
-    batchReveal(scope, '[data-motion-image]:not([data-motion-parallax])', { autoAlpha: 0.72, y: 12, scale: 1.055 }, {
-      autoAlpha: 1,
-      y: 0,
-      scale: 1,
-      duration: 0.95,
-      ease: 'power2.out',
-      immediateRender: false,
-    }, (animation) => batchAnimations.push(animation));
-    batchReveal(scope, '[data-motion-image][data-motion-parallax]', { autoAlpha: 0.72, y: 12, scale: 1.055 }, {
-      autoAlpha: 1,
-      y: 0,
-      scale: 1.045,
-      duration: 0.95,
-      ease: 'power2.out',
-      immediateRender: false,
-    }, (animation) => batchAnimations.push(animation));
+    scope.querySelectorAll<HTMLElement>('[data-motion="section"]').forEach((section) => {
+      const ownedTargets = (selector: string) => Array.from(section.querySelectorAll<HTMLElement>(selector))
+        .filter((target) => target.closest('[data-motion="section"]') === section);
+      const title = ownedTargets('[data-motion="title"]');
+      const description = ownedTargets('[data-motion="description"]');
+      const images = ownedTargets('[data-motion="image"]');
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          once: true,
+        },
+      });
+
+      if (title.length) {
+        timeline.fromTo(title, { autoAlpha: 0, y: 25 }, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.7,
+          stagger: 0.06,
+          ease: 'power2.out',
+          immediateRender: false,
+        }, 0);
+      }
+
+      if (images.length) {
+        timeline.fromTo(images, { autoAlpha: 0, scale: 1.04 }, {
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.9,
+          stagger: 0.06,
+          ease: 'power2.out',
+          immediateRender: false,
+        }, 0.12);
+      }
+
+      if (description.length) {
+        timeline.fromTo(description, { autoAlpha: 0, y: 12 }, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.48,
+          stagger: 0.04,
+          ease: 'power2.out',
+          immediateRender: false,
+        }, 0.28);
+      }
+    });
   }, scope);
 
+  // The home page hero owns a dynamically re-created pinned ScrollTrigger when
+  // it switches between desktop and mobile frame sequences. Registering extra
+  // scrub triggers while that pin refreshes can leave GSAP's trigger list in an
+  // incomplete state. Keep image parallax for standalone scopes only.
   const parallax = gsap.matchMedia(scope);
-  parallax.add(parallaxQuery, () => photoParallax(scope));
+  if (!document.querySelector('[data-scroll-canvas]')) {
+    parallax.add(parallaxQuery, () => {
+      scope.querySelectorAll<HTMLElement>('[data-motion="parallax"]').forEach((media) => {
+        gsap.fromTo(media, { y: 20 }, {
+          y: -20,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: media,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 0.5,
+          },
+        });
+      });
+    });
+  }
 
   return () => {
-    batchAnimations.forEach((animation) => animation.kill());
     context.revert();
     parallax.revert();
   };
 }
 
-/** Initializes opt-in motion inside marked menu components. Content stays visible until each trigger enters. */
+/** Initializes marked commercial sections and releases all GSAP contexts on route swaps. */
 export function installFoodMotion() {
   let cleanups: Array<() => void> = [];
   let stopped = false;

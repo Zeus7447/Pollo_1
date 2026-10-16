@@ -1,0 +1,291 @@
+---
+type Props = {
+  localPollo: { src: string; width: number; height: number };
+  localFresaWings: { src: string; width: number; height: number };
+};
+
+const { localPollo, localFresaWings } = Astro.props;
+
+// These values are carried over from the existing public location section.
+const locations = [
+  {
+    key: 'pollo',
+    name: 'Pollo Fresa',
+    shortName: 'POLLO FRESA',
+    address: 'Av. Mariano J. García 1254, Los Álamos',
+    mapQuery: 'Av Mariano J. García 1254, Los Alamos, 36568 Irapuato, Gto.',
+    schedule: 'Todos los días · 9 AM — 6 PM',
+    startHour: 9,
+    endHour: 18,
+    photo: localPollo.src,
+    photoAlt: 'Fachada del local de Pollo Fresa en Irapuato',
+    accent: 'pollo',
+  },
+  {
+    key: 'wings',
+    name: 'Fresa Wings',
+    shortName: 'FRESA WINGS',
+    address: 'Av. Independencia 1811, Miguel Hidalgo',
+    mapQuery: 'Av Independencia 1811, Miguel Hidalgo, 36550 Irapuato, Gto.',
+    schedule: 'Todos los días · 3 PM — 10 PM',
+    startHour: 15,
+    endHour: 22,
+    photo: localFresaWings.src,
+    photoAlt: 'Fachada del local de Fresa Wings en Irapuato',
+    accent: 'wings',
+  },
+];
+
+const embedUrl = (query: string) => `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+const directionsUrl = (query: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+const first = locations[0];
+---
+
+<section class="dark-location" id="ubicacion" aria-labelledby="dark-location-title" data-dark-location>
+  <div class="dark-location-inner">
+    <header class="dark-location-heading" data-location-enter>
+      <p class="dark-location-kicker"><span aria-hidden="true"></span> Encuéntranos</p>
+      <h2 id="dark-location-title">El antojo tiene <em>dirección.</em></h2>
+      <p class="dark-location-intro">Dos marcas, dos experiencias. Encuentra tu favorita.</p>
+    </header>
+
+    <div class="dark-location-layout">
+      <div class="dark-location-switcher" role="tablist" aria-label="Selecciona un negocio" data-location-enter>
+        {locations.map((location, index) => <button
+          type="button"
+          role="tab"
+          id={`location-tab-${location.key}`}
+          aria-selected={index === 0 ? 'true' : 'false'}
+          aria-controls="location-details"
+          tabindex={index === 0 ? 0 : -1}
+          class:list={['dark-location-tab', `is-${location.accent}`, index === 0 && 'is-active']}
+          data-location-tab={location.key}
+          data-name={location.name}
+          data-address={location.address}
+          data-map-query={location.mapQuery}
+          data-schedule={location.schedule}
+          data-start-hour={location.startHour}
+          data-end-hour={location.endHour}
+          data-photo={location.photo}
+          data-photo-alt={location.photoAlt}
+        >
+          <span class="dark-location-tab-index">0{index + 1}</span>
+          <span>{location.shortName}</span>
+          <span class="dark-location-tab-indicator" aria-hidden="true">↗</span>
+        </button>)}
+      </div>
+
+      <article class="dark-location-details" id="location-details" role="tabpanel" aria-labelledby="location-tab-pollo" data-location-enter>
+        <p class="dark-location-label">Sucursal seleccionada</p>
+        <h3 data-location-name>{first.name}</h3>
+        <p class="dark-location-address" data-location-address>{first.address}, Irapuato, Guanajuato</p>
+        <div class="dark-location-hours">
+          <span class="dark-location-status-dot" aria-hidden="true" data-location-dot></span>
+          <div>
+            <p class="dark-location-status" aria-live="polite" data-location-status>Consultando horario…</p>
+            <p class="dark-location-schedule" data-location-schedule>{first.schedule}</p>
+          </div>
+        </div>
+      </article>
+
+      <figure class="dark-location-photo" data-location-enter>
+        <img src={first.photo} alt={first.photoAlt} width={localPollo.width} height={localPollo.height} loading="lazy" decoding="async" data-location-photo />
+        <figcaption><span>IRAPUATO, GTO.</span><strong data-location-caption>{first.name}</strong></figcaption>
+      </figure>
+
+      <div class="dark-location-map" data-location-enter>
+        <iframe
+          src={embedUrl(first.mapQuery)}
+          title={`Mapa de ${first.name} en Irapuato`}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen
+          data-location-map
+        ></iframe>
+        <span class="dark-location-map-label"><i aria-hidden="true"></i> Mapa interactivo · Irapuato</span>
+      </div>
+
+      <a class="dark-location-directions is-pollo" href={directionsUrl(first.mapQuery)} target="_blank" rel="noopener noreferrer" data-location-directions data-location-enter>
+        <span>CÓMO LLEGAR</span><b aria-hidden="true">↗</b>
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from 'gsap';
+
+  document.querySelectorAll<HTMLElement>('[data-dark-location]').forEach((section) => {
+    if (section.dataset.locationInitialized === 'true') return;
+    section.dataset.locationInitialized = 'true';
+
+    const tabs = Array.from(section.querySelectorAll<HTMLButtonElement>('[data-location-tab]'));
+    const name = section.querySelector<HTMLElement>('[data-location-name]');
+    const address = section.querySelector<HTMLElement>('[data-location-address]');
+    const status = section.querySelector<HTMLElement>('[data-location-status]');
+    const dot = section.querySelector<HTMLElement>('[data-location-dot]');
+    const schedule = section.querySelector<HTMLElement>('[data-location-schedule]');
+    const photo = section.querySelector<HTMLImageElement>('[data-location-photo]');
+    const caption = section.querySelector<HTMLElement>('[data-location-caption]');
+    const map = section.querySelector<HTMLIFrameElement>('[data-location-map]');
+    const directions = section.querySelector<HTMLAnchorElement>('[data-location-directions]');
+    const panel = section.querySelector<HTMLElement>('#location-details');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let activeTab = tabs.findIndex((tab) => tab.getAttribute('aria-selected') === 'true');
+    let statusTimer = 0;
+    let entranceObserver: IntersectionObserver | undefined;
+
+    const getBusinessTime = () => {
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'America/Mexico_City',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+      }).formatToParts(new Date());
+      return Number(parts.find((part) => part.type === 'hour')?.value ?? 0) * 60
+        + Number(parts.find((part) => part.type === 'minute')?.value ?? 0);
+    };
+
+    const refreshStatus = () => {
+      if (!status || !dot || activeTab < 0) return;
+      const selected = tabs[activeTab];
+      const start = Number(selected.dataset.startHour) * 60;
+      const end = Number(selected.dataset.endHour) * 60;
+      const now = getBusinessTime();
+      const open = now >= start && now < end;
+      const startHour = Number(selected.dataset.startHour);
+      const formattedOpening = `${startHour % 12 || 12}:00 ${startHour >= 12 ? 'PM' : 'AM'}`;
+      status.textContent = open ? 'Abierto ahora' : now < start ? `Cerrado · abre a las ${formattedOpening}` : `Cerrado · abre mañana a las ${formattedOpening}`;
+      status.classList.toggle('is-open', open);
+      dot.classList.toggle('is-open', open);
+    };
+
+    const selectLocation = (nextIndex: number, moveFocus = false) => {
+      const next = tabs[nextIndex];
+      if (!next) return;
+      if (activeTab === nextIndex) {
+        if (moveFocus) next.focus();
+        refreshStatus();
+        return;
+      }
+      activeTab = nextIndex;
+      tabs.forEach((tab, index) => {
+        const selected = index === nextIndex;
+        tab.setAttribute('aria-selected', String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+        tab.classList.toggle('is-active', selected);
+      });
+      if (moveFocus) next.focus();
+
+      if (name) name.textContent = next.dataset.name ?? '';
+      if (address) address.textContent = `${next.dataset.address ?? ''}, Irapuato, Guanajuato`;
+      if (schedule) schedule.textContent = next.dataset.schedule ?? '';
+      if (caption) caption.textContent = next.dataset.name ?? '';
+      if (panel) panel.setAttribute('aria-labelledby', next.id);
+
+      const query = next.dataset.mapQuery ?? '';
+      if (map && query) {
+        map.title = `Mapa de ${next.dataset.name ?? 'la sucursal'} en Irapuato`;
+        map.src = `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+      }
+      if (directions && query) {
+        directions.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+        directions.classList.toggle('is-wings', next.dataset.locationTab === 'wings');
+        directions.classList.toggle('is-pollo', next.dataset.locationTab === 'pollo');
+      }
+      if (photo && next.dataset.photo) {
+        const updatePhoto = () => {
+          photo.src = next.dataset.photo ?? '';
+          photo.alt = next.dataset.photoAlt ?? '';
+          if (!reducedMotion.matches) gsap.fromTo(photo, { autoAlpha: 0.55, scale: 1.015 }, { autoAlpha: 1, scale: 1, duration: 0.28, ease: 'power2.out', overwrite: true });
+        };
+        if (!reducedMotion.matches) gsap.to(photo, { autoAlpha: 0.55, duration: 0.12, onComplete: updatePhoto, overwrite: true });
+        else updatePhoto();
+      }
+      refreshStatus();
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => selectLocation(index));
+      tab.addEventListener('keydown', (event) => {
+        let nextIndex = activeTab;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (activeTab + 1) % tabs.length;
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (activeTab - 1 + tabs.length) % tabs.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = tabs.length - 1;
+        else return;
+        event.preventDefault();
+        selectLocation(nextIndex, true);
+      });
+    });
+
+    const entranceTargets = section.querySelectorAll<HTMLElement>('[data-location-enter]');
+    if (!reducedMotion.matches && 'IntersectionObserver' in window) {
+      entranceObserver = new IntersectionObserver(([entry]) => {
+        if (!entry?.isIntersecting) return;
+        gsap.fromTo(entranceTargets, { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.65, stagger: 0.07, ease: 'power2.out', clearProps: 'opacity,visibility,transform' });
+        entranceObserver?.disconnect();
+      }, { threshold: 0.12 });
+      entranceObserver.observe(section);
+    }
+
+    refreshStatus();
+    statusTimer = window.setInterval(refreshStatus, 60_000);
+    window.addEventListener('pagehide', () => {
+      window.clearInterval(statusTimer);
+      entranceObserver?.disconnect();
+      gsap.killTweensOf(section.querySelectorAll('[data-location-photo], [data-location-enter]'));
+    }, { once: true });
+  });
+</script>
+
+<style>
+  .dark-location{--location-bg:#151211;--location-panel:#211c1a;--location-text:#fff;--location-muted:#bfb6b3;--location-red:#ff5037;--location-yellow:#ffbe0b;--location-line:#423633;position:relative;width:auto;margin-inline:calc(50% - 50vw);overflow:hidden;padding:clamp(58px,7.5vw,112px) clamp(22px,5.2vw,88px);color:var(--location-text);background:var(--location-bg)}
+  .dark-location-inner{width:100%;max-width:1760px;margin:0 auto}
+  .dark-location-heading{margin-bottom:clamp(25px,4vw,48px)}
+  .dark-location-kicker{display:flex;align-items:center;gap:10px;margin:0 0 15px;color:var(--location-muted);font-size:.68rem;font-weight:850;letter-spacing:.2em;text-transform:uppercase}
+  .dark-location-kicker span{width:24px;height:2px;background:var(--location-red)}
+  .dark-location-heading h2{max-width:16ch;color:var(--location-text);font-family:var(--display,Impact,sans-serif);font-size:clamp(2.8rem,6vw,6.2rem);font-weight:950;line-height:.9;letter-spacing:-.055em;text-transform:uppercase}
+  .dark-location-heading h2 em{color:var(--location-red);font-style:normal}
+  .dark-location-intro{margin:16px 0 0;color:var(--location-muted);font-size:clamp(.9rem,1.15vw,1.05rem)}
+  .dark-location-layout{display:grid;grid-template-columns:minmax(300px,.62fr) minmax(0,1fr);grid-template-rows:auto auto minmax(190px,auto) auto;grid-template-areas:"switch map" "details map" "photo map" "directions map";column-gap:clamp(26px,4.5vw,76px);row-gap:23px;align-items:start}
+  .dark-location-switcher{grid-area:switch;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--location-line);border-bottom:1px solid var(--location-line)}
+  .dark-location-tab{display:grid;grid-template-columns:30px minmax(0,1fr) 20px;align-items:center;gap:8px;min-width:0;min-height:70px;padding:10px 12px 10px 0;border:0;color:var(--location-muted);background:transparent;text-align:left;cursor:pointer;transition:color .2s ease,background-color .2s ease}
+  .dark-location-tab+.dark-location-tab{padding-left:14px;border-left:1px solid var(--location-line)}
+  .dark-location-tab span:nth-child(2){font-size:clamp(.72rem,1.1vw,.9rem);font-weight:950;letter-spacing:.025em}
+  .dark-location-tab-index{color:#817571;font-size:.62rem;font-weight:800}
+  .dark-location-tab-indicator{justify-self:end;font-size:1rem;opacity:0;transform:translate(-3px,3px);transition:opacity .2s ease,transform .2s ease}
+  .dark-location-tab.is-pollo.is-active{color:var(--location-yellow)}
+  .dark-location-tab.is-wings.is-active{color:var(--location-red)}
+  .dark-location-tab.is-active .dark-location-tab-indicator{opacity:1;transform:translate(0)}
+  .dark-location-tab:focus-visible,.dark-location-directions:focus-visible{outline:2px solid var(--location-text);outline-offset:4px}
+  .dark-location-details{grid-area:details;padding:7px 0 2px}
+  .dark-location-label{margin:0 0 10px;color:var(--location-muted);font-size:.62rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+  .dark-location-details h3{margin:0;color:var(--location-text);font-family:var(--display,Impact,sans-serif);font-size:clamp(2rem,3.3vw,3.4rem);font-weight:900;line-height:.98;letter-spacing:-.035em}
+  .dark-location-address{max-width:34ch;margin:12px 0 20px;color:var(--location-muted);font-size:.92rem;line-height:1.55}
+  .dark-location-hours{display:flex;align-items:flex-start;gap:11px;padding-top:16px;border-top:1px solid var(--location-line)}
+  .dark-location-status-dot{flex:none;width:9px;height:9px;margin-top:5px;border-radius:50%;background:#8a817d}
+  .dark-location-status-dot.is-open{background:#7cc78a;box-shadow:0 0 0 4px #7cc78a22}
+  .dark-location-status{margin:0 0 5px;color:var(--location-text);font-size:.83rem;font-weight:800}
+  .dark-location-status.is-open{color:#a6dfa9}
+  .dark-location-schedule{margin:0;color:var(--location-muted);font-size:.78rem}
+  .dark-location-photo{position:relative;grid-area:photo;min-height:190px;margin:0;overflow:hidden;background:var(--location-panel)}
+  .dark-location-photo::after{position:absolute;inset:35% 0 0;background:linear-gradient(transparent,#100d0dd9);content:"";pointer-events:none}
+  .dark-location-photo img{display:block;width:100%;height:clamp(190px,17vw,250px);object-fit:cover;object-position:center}
+  .dark-location-photo figcaption{position:absolute;z-index:1;right:16px;bottom:15px;left:16px;display:flex;justify-content:space-between;align-items:end;gap:10px}
+  .dark-location-photo figcaption span{color:#fff9;font-size:.56rem;font-weight:800;letter-spacing:.16em}
+  .dark-location-photo figcaption strong{font-size:.78rem;font-weight:900}
+  .dark-location-map{position:relative;grid-area:map;min-width:0;height:clamp(550px,44vw,700px);overflow:hidden;background:var(--location-panel)}
+  .dark-location-map iframe{display:block;width:100%;height:100%;min-height:550px;border:0;filter:grayscale(.7) contrast(1.05) brightness(.84)}
+  .dark-location-map-label{position:absolute;top:18px;left:18px;display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid #ffffff2c;color:#fff;background:#151211dd;font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;pointer-events:none}
+  .dark-location-map-label i{width:7px;height:7px;border-radius:50%;background:var(--location-red);box-shadow:0 0 0 4px #ff50372b}
+  .dark-location-directions{grid-area:directions;display:flex;justify-content:space-between;align-items:center;min-height:58px;padding:0 18px;color:#151211;background:var(--location-yellow);font-size:.7rem;font-weight:950;letter-spacing:.1em;transition:background-color .2s ease,transform .2s ease}
+  .dark-location-directions.is-wings{color:#fff;background:var(--location-red)}
+  .dark-location-directions:hover{transform:translateY(-2px)}
+  .dark-location-directions b{font-size:1.1rem}
+  @media(min-width:1600px){.dark-location-layout{grid-template-columns:minmax(390px,.62fr) minmax(0,1fr)}.dark-location-map{height:650px}}
+  @media(max-width:900px){.dark-location{padding-inline:clamp(22px,4vw,42px)}.dark-location-layout{grid-template-columns:minmax(270px,.72fr) minmax(0,1fr);column-gap:26px}.dark-location-tab{grid-template-columns:22px minmax(0,1fr) 15px;gap:5px;min-height:64px}.dark-location-tab+.dark-location-tab{padding-left:9px}.dark-location-tab span:nth-child(2){font-size:.67rem}.dark-location-map{height:590px}.dark-location-map iframe{min-height:590px}}
+  @media(max-width:680px){.dark-location{padding:58px 20px 66px}.dark-location-heading{margin-bottom:28px}.dark-location-heading h2{max-width:13ch;font-size:clamp(2.55rem,11vw,4rem);line-height:.92}.dark-location-intro{max-width:33ch;margin-top:12px;font-size:.86rem}.dark-location-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto;grid-template-areas:"switch" "details" "photo" "map" "directions";gap:0}.dark-location-switcher{margin-bottom:23px}.dark-location-tab{grid-template-columns:25px minmax(0,1fr) 20px;min-height:60px;padding-right:8px}.dark-location-tab+.dark-location-tab{padding-left:10px}.dark-location-tab span:nth-child(2){font-size:.73rem}.dark-location-details{padding:0 0 20px}.dark-location-details h3{font-size:2.4rem}.dark-location-address{margin:8px 0 16px;font-size:.86rem}.dark-location-hours{padding-top:13px}.dark-location-photo{min-height:0;margin-bottom:17px}.dark-location-photo img{height:clamp(205px,62vw,290px)}.dark-location-photo figcaption{right:13px;bottom:12px;left:13px}.dark-location-map{height:clamp(360px,105vw,480px)}.dark-location-map iframe{min-height:360px}.dark-location-map-label{top:12px;left:12px;padding:9px 10px;font-size:.55rem}.dark-location-directions{min-height:55px;margin-top:15px}}
+  @media(max-width:380px){.dark-location{padding-inline:16px}.dark-location-tab{grid-template-columns:19px minmax(0,1fr) 15px;gap:5px}.dark-location-tab span:nth-child(2){font-size:.65rem}}
+  @media(prefers-reduced-motion:reduce){.dark-location-tab,.dark-location-tab-indicator,.dark-location-directions{transition:none}.dark-location-directions:hover{transform:none}}
+</style>
