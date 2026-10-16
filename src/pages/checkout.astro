@@ -1,0 +1,452 @@
+---
+import CheckoutLayout from '../layouts/CheckoutLayout.astro';
+import { getCatalog } from '../lib/directus';
+
+const { products, catalogError } = await getCatalog();
+---
+
+<CheckoutLayout title="Finalizar pedido | Pollo Fresa y Fresa Wings">
+  <main class="checkout-page" data-checkout-page data-current-step="2">
+    <header class="checkout-header">
+      <a class="checkout-back" href="/?cart=open#inicio" aria-label="Regresar al carrito">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6 6-6-6 6-6" /></svg>
+        <span>Volver al carrito</span>
+      </a>
+      <a class="checkout-logo" href="/" aria-label="Pollo Fresa, volver al menú"><span>POLLO FRESA <i>×</i> FRESA WINGS</span></a>
+      <span class="checkout-channel">Pedido por WhatsApp</span>
+    </header>
+
+    <div class="checkout-shell">
+      <div class="checkout-intro">
+        <p class="checkout-eyebrow" data-checkout-eyebrow>PASO 2 DE 3 · ENTREGA Y DATOS</p>
+        <h1 data-checkout-title>¿Cómo recibes tu pedido?</h1>
+        <p data-checkout-copy>Elige cómo recibirlo y déjanos tus datos de contacto.</p>
+      </div>
+
+      <ol class="checkout-steps" aria-label="Etapas del pedido">
+        <li class="is-complete" data-step-indicator="1"><span>01</span><b>Carrito</b></li>
+        <li class="is-current" aria-current="step" data-step-indicator="2"><span>02</span><b>Entrega y datos</b></li>
+        <li data-step-indicator="3"><span>03</span><b>Revisión</b></li>
+      </ol>
+
+      <section class="checkout-empty" data-checkout-empty role="status">
+        <p class="checkout-eyebrow">Tu pedido</p>
+        <h2 data-empty-title>Estamos preparando tu resumen…</h2>
+        <p data-empty-copy>El carrito se conserva en este dispositivo.</p>
+        <a href="/#pollo-menu">Volver al menú <span aria-hidden="true">→</span></a>
+      </section>
+
+      <div class="checkout-layout" data-checkout-content hidden>
+        <form class="checkout-form" data-checkout-form>
+          <section class="checkout-panel" data-step-panel="2" aria-labelledby="fulfillment-title">
+            <fieldset class="fulfillment-choice">
+              <legend id="fulfillment-title">Forma de entrega <b>*</b></legend>
+              <div class="fulfillment-options">
+                <label><input type="radio" name="checkout-fulfillment" value="pickup" checked /><span class="fulfillment-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-1.5 10h-15L3 10Zm2-6h14l2 6H3l2-6Zm4 10v3m6-3v3" /></svg><span><b>Recoger en sucursal</b><small>Recoge tu pedido en el local.</small></span><i aria-hidden="true">✓</i></span></label>
+                <label><input type="radio" name="checkout-fulfillment" value="delivery" /><span class="fulfillment-card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v12H3zM14 10h4l3 3v5h-7z" /><circle cx="7.5" cy="18" r="1.5" /><circle cx="17.5" cy="18" r="1.5" /></svg><span><b>Entrega a domicilio</b><small>Cobertura y costo por confirmar.</small></span><i aria-hidden="true">✓</i></span></label>
+              </div>
+            </fieldset>
+
+            <div class="checkout-pickup" data-checkout-pickup>
+              <p class="checkout-label">Sucursal de recogida</p>
+              <div data-pickup-locations></div>
+            </div>
+
+            <label class="checkout-field" data-address-field hidden>
+              <span>Dirección de entrega <b>*</b></span>
+              <textarea name="address" data-address rows="3" maxlength="500" placeholder="Calle, número, colonia y referencias" autocomplete="street-address"></textarea>
+              <small>La cobertura y el costo de envío se confirman con la sucursal.</small>
+            </label>
+
+            <div class="contact-heading"><span>2</span><div><h2>Datos de contacto</h2><p>Para que la sucursal pueda coordinar contigo.</p></div></div>
+            <div class="checkout-field-row">
+              <label class="checkout-field">
+                <span>Nombre <b>*</b></span>
+                <input name="customer-name" data-customer-name type="text" maxlength="120" autocomplete="name" placeholder="Nombre de quien recibe" required />
+              </label>
+              <label class="checkout-field">
+                <span>Teléfono de contacto <b>*</b></span>
+                <input name="customer-phone" data-customer-phone type="tel" maxlength="30" pattern="[0-9+() -]{7,30}" autocomplete="tel" inputmode="tel" placeholder="462 000 0000" title="Usa entre 7 y 30 números, espacios, paréntesis, + o guiones." required />
+              </label>
+            </div>
+
+            <label class="checkout-field">
+              <span>Indicaciones adicionales <small>Opcional</small></span>
+              <textarea name="notes" data-customer-notes rows="3" maxlength="1000" placeholder="Referencias para llegar o detalles de entrega"></textarea>
+            </label>
+
+            <p class="checkout-privacy">Tus datos se usan para preparar este pedido y no se guardan al actualizar la página.</p>
+            <p class="checkout-error" data-checkout-error role="alert" hidden></p>
+            <div class="checkout-actions">
+              <a class="checkout-secondary" href="/?cart=open#inicio">Volver al carrito</a>
+              <button class="checkout-primary" type="submit">Continuar a revisión <span aria-hidden="true">→</span></button>
+            </div>
+          </section>
+
+          <section class="checkout-panel" data-step-panel="3" aria-labelledby="checkout-review-title" hidden>
+            <div class="review-section"><div class="review-section-heading"><h2 id="checkout-review-title" tabindex="-1">Productos</h2><button type="button" data-edit-cart>Editar carrito</button></div><div class="review-products" data-review-products></div></div>
+            <div class="review-section"><h3>Entrega</h3><dl class="review-details" data-review-fulfillment></dl></div>
+            <div class="review-section"><h3>Contacto</h3><dl class="review-details"><div><dt>Nombre</dt><dd data-review-name></dd></div><div><dt>Teléfono</dt><dd data-review-phone></dd></div><div data-review-notes-row hidden><dt>Indicaciones</dt><dd data-review-notes></dd></div></dl></div>
+            <div class="review-payment"><span>Pago</span><b>Efectivo al recibir</b><small>El importe y la disponibilidad se confirman por WhatsApp.</small></div>
+            <div class="checkout-error" data-review-error role="alert" hidden></div>
+            <div class="checkout-actions checkout-review-actions">
+              <button class="checkout-secondary" type="button" data-edit-details>Editar datos</button>
+              <a class="checkout-primary checkout-whatsapp" data-whatsapp-link href="#" target="_blank" rel="noopener noreferrer">Enviar pedido por WhatsApp <span aria-hidden="true">↗</span></a>
+            </div>
+          </section>
+        </form>
+
+        <aside class="checkout-summary" aria-labelledby="checkout-summary-title">
+          <div class="summary-heading"><p>Tu pedido</p><h2 id="checkout-summary-title">Resumen</h2></div>
+          <div class="summary-products" data-summary-products></div>
+          <div class="summary-hours" data-summary-hours></div>
+          <dl class="summary-totals">
+            <div><dt>Subtotal de productos</dt><dd data-summary-subtotal>$0.00</dd></div>
+            <div data-summary-delivery-row hidden><dt>Envío</dt><dd>Por confirmar</dd></div>
+            <div class="summary-grand-total"><dt data-summary-total-label>Total</dt><dd data-summary-total>$0.00</dd></div>
+          </dl>
+          <p class="summary-note" data-summary-note>Los precios y la disponibilidad se vuelven a confirmar por WhatsApp.</p>
+        </aside>
+      </div>
+    </div>
+  </main>
+</CheckoutLayout>
+
+<script define:vars={{ checkoutProducts: products, catalogUnavailable: catalogError }}>
+  const CART_KEY = 'pollo-fresa-cart-v1';
+  const WHATSAPP_NUMBER = '524463869132';
+  const schedules = { pollo: { label: 'Pollo Fresa', start: 9, end: 18 }, wings: { label: 'Fresa Wings', start: 15, end: 22 } };
+  const branchNames = {
+    pollo: 'Pollo Fresa · Av. Mariano J. García 1254, Los Álamos',
+    wings: 'Fresa Wings · Av. Independencia 1811, Miguel Hidalgo',
+  };
+  const page = document.querySelector('[data-checkout-page]');
+  const content = page?.querySelector('[data-checkout-content]');
+  const emptyState = page?.querySelector('[data-checkout-empty]');
+  const form = page?.querySelector('[data-checkout-form]');
+  const address = page?.querySelector('[data-address]');
+  const addressField = page?.querySelector('[data-address-field]');
+  const pickup = page?.querySelector('[data-checkout-pickup]');
+  const draftKey = 'pollo-fresa-checkout-draft-v1';
+  try {
+    const draft = JSON.parse(sessionStorage.getItem(draftKey) || 'null');
+    if (draft && typeof draft === 'object') {
+      const nameField = page?.querySelector('[data-customer-name]');
+      const phoneField = page?.querySelector('[data-customer-phone]');
+      const notesField = page?.querySelector('[data-customer-notes]');
+      if (nameField instanceof HTMLInputElement) nameField.value = String(draft.name || '');
+      if (phoneField instanceof HTMLInputElement) phoneField.value = String(draft.phone || '');
+      if (notesField instanceof HTMLTextAreaElement) notesField.value = String(draft.notes || '');
+      if (address instanceof HTMLTextAreaElement) address.value = String(draft.address || '');
+      if (draft.fulfillment === 'delivery') {
+        const deliveryRadio = form?.querySelector('input[name="checkout-fulfillment"][value="delivery"]');
+        if (deliveryRadio instanceof HTMLInputElement) deliveryRadio.checked = true;
+      }
+    }
+    sessionStorage.removeItem(draftKey);
+  } catch {}
+  const hydratedProducts = Array.isArray(checkoutProducts) ? checkoutProducts : [];
+  const getProduct = (id) => hydratedProducts.find((product) => String(product.id) === String(id));
+  const getBrandKey = (product) => product?.brand === 'Fresa Wings' ? 'wings' : 'pollo';
+  const getOptionGroups = (product) => Array.isArray(product?.optionGroups) ? product.optionGroups : [];
+  const priceNumber = (price) => Number(String(price).replace(/[^0-9.]/g, '')) || 0;
+  const money = (price) => `$${Number(price).toFixed(2)}`;
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+  const getHour = () => Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/Mexico_City', hour: '2-digit', hourCycle: 'h23' }).format(new Date()));
+  const isOpen = (brand) => { const schedule = schedules[brand] ?? schedules.pollo; const hour = getHour(); return hour >= schedule.start && hour < schedule.end; };
+  const nextOpening = (brand) => { const schedule = schedules[brand] ?? schedules.pollo; const hour = getHour(); return hour < schedule.start ? `Abre a las ${schedule.start > 12 ? schedule.start - 12 : schedule.start} ${schedule.start >= 12 ? 'PM' : 'AM'}` : 'Abre mañana'; };
+  const selectionKey = (selections = []) => selections.map((selection) => `${selection.groupId}:${selection.optionId}`).sort().join('|');
+  const getLineOptions = (product, item) => (item.selectedOptions ?? []).map((selection) => {
+    const group = getOptionGroups(product).find((candidate) => Number(candidate.id) === Number(selection.groupId));
+    const option = group?.options?.find((candidate) => Number(candidate.id) === Number(selection.optionId));
+    return group && option ? { group, option } : null;
+  }).filter(Boolean);
+  const lineUnitPrice = (product, item) => priceNumber(product.price) + getLineOptions(product, item).reduce((total, selection) => total + Number(selection.option.priceDelta || 0), 0);
+  const getOptionError = (product, selections = []) => {
+    for (const selection of selections) {
+      const group = getOptionGroups(product).find((candidate) => Number(candidate.id) === Number(selection.groupId));
+      if (!group || !group.options.some((option) => Number(option.id) === Number(selection.optionId))) return `${product.name} tiene opciones que ya no están disponibles. Regresa al carrito para corregirlas.`;
+    }
+    for (const group of getOptionGroups(product)) {
+      const selectedCount = selections.filter((selection) => Number(selection.groupId) === Number(group.id)).length;
+      const minimum = Math.max(group.required ? 1 : 0, Number(group.minSelect) || 0);
+      const maximum = Number(group.maxSelect) > 0 ? Number(group.maxSelect) : Infinity;
+      if (selectedCount < minimum || selectedCount > maximum) return `Revisa las opciones de ${product.name}: ${group.name}.`;
+    }
+    return '';
+  };
+  const readCart = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+      return Array.isArray(saved) ? saved.filter((item) => item && Number.isInteger(item.quantity) && item.quantity > 0).map((item) => ({ id: item.id, quantity: item.quantity, selectedOptions: Array.isArray(item.selectedOptions) ? item.selectedOptions.filter((selection) => Number.isInteger(selection?.groupId) && Number.isInteger(selection?.optionId)) : [] })) : [];
+    } catch { return []; }
+  };
+  let cart = readCart();
+  let hydratedItems = [];
+  let subtotal = 0;
+  let cartIsValid = false;
+  let currentStep = 2;
+  const showError = (message = '') => {
+    const error = page?.querySelector('[data-checkout-error]');
+    if (error) { error.textContent = message; error.hidden = !message; }
+  };
+  const updateFulfillment = () => {
+    const type = form?.querySelector('input[name="checkout-fulfillment"]:checked')?.value ?? 'pickup';
+    const isDelivery = type === 'delivery';
+    if (addressField) addressField.hidden = !isDelivery;
+    if (pickup) pickup.hidden = isDelivery;
+    if (address instanceof HTMLTextAreaElement) address.required = isDelivery;
+    const deliveryRow = page?.querySelector('[data-summary-delivery-row]');
+    if (deliveryRow) deliveryRow.hidden = !isDelivery;
+    const totalLabel = page?.querySelector('[data-summary-total-label]');
+    const totalValue = page?.querySelector('[data-summary-total]');
+    const note = page?.querySelector('[data-summary-note]');
+    if (totalLabel) totalLabel.textContent = isDelivery ? 'Total antes del envío' : 'Total';
+    if (totalValue) totalValue.textContent = isDelivery ? `${money(subtotal)} + envío por confirmar` : money(subtotal);
+    if (note) note.textContent = isDelivery ? 'La sucursal confirma cobertura y total final antes de que realices el pago.' : 'Los precios y la disponibilidad se confirman por WhatsApp.';
+  };
+  const renderProductList = (items) => items.map((item) => {
+    const { product, quantity } = item;
+    const options = getLineOptions(product, item).map(({ group, option }) => `${group.name}: ${option.name}`);
+    const brand = schedules[getBrandKey(product)].label;
+    const image = product.image ? `<img src="${escapeHtml(product.image)}" alt="" loading="lazy" />` : '<span class="summary-product-placeholder" aria-hidden="true"></span>';
+    return `<article class="summary-product">${image}<div><small>${escapeHtml(brand)}</small><h3>${escapeHtml(product.name)}</h3>${options.length ? `<p>${options.map(escapeHtml).join(' · ')}</p>` : ''}<span>${quantity} × ${money(lineUnitPrice(product, item))}</span></div><b>${money(lineUnitPrice(product, item) * quantity)}</b></article>`;
+  }).join('');
+  const render = () => {
+    cart = readCart();
+    hydratedItems = cart.map((item) => ({ ...item, product: getProduct(item.id) })).filter((item) => item.product);
+    const unknownItems = hydratedItems.length !== cart.length;
+    const optionError = hydratedItems.map((item) => getOptionError(item.product, item.selectedOptions)).find(Boolean);
+    cartIsValid = !catalogUnavailable && cart.length > 0 && !unknownItems && !optionError;
+    subtotal = hydratedItems.reduce((total, item) => total + lineUnitPrice(item.product, item) * item.quantity, 0);
+
+    if (catalogUnavailable || cart.length === 0 || unknownItems) {
+      if (content) content.hidden = true;
+      if (emptyState) emptyState.hidden = false;
+      const title = emptyState?.querySelector('[data-empty-title]');
+      const copy = emptyState?.querySelector('[data-empty-copy]');
+      if (title) title.textContent = catalogUnavailable ? 'No pudimos cargar el menú.' : cart.length === 0 ? 'Tu carrito está vacío.' : 'Hay un producto que ya no está disponible.';
+      if (copy) copy.textContent = catalogUnavailable ? 'Vuelve al menú e inténtalo de nuevo en unos minutos.' : cart.length === 0 ? 'Agrega tus favoritos y vuelve para continuar.' : 'Regresa al carrito para revisar los productos disponibles.';
+      return;
+    }
+
+    if (emptyState) emptyState.hidden = true;
+    if (content) content.hidden = false;
+    const summaryProducts = page?.querySelector('[data-summary-products]');
+    const reviewProducts = page?.querySelector('[data-review-products]');
+    if (summaryProducts) summaryProducts.innerHTML = renderProductList(hydratedItems);
+    if (reviewProducts) reviewProducts.innerHTML = renderProductList(hydratedItems);
+    const brands = [...new Set(hydratedItems.map((item) => getBrandKey(item.product)))];
+    const locations = page?.querySelector('[data-pickup-locations]');
+    if (locations) locations.innerHTML = brands.map((brand) => `<p>${escapeHtml(branchNames[brand])}</p>`).join('');
+    const hours = page?.querySelector('[data-summary-hours]');
+    if (hours) hours.innerHTML = brands.map((brand) => `<p class="${isOpen(brand) ? 'is-open' : ''}"><span></span><b>${schedules[brand].label}</b><small>${isOpen(brand) ? 'Disponible ahora' : nextOpening(brand)}</small></p>`).join('');
+    const subtotalElement = page?.querySelector('[data-summary-subtotal]');
+    if (subtotalElement) subtotalElement.textContent = money(subtotal);
+    if (optionError) showError(optionError);
+    else showError('');
+    updateFulfillment();
+    if (currentStep === 3) renderReview();
+  };
+  const setStep = (step) => {
+    if (step === 3 && (!cartIsValid || !form?.reportValidity())) return;
+    currentStep = step;
+    page?.setAttribute('data-current-step', String(step));
+    const eyebrow = page?.querySelector('[data-checkout-eyebrow]');
+    const title = page?.querySelector('[data-checkout-title]');
+    const copy = page?.querySelector('[data-checkout-copy]');
+    if (eyebrow) eyebrow.textContent = step === 2 ? 'PASO 2 DE 3 · ENTREGA Y DATOS' : 'PASO 3 DE 3 · REVISIÓN FINAL';
+    if (title) title.textContent = step === 2 ? '¿Cómo recibes tu pedido?' : 'Revisa y confirma.';
+    if (copy) copy.textContent = step === 2 ? 'Elige cómo recibirlo y déjanos tus datos de contacto.' : 'Comprueba los productos y los datos antes de continuar por WhatsApp.';
+    page?.querySelectorAll('[data-step-panel]').forEach((panel) => { panel.hidden = panel.getAttribute('data-step-panel') !== String(step); });
+    page?.querySelectorAll('[data-step-indicator]').forEach((indicator) => {
+      const number = Number(indicator.getAttribute('data-step-indicator'));
+      indicator.classList.toggle('is-complete', number < step);
+      indicator.classList.toggle('is-current', number === step);
+      if (number === step) indicator.setAttribute('aria-current', 'step');
+      else indicator.removeAttribute('aria-current');
+    });
+    if (step === 3) renderReview();
+    requestAnimationFrame(() => {
+      const heading = step === 2 ? page?.querySelector('[data-checkout-title]') : page?.querySelector('[data-step-panel="3"] h2');
+      heading?.focus();
+      window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+  };
+  const renderReview = () => {
+    const fulfillmentType = form?.querySelector('input[name="checkout-fulfillment"]:checked')?.value ?? 'pickup';
+    const name = page?.querySelector('[data-customer-name]')?.value.trim() ?? '';
+    const phone = page?.querySelector('[data-customer-phone]')?.value.trim() ?? '';
+    const notes = page?.querySelector('[data-customer-notes]')?.value.trim() ?? '';
+    const deliveryAddress = address instanceof HTMLTextAreaElement ? address.value.trim() : '';
+    const isDelivery = fulfillmentType === 'delivery';
+    const brands = [...new Set(hydratedItems.map((item) => getBrandKey(item.product)))];
+    const fulfillment = page?.querySelector('[data-review-fulfillment]');
+    if (fulfillment) {
+      const details = isDelivery
+        ? [['Modalidad', 'A domicilio'], ['Dirección', deliveryAddress], ['Envío', 'Costo y cobertura por confirmar']]
+        : [['Modalidad', 'Recoger en sucursal'], ...brands.map((brand) => ['Sucursal', branchNames[brand]])];
+      fulfillment.innerHTML = details.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join('');
+    }
+    const reviewName = page?.querySelector('[data-review-name]');
+    const reviewPhone = page?.querySelector('[data-review-phone]');
+    const reviewNotes = page?.querySelector('[data-review-notes]');
+    const notesRow = page?.querySelector('[data-review-notes-row]');
+    if (reviewName) reviewName.textContent = name;
+    if (reviewPhone) reviewPhone.textContent = phone;
+    if (reviewNotes) reviewNotes.textContent = notes;
+    if (notesRow) notesRow.hidden = !notes;
+    const lines = hydratedItems.map((item) => {
+      const product = item.product;
+      const selections = getLineOptions(product, item).map(({ group, option }) => `${group.name}: ${option.name}`);
+      return `- ${item.quantity} x ${product.name} (${schedules[getBrandKey(product)].label}) - ${money(lineUnitPrice(product, item) * item.quantity)}${selections.length ? `\n   ${selections.join(', ')}` : ''}`;
+    });
+    const deliveryLines = isDelivery
+      ? ['*Modalidad:* A domicilio', `*Dirección:* ${deliveryAddress}`, '*Envío:* Costo por confirmar por la sucursal', `*Subtotal de productos:* ${money(subtotal)}`, '*Total final:* Por confirmar con el costo de envío']
+      : ['*Modalidad:* Recoger en sucursal', ...brands.map((brand) => `*Sucursal:* ${branchNames[brand]}`), `*Total:* ${money(subtotal)}`];
+    const message = ['Hola, quiero hacer este pedido:', '', ...lines, '', ...deliveryLines, '*Pago:* Efectivo', `*Cliente:* ${name}`, `*Teléfono:* ${phone}`, ...(notes ? [`*Notas:* ${notes}`] : []), '', '¿Me ayudan a confirmar disponibilidad, cobertura y total final antes del pago?'].join('\n');
+    const link = page?.querySelector('[data-whatsapp-link]');
+    if (link instanceof HTMLAnchorElement) {
+      if (cartIsValid) link.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+      else link.removeAttribute('href');
+    }
+    const error = page?.querySelector('[data-review-error]');
+    if (error) { error.textContent = cartIsValid ? '' : 'El carrito cambió o requiere ajustes. Regresa al carrito antes de enviar.'; error.hidden = cartIsValid; }
+    if (link instanceof HTMLAnchorElement) link.setAttribute('aria-disabled', String(!cartIsValid));
+  };
+
+  form?.addEventListener('change', (event) => {
+    if (event.target instanceof HTMLInputElement && event.target.name === 'checkout-fulfillment') updateFulfillment();
+  });
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!cartIsValid) { showError('Regresa al carrito para corregir los productos antes de continuar.'); return; }
+    if (!form.reportValidity()) return;
+    showError();
+    setStep(3);
+  });
+  page?.querySelector('[data-edit-details]')?.addEventListener('click', () => setStep(2));
+  page?.querySelector('[data-edit-cart]')?.addEventListener('click', () => {
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify({
+        fulfillment: form?.querySelector('input[name="checkout-fulfillment"]:checked')?.value ?? 'pickup',
+        name: page?.querySelector('[data-customer-name]')?.value ?? '',
+        phone: page?.querySelector('[data-customer-phone]')?.value ?? '',
+        notes: page?.querySelector('[data-customer-notes]')?.value ?? '',
+        address: address instanceof HTMLTextAreaElement ? address.value : '',
+      }));
+    } catch { /* Continue to cart if this browser blocks session storage. */ }
+    window.location.assign('/?cart=open#inicio');
+  });
+  page?.querySelector('[data-whatsapp-link]')?.addEventListener('click', (event) => {
+    if (!cartIsValid) { event.preventDefault(); const error = page.querySelector('[data-review-error]'); if (error) { error.textContent = 'El carrito cambió. Regresa al menú y revisa los productos antes de enviar.'; error.hidden = false; } }
+  });
+  window.addEventListener('storage', (event) => { if (event.key === CART_KEY) render(); });
+  render();
+</script>
+
+<style is:global>
+  html,body.checkout-body{min-height:100%;background:#fff;color:#151515}
+  .checkout-page{--checkout-ink:#151515;--checkout-muted:#777;--checkout-line:#eaeaea;--checkout-red:#e73a2b;min-height:100dvh;background:#fff;color:var(--checkout-ink);font-family:var(--body,Arial,sans-serif)}
+  .checkout-header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:78px;padding:0 clamp(20px,5vw,76px);border-bottom:1px solid var(--checkout-line)}
+  .checkout-back{display:inline-flex;width:max-content;min-height:44px;align-items:center;gap:9px;color:#454545;font-size:.76rem;font-weight:700;text-decoration:none}.checkout-back svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.checkout-logo{color:#151515;font-size:.73rem;font-weight:950;letter-spacing:.11em;text-decoration:none}.checkout-logo i{padding-inline:5px;color:var(--checkout-red);font-style:normal}.checkout-channel{justify-self:end;color:#777;font-size:.68rem;font-weight:700;letter-spacing:.04em}
+  .checkout-shell{width:min(1180px,calc(100% - 48px));margin:0 auto;padding:54px 0 90px}.checkout-intro{max-width:760px}.checkout-eyebrow{margin:0 0 12px;color:var(--checkout-red);font-size:.65rem;font-weight:900;letter-spacing:.17em;text-transform:uppercase}.checkout-intro h1{color:var(--checkout-ink);font:850 clamp(2.5rem,5vw,4.5rem)/.94 var(--body,Arial,sans-serif);letter-spacing:-.055em}.checkout-intro h1 em{color:var(--checkout-red);font-style:normal}.checkout-intro>p:last-child{margin:16px 0 0;color:#666;font-size:.9rem;line-height:1.55}
+  .checkout-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:40px 0 34px;padding:0;border-bottom:1px solid var(--checkout-line);list-style:none}.checkout-steps li{display:flex;min-height:56px;align-items:center;gap:11px;border-bottom:2px solid transparent;color:#898989}.checkout-steps li span{display:grid;width:28px;height:28px;place-items:center;border:1px solid #d4d4d4;border-radius:50%;font-size:.64rem;font-weight:800}.checkout-steps li b{font-size:.75rem}.checkout-steps li.is-complete,.checkout-steps li.is-current{color:#151515}.checkout-steps li.is-complete span{border-color:#151515;color:#fff;background:#151515}.checkout-steps li.is-current{border-color:var(--checkout-red)}.checkout-steps li.is-current span{border-color:var(--checkout-red);color:#fff;background:var(--checkout-red)}
+  .checkout-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,370px);align-items:start;gap:clamp(36px,6vw,82px)}.checkout-layout[hidden],.checkout-empty[hidden]{display:none}.checkout-form{min-width:0}.checkout-panel[hidden]{display:none}.checkout-panel-heading{display:flex;align-items:center;gap:14px;margin-bottom:27px}.checkout-panel-heading>span{display:grid;width:38px;height:38px;place-items:center;border-radius:50%;color:#fff;background:#151515;font-size:.72rem;font-weight:800}.checkout-panel-heading p{margin:0 0 3px;color:#777;font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.checkout-panel-heading h2{margin:0;color:#151515;font:750 clamp(1.45rem,2.6vw,2rem)/1.1 var(--body,Arial,sans-serif);letter-spacing:-.035em}.checkout-panel-heading h2:focus{outline:0}
+  .fulfillment-choice{margin:0 0 22px;padding:0;border:0}.fulfillment-choice legend,.checkout-label,.checkout-field>span{display:block;margin-bottom:9px;color:#292929;font-size:.74rem;font-weight:800}.fulfillment-choice legend b,.checkout-field>span b{color:var(--checkout-red)}.fulfillment-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fulfillment-options label{position:relative;display:block;cursor:pointer}.fulfillment-options input{position:absolute;width:1px;height:1px;opacity:0}.fulfillment-options label>span{display:grid;min-height:82px;align-content:center;gap:6px;padding:14px 15px;border:1px solid #dedede;border-radius:9px;background:#fff;transition:border-color .16s,background .16s}.fulfillment-options input:checked+span{border-color:#151515;box-shadow:inset 3px 0 var(--checkout-red)}.fulfillment-options input:focus-visible+span{outline:3px solid #e73a2b;outline-offset:2px}.fulfillment-options b{font-size:.78rem}.fulfillment-options small{color:#777;font-size:.65rem;line-height:1.4}
+  .checkout-pickup{margin:0 0 22px}.checkout-pickup[hidden]{display:none}.checkout-pickup p:not(.checkout-label){margin:0;padding:12px 0;border-bottom:1px solid var(--checkout-line);color:#454545;font-size:.75rem}.checkout-pickup p:not(.checkout-label):first-child{border-top:1px solid var(--checkout-line)}.checkout-field{display:block;min-width:0;margin:0 0 18px}.checkout-field[hidden]{display:none}.checkout-field input,.checkout-field textarea{display:block;width:100%;min-height:48px;padding:12px 13px;border:1px solid #dcdcdc;border-radius:7px;color:#151515;background:#fff;font:inherit;font-size:.82rem;outline:none;resize:vertical}.checkout-field textarea{min-height:92px}.checkout-field input:focus,.checkout-field textarea:focus{border-color:#151515;box-shadow:0 0 0 3px #15151512}.checkout-field input:invalid:not(:placeholder-shown){border-color:var(--checkout-red)}.checkout-field>small{display:block;margin-top:7px;color:#777;font-size:.65rem;line-height:1.45}.checkout-field>span small{margin-left:5px;color:#777;font-size:.66rem;font-weight:500}.checkout-field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.checkout-field-row .checkout-field{margin-bottom:17px}.checkout-privacy{margin:2px 0 18px;color:#777;font-size:.67rem;line-height:1.45}.checkout-error{margin:0 0 16px;padding:12px 13px;border:1px solid #f1beb8;border-radius:7px;color:#9a2419;background:#fff6f5;font-size:.74rem;line-height:1.45}.checkout-error[hidden]{display:none}
+  .checkout-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:25px;padding-top:18px;border-top:1px solid var(--checkout-line)}.checkout-primary,.checkout-secondary{display:inline-flex;min-height:50px;align-items:center;justify-content:center;gap:18px;padding:0 17px;border:1px solid #151515;border-radius:6px;color:#fff;background:#151515;font:800 .76rem var(--body,Arial,sans-serif);text-decoration:none;cursor:pointer;transition:background .16s,border-color .16s,transform .16s}.checkout-primary:hover{border-color:#333;background:#333}.checkout-primary span{font-size:1rem}.checkout-secondary{border-color:#ddd;color:#333;background:#fff}.checkout-secondary:hover{border-color:#151515}.checkout-primary:focus-visible,.checkout-secondary:focus-visible,.checkout-back:focus-visible,.checkout-empty a:focus-visible{outline:3px solid #e73a2b;outline-offset:3px}.checkout-whatsapp{border-color:var(--checkout-red);background:var(--checkout-red)}.checkout-whatsapp:hover{border-color:#c72d21;background:#c72d21}
+  .checkout-summary{position:sticky;top:22px;padding:22px;border:1px solid var(--checkout-line);border-radius:9px;background:#fff}.summary-heading{padding-bottom:15px;border-bottom:1px solid var(--checkout-line)}.summary-heading p{margin:0 0 5px;color:var(--checkout-red);font-size:.61rem;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.summary-heading h2{margin:0;font:750 1.2rem var(--body,Arial,sans-serif)}.summary-products{display:grid;max-height:320px;overflow:auto;overscroll-behavior:contain}.summary-product{display:grid;grid-template-columns:54px minmax(0,1fr) auto;align-items:start;gap:10px;padding:14px 0;border-bottom:1px solid var(--checkout-line)}.summary-product img,.summary-product-placeholder{display:block;width:54px;height:54px;border-radius:6px;object-fit:cover;background:#f2f2f2}.summary-product>div{min-width:0}.summary-product small{color:#777;font-size:.57rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}.summary-product h3{margin:3px 0;color:#151515;font:750 .74rem/1.25 var(--body,Arial,sans-serif);letter-spacing:0}.summary-product p{margin:4px 0;color:#777;font-size:.62rem;line-height:1.4}.summary-product span{color:#555;font-size:.63rem}.summary-product>b{padding-top:17px;color:#151515;font-size:.68rem;white-space:nowrap}.summary-hours{display:grid;gap:8px;padding:13px 0;border-bottom:1px solid var(--checkout-line)}.summary-hours p{display:grid;grid-template-columns:8px 1fr auto;align-items:center;gap:7px;margin:0}.summary-hours span{width:7px;height:7px;border-radius:50%;background:#aaa}.summary-hours p.is-open span{background:#36864b}.summary-hours b{font-size:.64rem}.summary-hours small{color:#777;font-size:.58rem}.summary-totals{display:grid;gap:11px;margin:15px 0 0}.summary-totals>div{display:flex;justify-content:space-between;gap:12px}.summary-totals dt{color:#666;font-size:.68rem}.summary-totals dd{margin:0;color:#151515;font-size:.7rem;font-weight:750;text-align:right}.summary-grand-total{padding-top:12px;border-top:1px solid var(--checkout-line)}.summary-grand-total dt,.summary-grand-total dd{color:#151515;font-size:.82rem;font-weight:850}.summary-note{margin:13px 0 0;color:#777;font-size:.62rem;line-height:1.45}
+  .review-section{margin:0 0 22px}.review-section h3{margin:0 0 10px;padding-bottom:9px;border-bottom:1px solid var(--checkout-line);color:#151515;font:800 .8rem var(--body,Arial,sans-serif);letter-spacing:0}.review-products{display:grid}.review-products .summary-product:first-child{padding-top:8px}.review-details{display:grid;gap:10px;margin:0}.review-details>div{display:grid;grid-template-columns:115px minmax(0,1fr);gap:12px}.review-details dt{color:#777;font-size:.7rem}.review-details dd{margin:0;color:#151515;font-size:.72rem;font-weight:650;overflow-wrap:anywhere}.review-payment{display:grid;grid-template-columns:1fr auto;gap:5px 12px;margin:0 0 18px;padding:14px;border-radius:7px;background:#f6f6f6}.review-payment span{color:#666;font-size:.7rem}.review-payment b{font-size:.72rem}.review-payment small{grid-column:1/-1;color:#777;font-size:.63rem}.checkout-review-actions{flex-wrap:wrap}.checkout-review-actions>*{flex:1}.checkout-empty{width:min(100%,600px);margin:40px auto;padding:36px 30px;border:1px solid var(--checkout-line);text-align:center}.checkout-empty h2{margin:0;color:#151515;font:750 1.55rem var(--body,Arial,sans-serif)}.checkout-empty>p:not(.checkout-eyebrow){color:#777;font-size:.85rem;line-height:1.5}.checkout-empty a{display:inline-flex;min-height:46px;align-items:center;gap:18px;margin-top:10px;padding:0 16px;color:#fff;background:#151515;font-size:.76rem;font-weight:800;text-decoration:none}
+  @media(max-width:850px){.checkout-header{padding-inline:24px}.checkout-shell{width:min(100% - 40px,700px);padding-top:42px}.checkout-layout{grid-template-columns:1fr;gap:28px}.checkout-summary{position:static;grid-row:1}.checkout-summary .summary-products{max-height:240px}.checkout-summary{padding:18px}}
+  @media(max-width:560px){.checkout-header{grid-template-columns:1fr auto;min-height:66px;padding-inline:17px}.checkout-back{gap:6px;font-size:.68rem}.checkout-logo{justify-self:end;font-size:.6rem}.checkout-channel{display:none}.checkout-shell{width:calc(100% - 34px);padding:34px 0 calc(44px + env(safe-area-inset-bottom))}.checkout-intro h1{font-size:clamp(2.2rem,10vw,3.15rem)}.checkout-intro>p:last-child{font-size:.82rem}.checkout-steps{margin:28px 0 24px}.checkout-steps li{min-height:51px;gap:7px}.checkout-steps li span{width:25px;height:25px;font-size:.58rem}.checkout-steps li b{font-size:.61rem}.checkout-panel-heading{align-items:flex-start;gap:11px;margin-bottom:22px}.checkout-panel-heading>span{width:32px;height:32px;flex:none;font-size:.65rem}.checkout-panel-heading h2{font-size:1.35rem}.fulfillment-options{grid-template-columns:1fr}.fulfillment-options label>span{min-height:67px}.checkout-field-row{grid-template-columns:1fr;gap:0}.checkout-field-row .checkout-field{margin-bottom:16px}.checkout-actions{align-items:stretch;flex-direction:column-reverse}.checkout-actions>*{width:100%;min-height:52px}.checkout-review-actions{flex-direction:column}.summary-product{grid-template-columns:48px minmax(0,1fr) auto;gap:8px}.summary-product img{width:48px;height:48px}.summary-hours p{grid-template-columns:8px 1fr}.summary-hours small{grid-column:2}.review-details>div{grid-template-columns:92px minmax(0,1fr);gap:8px}.checkout-empty{margin:26px auto;padding:28px 19px}}
+  @media(prefers-reduced-motion:reduce){.checkout-primary,.checkout-secondary,.checkout-back{transition:none}.checkout-page{scroll-behavior:auto}}
+</style>
+
+<style is:global>
+  .checkout-page .checkout-header{min-height:66px;border-bottom-color:#e6e6e6}
+  .checkout-page .checkout-shell{width:min(1120px,calc(100% - 56px));padding:34px 0 64px}
+  .checkout-page .checkout-intro{max-width:660px}
+  .checkout-page .checkout-eyebrow{margin-bottom:8px;color:#c93225;font-size:.62rem;letter-spacing:.12em}
+  .checkout-page .checkout-intro h1{margin:0;color:#151515;font-size:clamp(1.85rem,3.2vw,2.65rem);font-weight:800;line-height:1.08;letter-spacing:-.04em}
+  .checkout-page .checkout-intro h1 em{color:inherit}
+  .checkout-page .checkout-intro>p:last-child{margin-top:8px;color:#6b6b6b;font-size:.82rem}
+  .checkout-page .checkout-steps{margin:23px 0 28px}
+  .checkout-page .checkout-steps li{min-height:46px}
+  .checkout-page .checkout-layout{grid-template-columns:minmax(0,1fr) minmax(270px,330px);gap:clamp(28px,5vw,64px)}
+  .checkout-page .checkout-summary{padding:18px;border-color:#e6e6e6;border-radius:8px}
+  .checkout-page .summary-heading{padding-bottom:12px}
+  .checkout-page .summary-heading p{color:#6b6b6b}
+  .checkout-page .summary-products{max-height:245px}
+  .checkout-page .summary-product{grid-template-columns:48px minmax(0,1fr) auto;gap:9px;padding:11px 0}
+  .checkout-page .summary-product img,.checkout-page .summary-product-placeholder{width:48px;height:48px}
+  .checkout-page .summary-hours{gap:7px;padding:10px 0}
+  .checkout-page .summary-hours small{color:#6b6b6b}
+  .checkout-page .summary-totals{gap:9px;margin-top:12px}
+  .checkout-page .summary-totals dt,.checkout-page .summary-note{color:#6b6b6b}
+  .checkout-page .checkout-form{padding:0}
+  .checkout-page .fulfillment-choice{margin-bottom:25px}
+  .checkout-page .fulfillment-choice legend{margin-bottom:11px;font-size:.82rem}
+  .checkout-page .fulfillment-options{gap:12px}
+  .checkout-page .fulfillment-options label>span.fulfillment-card{position:relative;display:grid;min-height:104px;grid-template-columns:32px minmax(0,1fr) 20px;align-items:center;gap:12px;padding:16px;border:1px solid #e6e6e6;border-radius:8px;background:#fff;transition:border-color .18s,background-color .18s,box-shadow .18s}
+  .checkout-page .fulfillment-card>svg{width:25px;height:25px;fill:none;stroke:#6b6b6b;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .checkout-page .fulfillment-card>span{display:grid;gap:5px}
+  .checkout-page .fulfillment-card b{font-size:.78rem}
+  .checkout-page .fulfillment-card small{color:#6b6b6b;font-size:.67rem;line-height:1.4}
+  .checkout-page .fulfillment-card i{display:grid;width:19px;height:19px;place-items:center;border:1px solid #cfcfcf;border-radius:50%;color:transparent;font-size:.67rem;font-style:normal}
+  .checkout-page .fulfillment-options input:checked+.fulfillment-card{border-color:#e63b2b;background:#fffafa;box-shadow:0 0 0 1px #e63b2b}
+  .checkout-page .fulfillment-options input:checked+.fulfillment-card>svg{stroke:#e63b2b}
+  .checkout-page .fulfillment-options input:checked+.fulfillment-card i{border-color:#e63b2b;color:#fff;background:#e63b2b}
+  .checkout-page .fulfillment-options input:focus-visible+.fulfillment-card{outline:3px solid #e63b2b;outline-offset:3px}
+  .checkout-page .checkout-pickup{margin:0 0 25px;padding:15px 16px;border:1px solid #e6e6e6;border-radius:7px;background:#f7f7f7}
+  .checkout-page .checkout-pickup .checkout-label{margin-bottom:3px;color:#6b6b6b;font-size:.64rem;letter-spacing:.07em;text-transform:uppercase}
+  .checkout-page .checkout-pickup p:not(.checkout-label){display:flex;align-items:flex-start;gap:8px;padding:7px 0 0;border:0;color:#151515;font-size:.76rem;font-weight:650}
+  .checkout-page .checkout-pickup p:not(.checkout-label)::before{content:"";width:7px;height:7px;flex:none;margin-top:5px;border-radius:50%;background:#e63b2b}
+  .checkout-page .contact-heading{display:flex;align-items:center;gap:11px;margin:24px 0 17px;padding-top:19px;border-top:1px solid #e6e6e6}
+  .checkout-page .contact-heading>span{display:grid;width:27px;height:27px;place-items:center;border-radius:50%;color:#151515;background:#f1f1f1;font-size:.68rem;font-weight:800}
+  .checkout-page .contact-heading h2{margin:0;color:#151515;font-size:.9rem;font-weight:800;letter-spacing:0}
+  .checkout-page .contact-heading p{margin:4px 0 0;color:#6b6b6b;font-size:.67rem}
+  .checkout-page .checkout-field>span{margin-bottom:7px;color:#151515;font-size:.73rem}
+  .checkout-page .checkout-field>span small{color:#6b6b6b}
+  .checkout-page .checkout-field input,.checkout-page .checkout-field textarea{border-color:#d9d9d9;border-radius:6px;background:#fff;font-size:.78rem}
+  .checkout-page .checkout-field input::placeholder,.checkout-page .checkout-field textarea::placeholder{color:#888}
+  .checkout-page .checkout-field input:focus,.checkout-page .checkout-field textarea:focus{border-color:#151515;box-shadow:0 0 0 3px #15151512}
+  .checkout-page .checkout-privacy{color:#6b6b6b}
+  .checkout-page .checkout-actions{margin-top:21px;padding-top:16px}
+  .checkout-page .checkout-primary,.checkout-page .checkout-secondary{min-height:48px;border-radius:6px;transition:background-color .18s,border-color .18s,color .18s,transform .18s}
+  .checkout-page .checkout-primary{background:#151515;border-color:#151515}
+  .checkout-page .checkout-primary:hover{background:#333;border-color:#333;transform:translateY(-1px)}
+  .checkout-page .checkout-whatsapp{background:#d83224;border-color:#d83224}
+  .checkout-page .checkout-whatsapp:hover{background:#c93225;border-color:#c93225}
+  .checkout-page .checkout-secondary{background:#fff;color:#151515}
+  .checkout-page .checkout-secondary:hover{background:#f7f7f7;border-color:#aaa}
+  .checkout-page [data-step-panel="3"] .review-section{margin-bottom:22px}
+  .checkout-page .review-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px;padding-bottom:9px;border-bottom:1px solid #e6e6e6}
+  .checkout-page .review-section-heading h2{margin:0;color:#151515;font-size:.82rem;font-weight:800;letter-spacing:0}
+  .checkout-page .review-section-heading button{padding:6px 0;border:0;color:#6b6b6b;background:transparent;font:700 .66rem var(--body,Arial,sans-serif);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .checkout-page .review-section-heading button:hover{color:#151515}
+  .checkout-page .review-section-heading button:focus-visible{outline:2px solid #e63b2b;outline-offset:3px}
+  .checkout-page .review-products .summary-product{grid-template-columns:68px minmax(0,1fr) auto;gap:12px;padding:13px 0}
+  .checkout-page .review-products .summary-product img,.checkout-page .review-products .summary-product-placeholder{width:68px;height:68px;border-radius:6px}
+  .checkout-page .review-products .summary-product h3{font-size:.78rem}
+  .checkout-page .review-products .summary-product p{font-size:.66rem}
+  .checkout-page .review-products .summary-product span{font-size:.66rem}
+  .checkout-page .review-details{gap:9px}
+  .checkout-page .review-details>div{grid-template-columns:105px minmax(0,1fr)}
+  .checkout-page .review-details dt{color:#6b6b6b}
+  .checkout-page .review-payment{border:1px solid #e6e6e6;border-radius:6px;background:#f7f7f7}
+  .checkout-page[data-current-step="3"] .checkout-summary .summary-products,
+  .checkout-page[data-current-step="3"] .checkout-summary .summary-hours{display:none}
+  .checkout-page[data-current-step="3"] .checkout-summary .summary-heading{padding-bottom:9px}
+  .checkout-page[data-current-step="3"] .checkout-summary .summary-totals{margin-top:11px}
+  .checkout-page[data-current-step="3"] .checkout-summary .summary-grand-total{padding-top:10px}
+  .checkout-page .checkout-steps li{color:#6b6b6b}
+  .checkout-page .checkout-steps li span{border-color:#9b9b9b}
+  .checkout-page .checkout-steps li.is-current{color:#151515;border-color:#c93225}
+  .checkout-page .checkout-steps li.is-current span{border-color:#c93225;color:#fff;background:#c93225}
+  .checkout-page .checkout-channel,.checkout-page .checkout-panel-heading p,.checkout-page .summary-product small,.checkout-page .summary-product p,.checkout-page .summary-hours small,.checkout-page .review-details dt,.checkout-page .review-payment span,.checkout-page .review-payment small{color:#6b6b6b}
+  .checkout-page .fulfillment-choice legend b,.checkout-page .checkout-field>span b{color:#c93225}
+  @media(max-width:850px){.checkout-page .checkout-shell{width:min(100% - 40px,700px);padding-top:30px}.checkout-page .checkout-layout{grid-template-columns:minmax(0,1fr);gap:22px}.checkout-page .checkout-summary{grid-row:auto}.checkout-page[data-current-step="3"] .checkout-layout{display:flex;flex-direction:column}.checkout-page[data-current-step="3"] .checkout-summary{order:2;width:100%}.checkout-page[data-current-step="3"] .checkout-form{order:1;width:100%}}
+  @media(max-width:560px){.checkout-page .checkout-header{min-height:60px}.checkout-page .checkout-shell{width:calc(100% - 34px);padding:25px 0 calc(36px + env(safe-area-inset-bottom))}.checkout-page .checkout-intro h1{font-size:clamp(1.65rem,7.5vw,2.2rem)}.checkout-page .checkout-intro>p:last-child{font-size:.75rem}.checkout-page .checkout-steps{margin:18px 0 22px}.checkout-page .checkout-steps li{min-height:42px;gap:6px}.checkout-page .checkout-steps li b{font-size:.58rem}.checkout-page .checkout-steps li span{width:23px;height:23px}.checkout-page .fulfillment-options{grid-template-columns:1fr}.checkout-page .fulfillment-options label>span.fulfillment-card{min-height:78px;padding:12px}.checkout-page .contact-heading{margin-top:19px;padding-top:16px}.checkout-page .checkout-field-row{grid-template-columns:1fr;gap:0}.checkout-page .checkout-actions{gap:9px}.checkout-page .checkout-actions>*{width:100%;min-height:50px}.checkout-page .checkout-review-actions{flex-direction:column}.checkout-page .review-products .summary-product{grid-template-columns:56px minmax(0,1fr) auto;gap:9px}.checkout-page .review-products .summary-product img,.checkout-page .review-products .summary-product-placeholder{width:56px;height:56px}.checkout-page .review-details>div{grid-template-columns:88px minmax(0,1fr);gap:8px}.checkout-page .checkout-summary{padding:15px}.checkout-page .summary-note{font-size:.61rem}}
+  @media(prefers-reduced-motion:reduce){.checkout-page .fulfillment-options label>span,.checkout-page .checkout-primary,.checkout-page .checkout-secondary{transition:none}.checkout-page .checkout-primary:hover{transform:none}}
+</style>

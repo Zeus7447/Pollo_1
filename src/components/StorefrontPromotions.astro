@@ -102,7 +102,8 @@ const promotionAnchorId = brand === 'Pollo Fresa' ? 'promociones-pollo' : 'promo
     .brand-promotions-heading{display:block;margin-bottom:20px}
     .brand-promotions-heading h2{font-size:clamp(2.5rem,11vw,4.25rem)}
     .brand-promotion{grid-template-columns:1fr}
-    .brand-promotion-image,.brand-promotion-image img{min-height:0;height:68vw;max-height:390px}
+    .brand-promotion-image{display:grid;min-height:0;height:auto;max-height:min(68svh,520px);place-items:center}
+    .brand-promotion-image img{width:100%;height:auto;min-height:0;max-height:min(68svh,520px);object-fit:contain}
     .brand-promotion-copy{min-height:260px;padding:23px 20px}
     .brand-promotion-copy h3{margin-top:12px;font-size:clamp(1.9rem,9vw,3rem)}
   }
