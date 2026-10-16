@@ -1,0 +1,21 @@
+---
+import PrototypeLayout from '../../layouts/PrototypeLayout.astro';
+import PrototypeMenu from '../../components/PrototypeMenu.astro';
+import wingsLogo from '../../assets/alitas_logo.png';
+import { getBrandCatalog } from '../../lib/directus';
+
+const enabled = import.meta.env.DEV;
+if (!enabled) Astro.response.status = 404;
+const catalog = enabled ? await getBrandCatalog('Fresa Wings') : null;
+---
+<PrototypeLayout title="Fresa Wings — Menú de concepto" description="Propuesta visual street food para el menú de Fresa Wings." logo={wingsLogo} brand="Fresa Wings" theme="wings">
+  {enabled && catalog
+    ? catalog.catalogError
+      ? <main class="load-error"><h1>Catálogo temporalmente no disponible</h1><p>No se pudieron consultar los productos de Fresa Wings. Intenta recargar esta página.</p></main>
+      : <main><PrototypeMenu brand="Fresa Wings" theme="wings" products={catalog.products} categories={catalog.categories} /></main>
+    : <main class="load-error"><h1>Ruta no disponible</h1></main>}
+</PrototypeLayout>
+
+<style>
+  .load-error{min-height:100vh;display:grid;align-content:center;justify-items:center;padding:30px;text-align:center;color:#fff8eb;background:#151312;font-family:Arial,sans-serif}.load-error h1{font-size:clamp(30px,6vw,56px)}.load-error p{max-width:460px;line-height:1.6;color:#b7aaa0}
+</style>

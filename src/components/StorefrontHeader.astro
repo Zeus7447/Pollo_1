@@ -1,0 +1,196 @@
+---
+import logo from '../assets/pollo_fresa.webp';
+---
+
+<span class="header-sentinel" aria-hidden="true" data-header-sentinel></span>
+<header class="storefront-header" data-storefront-header>
+  <a class="storefront-logo" href="#inicio" aria-label="Pollo Fresa, inicio">
+    <img src={logo.src} alt="Pollo Fresa" width="112" height="70" />
+  </a>
+
+  <nav class="desktop-navigation" aria-label="Navegaci&oacute;n principal">
+    <a href="#inicio" data-nav-target="inicio">Inicio</a>
+    <a class="brand-link pollo-link" href="#pollo-menu" data-nav-target="pollo-menu">Pollo Fresa</a>
+    <a class="brand-link wings-link" href="#fresa-wings-menu" data-nav-target="fresa-wings-menu">Fresa Wings</a>
+    <a href="#promociones" data-nav-target="promociones">Promociones</a>
+  </nav>
+
+  <nav class="desktop-utilities" aria-label="Informaci&oacute;n y pedido">
+    <a href="#ubicacion" data-nav-target="ubicacion">Ubicaci&oacute;n</a>
+    <a href="#contacto" data-nav-target="contacto">Contacto</a>
+    <button class="header-cart" type="button" data-cart-toggle aria-controls="cart-drawer" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 8H6" /><circle cx="10" cy="20" r="1" /><circle cx="18" cy="20" r="1" /></svg>
+      <span>Carrito</span><b data-cart-count>0</b>
+    </button>
+    <a class="header-order" href="#pollo-menu">Pedir ahora <span aria-hidden="true">&#8599;</span></a>
+  </nav>
+
+  <div class="mobile-controls">
+    <button class="header-cart mobile-cart" type="button" data-cart-toggle aria-label="Abrir carrito" aria-controls="cart-drawer" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 8H6" /><circle cx="10" cy="20" r="1" /><circle cx="18" cy="20" r="1" /></svg><b data-cart-count>0</b>
+    </button>
+    <button class="menu-toggle" type="button" aria-label="Abrir men&uacute;" aria-expanded="false" aria-controls="mobile-navigation" data-menu-toggle>
+      <span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+
+  <nav class="mobile-navigation" id="mobile-navigation" aria-label="Navegaci&oacute;n principal" hidden data-mobile-navigation>
+    <a href="#inicio" data-nav-target="inicio">Inicio</a>
+    <a class="brand-link pollo-link" href="#pollo-menu" data-nav-target="pollo-menu">Pollo Fresa</a>
+    <a class="brand-link wings-link" href="#fresa-wings-menu" data-nav-target="fresa-wings-menu">Fresa Wings</a>
+    <a href="#promociones" data-nav-target="promociones">Promociones</a>
+    <a href="#ubicacion" data-nav-target="ubicacion">Ubicaci&oacute;n</a>
+    <a href="#contacto" data-nav-target="contacto">Contacto</a>
+    <a class="header-order" href="#pollo-menu">Pedir ahora <span aria-hidden="true">&#8599;</span></a>
+  </nav>
+</header>
+<button class="navigation-backdrop" type="button" aria-label="Cerrar men&uacute;" hidden data-menu-backdrop></button>
+<div class="header-offset" aria-hidden="true"></div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-storefront-header]').forEach((header) => {
+    const toggle = header.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+    const navigation = header.querySelector<HTMLElement>('[data-mobile-navigation]');
+    const backdrop = document.querySelector<HTMLButtonElement>('[data-menu-backdrop]');
+    const sentinel = document.querySelector<HTMLElement>('[data-header-sentinel]');
+    const mobileQuery = window.matchMedia('(max-width: 1100px)');
+    let previousOverflow = '';
+    const syncHeaderHeight = () => document.documentElement.style.setProperty('--storefront-header-height', `${header.getBoundingClientRect().height}px`);
+    syncHeaderHeight();
+    header.addEventListener('transitionend', (event) => { if (event.propertyName === 'height') syncHeaderHeight(); });
+    window.addEventListener('resize', syncHeaderHeight, { passive: true });
+
+    const closeMenu = (restoreFocus = false) => {
+      if (!toggle || !navigation || navigation.hidden) return;
+      navigation.hidden = true;
+      backdrop && (backdrop.hidden = true);
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Abrir men\u00fa');
+      document.body.classList.remove('navigation-open');
+      document.body.style.overflow = previousOverflow;
+      if (restoreFocus) toggle.focus();
+    };
+
+    const openMenu = () => {
+      if (!toggle || !navigation || !mobileQuery.matches) return;
+      previousOverflow = document.body.style.overflow;
+      navigation.hidden = false;
+      if (backdrop) backdrop.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-label', 'Cerrar men\u00fa');
+      document.body.classList.add('navigation-open');
+      document.body.style.overflow = 'hidden';
+      navigation.querySelector<HTMLElement>('a')?.focus();
+    };
+
+    toggle?.addEventListener('click', () => navigation?.hidden ? openMenu() : closeMenu());
+    backdrop?.addEventListener('click', () => closeMenu(true));
+    navigation?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => closeMenu(true)));
+    header.querySelectorAll('[data-cart-toggle]').forEach((button) => button.addEventListener('click', () => closeMenu()));
+
+    document.addEventListener('keydown', (event) => {
+      if (!navigation || navigation.hidden) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeMenu(true);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = [...navigation.querySelectorAll<HTMLElement>('a[href]')];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !navigation.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !navigation.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
+    mobileQuery.addEventListener('change', (event) => { if (!event.matches) closeMenu(); });
+
+    if (sentinel && 'IntersectionObserver' in window) {
+      const compactObserver = new IntersectionObserver(([entry]) => header.classList.toggle('is-compact', !entry.isIntersecting));
+      compactObserver.observe(sentinel);
+      window.addEventListener('pagehide', () => compactObserver.disconnect(), { once: true });
+    }
+
+    const activeTargets = ['inicio', 'pollo-menu', 'fresa-wings-menu', 'promociones', 'ubicacion', 'contacto']
+      .map((id) => document.getElementById(id))
+      .filter((target): target is HTMLElement => target instanceof HTMLElement);
+    if ('IntersectionObserver' in window && activeTargets.length) {
+      const intersecting = new Set<HTMLElement>();
+      const activeObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => entry.isIntersecting ? intersecting.add(entry.target as HTMLElement) : intersecting.delete(entry.target as HTMLElement));
+        const active = [...intersecting].sort((a, b) => Math.abs(a.getBoundingClientRect().top - 120) - Math.abs(b.getBoundingClientRect().top - 120))[0];
+        if (!active) return;
+        header.querySelectorAll<HTMLAnchorElement>('[data-nav-target]').forEach((link) => {
+          if (link.dataset.navTarget === active.id) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+      }, { rootMargin: '-18% 0px -68% 0px', threshold: 0 });
+      activeTargets.forEach((target) => activeObserver.observe(target));
+      window.addEventListener('pagehide', () => activeObserver.disconnect(), { once: true });
+    }
+  });
+</script>
+
+<style>
+  .storefront-header{--header-height:82px;position:fixed;z-index:55;inset:0 0 auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:clamp(20px,3vw,48px);width:100%;height:var(--header-height);padding:0 max(24px,calc((100% - 1480px)/2));border-bottom:1px solid #291a1614;color:#291a16;background:rgba(255,244,218,.97);box-shadow:0 1px 0 #291a1608;backdrop-filter:blur(14px);transition:height .2s ease,box-shadow .2s ease,background-color .2s ease}
+  .storefront-header.is-compact{--header-height:68px;background:rgba(255,244,218,.985);box-shadow:0 8px 24px #291a1618}
+  .storefront-logo{display:flex;align-items:center;min-width:0;height:100%;text-decoration:none}
+  .storefront-logo img{display:block;width:112px;height:auto;max-height:65px;object-fit:contain;transition:width .2s ease,max-height .2s ease}
+  .is-compact .storefront-logo img{width:100px;max-height:56px}
+  .desktop-navigation,.desktop-utilities{display:flex;align-items:center;white-space:nowrap}
+  .desktop-navigation{justify-content:center;gap:clamp(15px,2vw,29px)}
+  .desktop-utilities{justify-content:flex-end;gap:clamp(12px,1.4vw,20px)}
+  .desktop-navigation a,.desktop-utilities>a:not(.header-order){position:relative;display:inline-flex;align-items:center;min-height:44px;color:#66514a;font-size:.74rem;font-weight:800;transition:color .18s ease}
+  .desktop-navigation a::after,.desktop-utilities>a:not(.header-order)::after{position:absolute;right:0;bottom:5px;left:0;height:2px;background:#e93421;content:'';transform:scaleX(0);transform-origin:left;transition:transform .18s ease}
+  .desktop-navigation a:hover,.desktop-utilities>a:not(.header-order):hover,.desktop-navigation a[aria-current=location],.desktop-utilities>a[aria-current=location]{color:#291a16}
+  .desktop-navigation a:hover::after,.desktop-utilities>a:not(.header-order):hover::after,.desktop-navigation a[aria-current=location]::after,.desktop-utilities>a[aria-current=location]::after{transform:scaleX(1)}
+  .desktop-navigation .brand-link{color:#291a16;font-size:.79rem;font-weight:950}
+  .desktop-navigation .pollo-link[aria-current=location]{color:#c72b1d}
+  .desktop-navigation .wings-link[aria-current=location]{color:#cf3c2b}
+  .header-cart{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:44px;min-height:44px;padding:0 6px;border:0;color:#291a16;background:transparent;font:800 .72rem var(--body,Arial,sans-serif);cursor:pointer}
+  .header-cart svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.8}
+  .header-cart b{display:grid;min-width:18px;height:18px;padding:0 4px;place-items:center;border-radius:20px;color:#291a16;background:#ffbe0b;font-size:.6rem}
+  .header-order{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:43px;padding:0 16px;border:1px solid #c6281b;border-radius:3px;color:#fff4da;background:#c6281b;font-size:.72rem;font-weight:900;transition:background-color .18s ease,color .18s ease,transform .18s ease}
+  .header-order:hover{color:#291a16;background:#ffbe0b;border-color:#ffbe0b;transform:translateY(-1px)}
+  .header-order span{font-size:1rem}
+  .storefront-header a:focus-visible,.header-cart:focus-visible,.menu-toggle:focus-visible{outline:3px solid #e93421;outline-offset:3px}
+  .mobile-controls,.mobile-navigation,.navigation-backdrop{display:none}
+  .header-offset{height:82px}
+  .header-sentinel{display:block;width:1px;height:1px;margin:0;padding:0;pointer-events:none}
+  :global(html){--storefront-header-height:82px;scroll-padding-top:84px}
+  :global(#inicio),:global(#marcas),:global(#pollo-menu),:global(#fresa-wings-menu),:global(#promociones),:global(#ubicacion),:global(#contacto){scroll-margin-top:84px}
+  @media(max-width:1100px){
+    .storefront-header{--header-height:72px;grid-template-columns:minmax(0,1fr) auto;padding:0 20px;backdrop-filter:blur(12px)}
+    .storefront-header.is-compact{--header-height:64px}
+    .storefront-logo img{width:100px;max-height:58px}
+    .is-compact .storefront-logo img{width:92px;max-height:52px}
+    .desktop-navigation,.desktop-utilities{display:none}
+    .mobile-controls{display:flex;align-items:center;gap:8px}
+    .mobile-cart{width:46px;height:46px}
+    .mobile-cart b{position:absolute;top:1px;right:0}
+    .menu-toggle{display:grid;width:46px;height:46px;place-items:center;border:1px solid #291a1626;border-radius:50%;color:#291a16;background:transparent;cursor:pointer}
+    .menu-toggle:focus-visible,.header-cart:focus-visible,.storefront-header a:focus-visible{outline:3px solid #e93421;outline-offset:3px}
+    .menu-icon{display:grid;width:19px;gap:5px}
+    .menu-icon i{display:block;height:2px;background:currentColor;transition:transform .18s ease}
+    [aria-expanded=true] .menu-icon i:first-child{transform:translateY(3.5px) rotate(45deg)}
+    [aria-expanded=true] .menu-icon i:last-child{transform:translateY(-3.5px) rotate(-45deg)}
+    .mobile-navigation{position:absolute;top:100%;right:0;left:0;display:grid;gap:2px;max-height:calc(100dvh - var(--header-height));padding:12px 20px calc(22px + env(safe-area-inset-bottom));overflow:auto;border-top:1px solid #291a1614;background:#fff4da;box-shadow:0 18px 32px #291a1620;overscroll-behavior:contain}
+    .mobile-navigation[hidden]{display:none}
+    .mobile-navigation a:not(.header-order){display:flex;align-items:center;min-height:52px;padding:0 10px;border-bottom:1px solid #291a1618;color:#291a16;font-size:.9rem;font-weight:850}
+    .mobile-navigation .brand-link{font-size:1rem}
+    .mobile-navigation .pollo-link{color:#c72b1d}
+    .mobile-navigation .wings-link{color:#cf3c2b}
+    .mobile-navigation a[aria-current=location]:not(.header-order){box-shadow:inset 3px 0 #ffbe0b}
+    .mobile-navigation .header-order{min-height:50px;margin-top:10px;font-size:.84rem}
+    .navigation-backdrop:not([hidden]){position:fixed;z-index:54;inset:var(--storefront-header-height,72px) 0 0;display:block;width:100%;height:auto;border:0;background:#17100f78;backdrop-filter:blur(2px)}
+    .header-offset{height:72px}
+  }
+  @media(max-width:380px){.storefront-header{padding-inline:14px}.storefront-logo img{width:91px}.mobile-controls{gap:5px}.mobile-cart,.menu-toggle{width:43px;height:43px}}
+  @media(prefers-reduced-motion:reduce){.storefront-header,.storefront-logo img,.desktop-navigation a,.desktop-utilities>a,.desktop-navigation a::after,.desktop-utilities>a::after,.header-order,.menu-icon i{transition:none}}
+</style>

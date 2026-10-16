@@ -1,0 +1,249 @@
+---
+import StorefrontPromotions from './StorefrontPromotions.astro';
+import type { CatalogCategory, CatalogProduct, CatalogPromotion } from '../lib/directus';
+import polloLogo from '../assets/pollo_fresa.webp';
+
+interface Props { products: CatalogProduct[]; categories: CatalogCategory[]; promotions?: CatalogPromotion[]; demo?: boolean }
+const { products, categories, promotions = [], demo = true } = Astro.props;
+const leadProduct = products.find((product) => product.featured && product.image) ?? products.find((product) => product.image);
+const visibleCategories = categories.filter((category) => products.some((product) => product.categoryId === category.id));
+const friedCategory = categories.find((category) => /frit/i.test(category.name));
+const roastCategory = categories.find((category) => /asado/i.test(category.name));
+const rotisserieCategory = categories.find((category) => /rostizado/i.test(category.name));
+const friedProducts = products.filter((product) => product.categoryId === friedCategory?.id)
+  .sort((a, b) => Number(a.name.match(/\d+/)?.[0] ?? 0) - Number(b.name.match(/\d+/)?.[0] ?? 0));
+const roastProduct = products.find((product) => product.categoryId === roastCategory?.id);
+const rotisserieProduct = products.find((product) => product.categoryId === rotisserieCategory?.id);
+const handledIds = new Set([...friedProducts, ...(roastProduct ? [roastProduct] : []), ...(rotisserieProduct ? [rotisserieProduct] : [])].map((product) => product.id));
+const remainingProducts = products.filter((product) => !handledIds.has(product.id));
+const initialCombo = friedProducts.find((product) => product.featured) ?? friedProducts[0];
+const productPayload = (product: CatalogProduct) => JSON.stringify(product).replace(/</g, '\\u003c');
+---
+
+<div class="pollo-concept" class:production-menu={!demo} id={demo ? undefined : 'pollo-menu'} data-catalog-brand={!demo ? 'Pollo Fresa' : undefined} data-food-motion-scope={!demo ? 'pollo' : undefined}>
+  {demo && <div class="preview-bar"><span>Vista de concepto</span><span>Pedidos desactivados</span></div>}
+  {demo && <header class="proto-header">
+    <a class="wordmark" href="#inicio" aria-label="Pollo Fresa, inicio"><img class="brand-logo" src={polloLogo.src} alt="" /><span>Pollo Fresa<small>POLLO · FUEGO · TRADICIÓN</small></span></a>
+    <nav aria-label="Navegación del menú" class="top-links"><a href={demo ? '#menu' : '#pollo-menu-list'}>Menú</a><a href="#categorias">Categorías</a><a href="#nota">Acerca del prototipo</a></nav>
+    <span class="demo-pill"><i></i> Solo demostración</span>
+  </header>}
+
+  <section class="cover" id={demo ? 'inicio' : 'pollo-inicio'} aria-labelledby={demo ? 'cover-title' : 'pollo-cover-title'}>
+    <div class="cover-copy" data-motion-story>
+      <p class="kicker" data-motion-step>El sabor que reúne</p>
+      <h1 id={demo ? 'cover-title' : 'pollo-cover-title'} data-motion-step>MÁS POLLO.<br /><em>MÁS SABOR.</em></h1>
+      <p class="cover-intro" data-motion-step>Pollo frito, asado y rostizado para reunir a todos.</p>
+      <a class="cover-link" href={demo ? '#menu' : '#pollo-menu-list'}>VER EL MENÚ <span aria-hidden="true">↘</span></a>
+      <span class="cover-index">COMBOS DE 8 A 24 PIEZAS · PARA COMPARTIR</span>
+    </div>
+    <div class="cover-art" aria-label={leadProduct ? `Fotografía del producto ${leadProduct.name}` : undefined}>
+      {leadProduct?.image ? <img src={leadProduct.image} alt={leadProduct.name} fetchpriority="high" data-motion-image data-motion-parallax /> : <div class="photo-unavailable">Fotografía no disponible</div>}
+      <div class="art-note"><span>DEL MENÚ</span><b>{leadProduct?.name ?? 'Pollo Fresa'}</b></div>
+      <span class="art-number">01</span>
+    </div>
+    <span class="vertical-note" aria-hidden="true">Pollo Fresa — MENÚ</span>
+  </section>
+
+  {!demo && <StorefrontPromotions brand="Pollo Fresa" promotions={promotions} products={products} />}
+
+  <section class="category-band" id={demo ? 'categorias' : 'pollo-categorias'} aria-label="Explorar categorías">
+    <span>ENCUENTRA TU ANTOJO</span>
+<div class="category-links">
+      {visibleCategories.map((category, index) => <a href={`#categoria-${category.id}`} data-motion-hover><i>{String(index + 1).padStart(2, '0')}</i>{category.name}<b aria-hidden="true">↗</b></a>)}
+    </div>
+  </section>
+
+  <section class="menu-area" id={demo ? 'menu' : 'pollo-menu-list'}>
+    <header class="menu-heading" data-motion-story><p class="kicker" data-motion-step>El menú de la casa</p><h2 data-motion-step>Tradición para<br /><em>compartir.</em></h2><p data-motion-step>{products.length} productos disponibles</p></header>
+
+    {friedCategory && friedProducts.length > 0 && <section class:list={['fried-feature', !demo && 'product-card']} id={`categoria-${friedCategory.id}`} aria-labelledby="fried-title" data-product-id={initialCombo?.id}>
+      <div class="fried-photo" data-combo-photo>
+        <img data-selected-image data-motion-image data-motion-parallax src={initialCombo?.image} alt={initialCombo?.name ?? 'Producto'} fetchpriority="high" hidden={!initialCombo?.image} />
+        <div class="photo-unavailable" data-selected-placeholder hidden={Boolean(initialCombo?.image)}>Fotografía no disponible</div>
+        <span class="photo-overline">POLLO FRITO · PARA COMPARTIR</span>
+        <span class="photo-index" aria-hidden="true">01 / 05</span>
+      </div>
+      <div class="fried-copy" data-motion-story>
+        <p class="kicker" data-motion-step>Combos Pollo Frito</p>
+        <h2 id="fried-title" data-motion-step>EL CRUNCH<br /><em>QUE REÚNE.</em></h2>
+        <p class="fried-intro" data-motion-step>Crujiente para compartir, con el tamaño que pide la reunión.</p>
+        {initialCombo && <div class="selected-combo" aria-live="polite" aria-atomic="true">
+          <span>COMBO SELECCIONADO</span>
+          <h3 data-selected-name>{initialCombo.name}</h3>
+          <strong data-selected-price>{initialCombo.price}</strong>
+          <p data-selected-description>{initialCombo.description}</p>
+          <div data-selected-options class="selected-options">
+            {initialCombo.optionGroups.map((group) => <div data-group-id={group.id}><b>{group.name}</b><span>{group.options.map((option) => option.name).join(' · ')}</span></div>)}
+          </div>
+          <details class="combo-full-description"><summary>Leer descripción completa</summary><p data-selected-full-description>{initialCombo.description}</p></details>
+        </div>}
+        <div class="combo-picker" role="group" aria-label="Seleccionar combo de pollo frito">
+          <span class="picker-label">ELIGE TU COMBO</span>
+          <div class="combo-options">
+            {friedProducts.map((product, index) => <button type="button" id={!demo ? `promotion-product-${product.id}` : undefined} class="combo-option" class:active={product.id === initialCombo?.id} aria-pressed={product.id === initialCombo?.id} aria-label={`Seleccionar ${product.name}`} data-combo-product={productPayload(product)} data-motion-hover>
+              <b>{product.name.match(/\d+/)?.[0] ?? product.name}</b><small>piezas</small>
+            </button>)}
+          </div>
+        </div>
+        <div class="combo-buy">
+          {demo
+            ? <button type="button" disabled aria-describedby="combo-disabled">Agregar al pedido <span aria-hidden="true">＋</span></button>
+            : <button type="button" class="add-button" aria-label={`Agregar ${initialCombo.name} al pedido`} data-add-product={initialCombo.id}>Agregar <span>+</span></button>}
+          {demo && <small id="combo-disabled">Compra desactivada en esta demostración</small>}
+        </div>
+      </div>
+    </section>}
+
+    {roastProduct && <section class:list={['roast-feature', !demo && 'product-card']} id={`categoria-${roastCategory?.id}`} aria-labelledby="roast-title" data-product-id={roastProduct.id}>
+      <div class="roast-copy" data-motion-story>
+        <p class="kicker" data-motion-step>Combos Pollo Asado</p>
+        <span class="editorial-number">02 <i>—</i> A LAS BRASAS</span>
+        <h2 id="roast-title" data-motion-step>FUEGO.<br /><em>SABOR.</em></h2>
+        <h3 data-motion-step>{roastProduct.name}</h3>
+        <p class="description-clamp">{roastProduct.description}</p>
+        <details class="full-description"><summary>Leer descripción completa</summary><p>{roastProduct.description}</p></details>
+        <div class="roast-price"><strong>{roastProduct.price}</strong><span>Precio del catálogo</span></div>
+        {roastProduct.optionGroups.length > 0 && <div class="product-options">{roastProduct.optionGroups.map((group) => <span>{group.name}</span>)}</div>}
+        {demo
+          ? <button class="disabled-action" type="button" disabled>Agregar al pedido <span aria-hidden="true">＋</span></button>
+          : <button id={`promotion-product-${roastProduct.id}`} class="disabled-action add-button" type="button" aria-label={`Agregar ${roastProduct.name} al pedido`}>Agregar <span>＋</span></button>}
+        {demo && <small class="disabled-note">Compra desactivada en esta demostración</small>}
+      </div>
+      <figure class="roast-photo">
+        {roastProduct.image ? <img src={roastProduct.image} alt={roastProduct.name} loading="lazy" data-motion-image data-motion-parallax /> : <div class="photo-unavailable">Fotografía no disponible</div>}
+        <figcaption>{roastProduct.name} <i>·</i> Pollo Fresa</figcaption>
+      </figure>
+      <span class="roast-side-note" aria-hidden="true">CALOR LENTO · SABOR DE CASA</span>
+    </section>}
+
+    {rotisserieProduct && <section class:list={['rotisserie-feature', !demo && 'product-card']} id={`categoria-${rotisserieCategory?.id}`} aria-labelledby="rotisserie-title" data-product-id={rotisserieProduct.id}>
+      <div class="rotisserie-image">
+        {rotisserieProduct.image ? <img src={rotisserieProduct.image} alt={rotisserieProduct.name} loading="lazy" data-motion-image data-motion-parallax /> : <div class="photo-unavailable">Fotografía no disponible</div>}
+        <span class="rotisserie-stamp">HECHO<br />PARA<br /><i>REUNIR</i></span>
+      </div>
+      <div class="rotisserie-copy" data-motion-story>
+        <span class="editorial-number">03 <i>—</i> GIRO A GIRO</span>
+        <p class="kicker" data-motion-step>Combos Pollo Rostizado</p>
+        <h2 id="rotisserie-title" data-motion-step>GIRO.<br /><em>DORADO.</em><br />JUGOSO.</h2>
+        <p class="rotisserie-product-name">{rotisserieProduct.name}</p>
+        <p class="description-clamp">{rotisserieProduct.description}</p>
+        <details class="full-description"><summary>Leer descripción completa</summary><p>{rotisserieProduct.description}</p></details>
+        <div class="rotisserie-price"><strong>{rotisserieProduct.price}</strong><span>Precio del catálogo</span></div>
+        {rotisserieProduct.optionGroups.length > 0 && <div class="product-options">{rotisserieProduct.optionGroups.map((group) => <span>{group.name}</span>)}</div>}
+        {demo
+          ? <button class="disabled-action" type="button" disabled>Agregar al pedido <span aria-hidden="true">＋</span></button>
+          : <button id={`promotion-product-${rotisserieProduct.id}`} class="disabled-action add-button" type="button" aria-label={`Agregar ${rotisserieProduct.name} al pedido`}>Agregar <span>＋</span></button>}
+        {demo && <small class="disabled-note">Compra desactivada en esta demostración</small>}
+      </div>
+    </section>}
+
+    {remainingProducts.length > 0 && <section class="remaining-products" aria-label="Otros productos disponibles">
+      {remainingProducts.map((product) => <article id={!demo ? `promotion-product-${product.id}` : undefined} class:list={[!demo && 'product-card']} data-product-id={product.id}><span>{product.category}</span><h3>{product.name}</h3><p>{product.description}</p><strong>{product.price}</strong>{demo ? <button type="button" disabled>Agregar al pedido</button> : <button type="button" class="add-button">Agregar <span>+</span></button>}</article>)}
+    </section>}
+    {!friedProducts.length && !roastProduct && !rotisserieProduct && <p class="empty-catalog">No hay productos disponibles para esta marca en este momento.</p>}
+  </section>
+
+  {demo && <footer class="proto-footer" id="nota"><span>Pollo Fresa</span><p>Prototipo visual conectado al catálogo disponible. El carrito y los pedidos permanecen desactivados.</p><a href="#inicio">Volver arriba ↑</a></footer>}
+</div>
+
+<script>
+  const picker = document.querySelector('.pollo-concept .combo-options');
+  const selectedImage = document.querySelector<HTMLImageElement>('[data-selected-image]');
+  const selectedName = document.querySelector<HTMLElement>('[data-selected-name]');
+  const selectedPrice = document.querySelector<HTMLElement>('[data-selected-price]');
+  const selectedDescription = document.querySelector<HTMLElement>('[data-selected-description]');
+  const selectedFullDescription = document.querySelector<HTMLElement>('[data-selected-full-description]');
+  const selectedOptions = document.querySelector<HTMLElement>('[data-selected-options]');
+  const selectedPlaceholder = document.querySelector<HTMLElement>('[data-selected-placeholder]');
+  const comboFeature = document.querySelector<HTMLElement>('.fried-feature');
+  const purchaseButton = document.querySelector<HTMLButtonElement>('.fried-copy .combo-buy button');
+
+  picker?.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-combo-product]');
+    if (!button) return;
+    const product = JSON.parse(button.dataset.comboProduct ?? '{}') as {
+      id: number; name: string; price: string; image?: string; description: string;
+      optionGroups: { id: number; name: string; required: boolean; options: { id: number; name: string; priceDelta: number }[] }[];
+    };
+    picker.querySelectorAll<HTMLButtonElement>('[data-combo-product]').forEach((option) => {
+      const active = option === button;
+      option.classList.toggle('active', active);
+      option.setAttribute('aria-pressed', String(active));
+    });
+    if (selectedName) selectedName.textContent = product.name;
+    if (selectedPrice) selectedPrice.textContent = product.price;
+    if (selectedDescription) selectedDescription.textContent = product.description;
+    if (selectedFullDescription) selectedFullDescription.textContent = product.description;
+    if (comboFeature) comboFeature.dataset.productId = String(product.id);
+    if (selectedPlaceholder) selectedPlaceholder.hidden = Boolean(product.image);
+    if (selectedImage && product.image) {
+      selectedImage.classList.add('is-changing');
+      selectedImage.addEventListener('transitionend', () => selectedImage.classList.remove('is-changing'), { once: true });
+      selectedImage.src = product.image;
+      selectedImage.alt = product.name;
+      selectedImage.hidden = false;
+    } else if (selectedImage) {
+      selectedImage.hidden = true;
+    }
+    if (purchaseButton) {
+      purchaseButton.dataset.productId = String(product.id);
+      purchaseButton.dataset.addProduct = String(product.id);
+      purchaseButton.dataset.productPrice = product.price;
+      purchaseButton.dataset.productImage = product.image ?? '';
+      purchaseButton.dataset.productOptions = JSON.stringify(product.optionGroups);
+    }
+    if (selectedOptions) {
+      selectedOptions.replaceChildren(...product.optionGroups.map((group) => {
+        const row = document.createElement('div');
+        row.dataset.groupId = String(group.id);
+        const heading = document.createElement('b');
+        heading.textContent = group.name;
+        const values = document.createElement('span');
+        values.replaceChildren(...group.options.map((option) => {
+          const name = document.createElement('span');
+          name.dataset.optionId = String(option.id);
+          name.textContent = option.name;
+          return name;
+        }));
+        row.append(heading, values);
+        return row;
+      }));
+    }
+  });
+</script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Barlow+Condensed:wght@500;600;700;800;900&display=swap');
+  .pollo-concept{--accent:#b93827;--paper:#f1e9da;--ink:#251e19;--muted:#756d62;--serif:'Playfair Display',Georgia,serif;--sans:'DM Sans',Arial,sans-serif;--display:'Barlow Condensed',Impact,sans-serif;color:var(--ink);font-family:var(--sans);overflow:hidden;background:var(--paper)}
+  .preview-bar{min-height:28px;display:flex;justify-content:space-between;align-items:center;padding:4px 5vw;background:#221d18;color:#fff3e6;font:700 9px var(--sans);letter-spacing:.14em;text-transform:uppercase}
+  .proto-header{height:76px;padding:0 6vw;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #251e1926}.wordmark{display:flex;align-items:center;gap:12px;font-weight:800;font-size:14px;letter-spacing:-.04em}.wordmark small{display:block;margin-top:4px;color:var(--muted);font-size:8px;letter-spacing:.12em}.mark{width:36px;height:36px;border:1px solid var(--accent);display:grid;place-items:center;color:var(--accent);font:700 13px var(--display);transform:rotate(-8deg)}.top-links{display:flex;gap:30px;color:var(--muted);font-size:11px;font-weight:700}.top-links a{text-decoration:none;color:inherit}.top-links a:hover,.top-links a:focus-visible{color:var(--accent)}.demo-pill{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid #251e1938;border-radius:99px;font-size:9px;font-weight:700}.demo-pill i{width:7px;height:7px;background:#d69536;border-radius:50%}
+  .cover{min-height:590px;display:grid;grid-template-columns:.94fr 1.06fr;align-items:center;position:relative;padding:46px 10vw 76px;gap:4vw}.cover-copy{position:relative;z-index:2}.kicker{text-transform:uppercase;letter-spacing:.18em;font-size:9px;font-weight:800;color:var(--accent)}.cover h1{max-width:560px;margin:24px 0;font:600 clamp(58px,8.4vw,125px)/.91 var(--serif);letter-spacing:-.075em}.cover h1 em,.menu-heading h2 em{color:var(--accent);font-weight:600}.cover-intro{max-width:310px;color:var(--muted);font-size:14px;line-height:1.7}.cover-link{display:inline-flex;gap:22px;align-items:center;margin-top:23px;padding-bottom:9px;border-bottom:1px solid var(--accent);font-size:11px;font-weight:800;text-decoration:none;color:inherit}.cover-link span{font-size:20px;color:var(--accent)}.cover-index{display:block;margin-top:72px;color:var(--muted);font-size:8px;font-weight:800;letter-spacing:.18em}.cover-art{height:480px;position:relative;margin-right:-6vw}.cover-art:before{content:'';position:absolute;inset:8% 12% 2% 2%;background:#d5c5aa;transform:rotate(-5deg)}.cover-art>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:polygon(8% 0,100% 4%,95% 100%,0 92%)}.art-note{position:absolute;z-index:2;left:0;bottom:22px;min-width:190px;padding:15px 20px;background:var(--paper);box-shadow:0 10px 40px #0002}.art-note span,.art-note b{display:block}.art-note span{font-size:8px;letter-spacing:.16em;color:var(--accent);font-weight:800}.art-note b{margin-top:6px;font:600 18px var(--serif)}.art-number{position:absolute;right:8px;top:2px;color:var(--ink);font:800 14px var(--display)}.vertical-note{position:absolute;right:2vw;top:40%;writing-mode:vertical-rl;font-size:8px;letter-spacing:.2em;color:var(--muted)}
+  .category-band{display:grid;grid-template-columns:180px 1fr;gap:30px;align-items:start;padding:26px 10vw 29px;border-top:1px solid #251e1933;border-bottom:1px solid #251e1933}.category-band>span{padding-top:12px;font-size:8px;font-weight:800;letter-spacing:.16em;color:var(--muted)}.category-links{display:flex;flex-wrap:wrap;gap:9px}.category-links a{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid #251e1933;font-size:10px;font-weight:700;text-decoration:none;color:inherit;transition:background .2s,color .2s,transform .2s}.category-links a:hover{background:var(--accent);color:#fff;transform:translateY(-2px)}.category-links i{font:700 11px var(--display);color:var(--accent)}.category-links a:hover i,.category-links a:hover b{color:#fff}.category-links b{margin-left:4px;color:var(--accent)}
+  .menu-area{padding:100px 8vw 90px}.menu-heading{display:grid;grid-template-columns:1fr 1fr;align-items:end;margin:0 auto 54px;max-width:1320px}.menu-heading .kicker{grid-column:1/-1;margin:0}.menu-heading h2{margin-top:9px;font:600 clamp(48px,6.5vw,82px)/.94 var(--serif);letter-spacing:-.07em}.menu-heading h2 em{font-style:italic}.menu-heading>p:last-child{justify-self:end;margin:0 0 6px;color:var(--muted);font-size:10px}
+  .fried-feature{max-width:1440px;min-height:650px;margin:0 auto 120px;display:grid;grid-template-columns:minmax(0,1.18fr) minmax(390px,.82fr);background:#e7dcc9;scroll-margin-top:24px}.fried-photo{position:relative;min-height:650px;overflow:hidden;background:#c4ae8c}.fried-photo:after{content:'';position:absolute;inset:45% 0 0;background:linear-gradient(0deg,#2118139c,transparent);pointer-events:none}.fried-photo img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;transition:opacity .24s ease,transform .65s ease}.fried-photo img.is-changing{opacity:.3;transform:scale(1.025)}.photo-overline,.photo-index{position:absolute;z-index:2;color:#fff;font-size:9px;font-weight:800;letter-spacing:.16em}.photo-overline{left:30px;bottom:28px}.photo-index{right:28px;top:25px}.fried-copy{display:flex;flex-direction:column;justify-content:center;padding:54px clamp(30px,4.2vw,68px)}.fried-copy>.kicker{margin:0 0 20px}.fried-copy h2{margin:0;font:600 clamp(52px,6vw,88px)/.9 var(--serif);letter-spacing:-.075em}.fried-copy h2 em{color:var(--accent);font-style:italic}.fried-intro{max-width:360px;margin:19px 0 26px;color:#756d62;font-size:13px;line-height:1.65}.selected-combo{display:grid;grid-template-columns:1fr auto;align-items:end;gap:4px 16px;padding:18px 0 16px;border-top:1px solid #251e1933;border-bottom:1px solid #251e1933}.selected-combo>span{grid-column:1/-1;font-size:8px;font-weight:800;letter-spacing:.15em;color:var(--muted)}.selected-combo h3{margin:4px 0 0;font:600 clamp(20px,2.2vw,30px)/1.1 var(--serif)}.selected-combo>strong{color:var(--accent);font:800 34px/.95 var(--display)}.selected-combo>p{grid-column:1/-1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:5px 0 0;color:var(--muted);font-size:9px;line-height:1.55}.selected-options{display:flex;flex-wrap:wrap;gap:5px;grid-column:1/-1}.selected-options span,.product-options span{font-size:8px;font-weight:700;color:var(--accent)}
+  .combo-picker{margin-top:21px}.picker-label{display:block;margin-bottom:10px;font-size:8px;font-weight:800;letter-spacing:.15em;color:var(--muted)}.combo-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.combo-option{min-height:66px;padding:8px 4px;border:1px solid #251e1938;background:transparent;color:var(--ink);cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .18s}.combo-option:hover{transform:translateY(-2px);border-color:var(--accent)}.combo-option.active{background:var(--ink);border-color:var(--ink);color:#fff}.combo-option b,.combo-option small{display:block}.combo-option b{font:700 20px var(--display)}.combo-option small{margin-top:2px;font-size:8px}.combo-buy{display:flex;align-items:center;gap:12px;margin-top:18px}.combo-buy button,.disabled-action{min-height:48px;padding:0 20px;border:0;background:var(--accent);color:#fff;font:800 10px var(--sans);letter-spacing:.04em;text-transform:uppercase}.combo-buy button span,.disabled-action span{padding-left:18px;font-size:17px}.combo-buy button:disabled,.disabled-action:disabled{opacity:.55;cursor:not-allowed}.combo-buy small,.disabled-note{font-size:8px;color:var(--muted)}
+  .roast-feature{position:relative;display:grid;grid-template-columns:minmax(300px,.78fr) minmax(0,1.22fr);align-items:center;gap:6vw;max-width:1380px;min-height:630px;margin:0 auto 130px;padding:35px 4vw 55px;scroll-margin-top:24px}.roast-copy{position:relative;z-index:2;padding:10px 0 20px 2vw}.editorial-number{display:block;margin-bottom:34px;font:700 11px var(--display);letter-spacing:.16em;color:var(--muted)}.editorial-number i{padding:0 8px;color:var(--accent);font-style:normal}.roast-copy>.kicker{margin:0 0 14px}.roast-copy h2{margin:0 0 19px;font:600 clamp(56px,7vw,96px)/.87 var(--serif);letter-spacing:-.08em}.roast-copy h2 em{color:var(--accent);font-style:italic}.roast-copy h3{margin:0 0 8px;font:700 16px var(--sans)}.description-clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:var(--muted);font-size:11px;line-height:1.7;max-width:420px}.full-description{max-width:420px;margin-top:8px;color:var(--muted);font-size:10px;line-height:1.6}.full-description summary{width:max-content;color:var(--accent);cursor:pointer;font-weight:800}.full-description p{margin:9px 0}.roast-price{display:flex;align-items:baseline;gap:13px;margin:18px 0}.roast-price strong,.rotisserie-price strong{color:var(--accent);font:800 40px/.95 var(--display)}.roast-price span,.rotisserie-price span{font-size:8px;color:var(--muted)}.product-options{display:flex;gap:10px;margin:0 0 13px}.roast-photo{position:relative;height:580px;margin:0;overflow:hidden;background:#d8c7aa}.roast-photo:before{content:'';position:absolute;z-index:1;left:-15px;top:12%;width:24px;height:76%;background:var(--accent)}.roast-photo img,.rotisserie-image img{width:100%;height:100%;object-fit:cover;transition:transform .7s ease}.roast-photo:hover img,.rotisserie-image:hover img{transform:scale(1.025)}.roast-photo figcaption{position:absolute;right:0;bottom:0;padding:15px 20px;background:var(--paper);font:600 13px var(--serif)}.roast-photo figcaption i{color:var(--accent);font-style:normal}.roast-side-note{position:absolute;right:0;top:50%;writing-mode:vertical-rl;color:var(--muted);font-size:8px;font-weight:700;letter-spacing:.18em}
+  .rotisserie-feature{display:grid;grid-template-columns:minmax(0,1.13fr) minmax(370px,.87fr);align-items:stretch;max-width:1500px;min-height:650px;margin:0 auto 100px;background:#34231d;color:#fff5e7;scroll-margin-top:24px}.rotisserie-image{position:relative;min-height:650px;overflow:hidden;background:#5b3426}.rotisserie-image:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#1b100b1c,transparent 70%)}.rotisserie-image img{position:absolute;inset:0}.rotisserie-stamp{position:absolute;z-index:2;left:26px;top:26px;width:100px;height:100px;display:grid;align-content:center;text-align:center;border:1px solid #fff9;border-radius:50%;font:800 12px/.9 var(--display);letter-spacing:.08em;transform:rotate(-11deg)}.rotisserie-stamp i{color:#ef684c;font-style:normal}.rotisserie-copy{align-self:center;padding:56px clamp(30px,5.2vw,78px)}.rotisserie-copy .editorial-number{color:#d1b7a6;margin-bottom:24px}.rotisserie-copy>.kicker{color:#ef8066;margin:0 0 15px}.rotisserie-copy h2{margin:0;font:800 clamp(62px,8vw,110px)/.76 var(--display);letter-spacing:-.04em;text-transform:uppercase}.rotisserie-copy h2 em{color:#ef684c;font-style:normal}.rotisserie-product-name{margin:22px 0 0;font:600 17px var(--serif)}.rotisserie-copy .description-clamp{color:#d1b7a6}.rotisserie-copy .full-description{color:#d1b7a6}.rotisserie-price{display:flex;align-items:baseline;gap:13px;margin:19px 0}.rotisserie-price span{color:#d1b7a6}.rotisserie-copy .disabled-note{display:block;color:#d1b7a6;margin-top:8px}
+  .remaining-products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:1300px;margin:0 auto 80px}.remaining-products article{padding:22px;border-top:1px solid #251e1940}.remaining-products article>span{font-size:9px;color:var(--accent)}.remaining-products h3{font:600 22px var(--serif)}.remaining-products p{font-size:10px;color:var(--muted);line-height:1.6}.remaining-products strong{color:var(--accent);font:700 25px var(--display)}.remaining-products button{display:block;margin-top:12px;padding:12px;background:var(--accent);color:white;border:0}.empty-catalog{padding:50px 0;color:var(--muted)}.proto-footer{display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;gap:20px;padding:25px 10vw;border-top:1px solid #251e1933;font-size:9px}.proto-footer>span{font:700 17px var(--serif)}.proto-footer p{color:var(--muted);line-height:1.6}.proto-footer a{justify-self:end;color:var(--accent);font-weight:800;text-decoration:none}
+  @media(max-width:900px){.cover{min-height:auto;grid-template-columns:.95fr 1.05fr;padding:58px 7vw 70px;gap:12px}.cover h1{font-size:clamp(52px,9vw,82px)}.cover-art{height:380px;margin-right:-7vw}.cover-index{margin-top:48px}.category-band{grid-template-columns:1fr;padding:22px 7vw;gap:12px}.category-band>span{padding:0}.menu-area{padding:78px 6vw}.fried-feature{min-height:560px;grid-template-columns:1.05fr .95fr}.fried-photo{min-height:560px}.fried-copy{padding:36px 26px}.fried-copy h2{font-size:clamp(48px,6vw,68px)}.roast-feature{gap:4vw;padding-inline:2vw}.roast-photo{height:500px}.rotisserie-feature{min-height:550px;grid-template-columns:1fr .9fr}.rotisserie-image{min-height:550px}.rotisserie-copy{padding:42px 28px}.rotisserie-copy h2{font-size:clamp(56px,8vw,78px)}}
+  @media(max-width:620px){.preview-bar{padding-inline:5vw;font-size:8px}.proto-header{height:66px;padding:0 5vw}.wordmark{font-size:12px}.wordmark small{font-size:7px}.mark{width:32px;height:32px}.top-links{display:none}.demo-pill{font-size:8px}.cover{grid-template-columns:1fr;padding:52px 6vw 52px;gap:32px}.cover-copy{max-width:400px}.cover h1{font-size:clamp(66px,19vw,94px);margin:20px 0}.cover-intro{font-size:13px}.cover-index{margin-top:35px}.cover-art{height:330px;margin:0 0 0 7vw}.vertical-note{display:none}.art-note{left:-7vw}.category-band{padding:20px 6vw}.category-links{gap:7px}.category-links a{padding:10px;font-size:9px}.menu-area{padding:64px 5vw 58px}.menu-heading{display:block;margin-bottom:36px}.menu-heading h2{font-size:58px}.menu-heading>p:last-child{margin-top:14px}.fried-feature{display:flex;flex-direction:column;margin-bottom:78px}.fried-photo{min-height:0;height:min(112vw,460px)}.photo-overline{left:16px;bottom:17px;font-size:8px}.photo-index{right:15px;top:15px}.fried-copy{padding:28px 20px 24px}.fried-copy>.kicker{margin-bottom:13px}.fried-copy h2{font-size:clamp(55px,15vw,76px)}.fried-intro{margin:12px 0 18px;font-size:12px}.selected-combo{padding:14px 0}.selected-combo h3{font-size:22px}.selected-combo>strong{font-size:33px}.selected-combo>p{-webkit-line-clamp:2}.combo-picker{margin-top:17px}.combo-options{gap:5px}.combo-option{min-height:60px;padding:6px 2px}.combo-option b{font-size:19px}.combo-option small{font-size:7px}.combo-buy{display:grid;grid-template-columns:1fr;gap:7px;margin-top:14px}.combo-buy button{width:100%;min-height:50px}.roast-feature{display:flex;flex-direction:column-reverse;gap:0;margin-bottom:76px;padding:0}.roast-copy{padding:24px 5vw 0}.editorial-number{margin-bottom:18px}.roast-copy h2{font-size:clamp(60px,17vw,84px)}.roast-photo{width:100%;height:112vw;max-height:470px}.roast-photo:before{width:11px;left:0}.roast-photo figcaption{padding:12px 14px;font-size:11px}.roast-copy h3{margin-top:20px}.description-clamp{font-size:10px}.roast-price{margin:14px 0}.roast-price strong,.rotisserie-price strong{font-size:38px}.disabled-action{width:100%;min-height:50px}.disabled-note{display:block;margin-top:7px}.rotisserie-feature{display:flex;flex-direction:column;margin:0 -5vw 66px;min-height:0}.rotisserie-image{height:112vw;max-height:480px;min-height:0}.rotisserie-stamp{left:17px;top:17px;width:82px;height:82px;font-size:10px}.rotisserie-copy{padding:28px 6vw 30px}.rotisserie-copy .editorial-number{margin-bottom:17px}.rotisserie-copy h2{font-size:clamp(70px,20vw,100px)}.rotisserie-product-name{margin-top:19px}.rotisserie-price{margin:14px 0}.rotisserie-copy .disabled-action{width:100%}.remaining-products{margin:0 auto 55px}.proto-footer{grid-template-columns:1fr;padding:20px 6vw;gap:7px}.proto-footer p{margin:2px 0}.proto-footer a{justify-self:start}}
+  @media(max-width:360px){.combo-option b{font-size:17px}.combo-option{min-height:57px}.fried-copy{padding-inline:15px}.selected-combo{grid-template-columns:1fr auto;gap:5px 8px}}
+  @media(prefers-reduced-motion:reduce){.pollo-concept *, .pollo-concept *::before,.pollo-concept *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+  .pollo-concept [hidden]{display:none!important}.selected-options{display:grid;gap:5px;grid-column:1/-1}.selected-options>div{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:8px}.selected-options b{color:var(--ink)}.selected-options>div>span{color:var(--muted)}.selected-options>div>span>span+span:before{content:' · ';color:var(--accent)}.combo-full-description{grid-column:1/-1;margin-top:4px;color:var(--muted);font-size:9px;line-height:1.55}.combo-full-description summary{width:max-content;color:var(--accent);cursor:pointer;font-weight:800}.combo-full-description p{margin:7px 0}.photo-unavailable{position:absolute;inset:0;display:grid;place-items:center;background:#d8c7aa;color:#756d62;font-size:12px}
+</style>
+
+<style>
+  .pollo-concept{--accent:#e52b20;--paper:#fff8e9;--ink:#231b19;--muted:#544741;--serif:'DM Sans',Arial,sans-serif;--sans:'DM Sans',Arial,sans-serif;--display:'Barlow Condensed',Impact,sans-serif;background:var(--paper);color:var(--ink)}
+  .preview-bar{background:var(--ink);color:#ffbe0b;padding-inline:4vw}
+  .proto-header{height:82px;padding-inline:5vw;background:var(--accent);border:0;color:white}.wordmark{gap:11px;color:white}.wordmark>span:last-child{font:800 17px var(--display);letter-spacing:.01em;text-transform:uppercase}.wordmark small{color:#fff4df;font:700 8px var(--sans);letter-spacing:.1em}.brand-logo{display:block;width:54px;height:62px;object-fit:contain;padding:3px;background:#fff8e9;border-radius:8px}.mark{display:none}.top-links{gap:28px;color:white;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.top-links a:hover,.top-links a:focus-visible{color:#ffbe0b}.demo-pill{border:1px solid #ffffff80;color:white;font-weight:800}.demo-pill i{background:#ffbe0b}
+  .cover{min-height:640px;grid-template-columns:.9fr 1.1fr;padding:52px 8vw 62px;gap:3vw;background:var(--accent);color:#fff8e9;overflow:hidden}.cover:after{content:'POLLO FRESA';position:absolute;right:18%;bottom:-.24em;color:#ffffff12;font:900 clamp(90px,18vw,270px)/.8 var(--display);letter-spacing:-.05em;white-space:nowrap;pointer-events:none}.cover-copy{z-index:3}.cover-copy .kicker,.fried-copy>.kicker,.roast-copy>.kicker,.rotisserie-copy>.kicker{display:inline-block;width:max-content;max-width:100%;padding:8px 11px;background:#ffbe0b;color:var(--ink);font-size:9px;letter-spacing:.12em}.cover h1{max-width:700px;margin:24px 0;font:900 clamp(76px,10.5vw,150px)/.78 var(--display);letter-spacing:-.025em;text-transform:uppercase;color:#fff8e9}.cover h1 em{color:#ffbe0b;font-style:normal}.cover-intro{max-width:350px;color:#fff8e9;font-size:15px;font-weight:600;line-height:1.55}.cover-link{margin-top:25px;padding:15px 19px;background:#ffbe0b;border:0;color:var(--ink);font-size:11px;font-weight:900;letter-spacing:.04em}.cover-link span{color:var(--ink)}.cover-index{margin-top:47px;color:#fff8e9;font-weight:900}.cover-art{height:clamp(420px,44vw,620px);margin-right:-5vw;isolation:isolate}.cover-art:before{z-index:-1;inset:2% 3% 0 9%;background:#ffbe0b;transform:rotate(7deg);border-radius:47% 53% 8% 8%}.cover-art>img{clip-path:polygon(7% 1%,100% 0,95% 100%,0 93%);filter:drop-shadow(0 24px 28px #48100c50)}.art-note{left:-8px;bottom:27px;background:#ffbe0b;color:var(--ink);box-shadow:8px 8px 0 var(--ink);transform:rotate(-2deg)}.art-note span{color:var(--ink);font-size:9px}.art-note b{font:800 19px var(--display);text-transform:uppercase}.art-number{right:5%;top:4%;padding:9px 12px;background:var(--ink);color:#ffbe0b;font-size:16px}.vertical-note{right:2.5vw;color:#fff8e9;font-weight:800}
+  .category-band{grid-template-columns:160px 1fr;align-items:center;gap:24px;padding:22px 7vw;background:#ffbe0b;border:0}.category-band>span{padding:0;color:var(--ink);font-size:9px;font-weight:900}.category-links{gap:8px}.category-links a{min-height:42px;padding:10px 13px;border:1px solid #231b1955;color:var(--ink);font-size:10px;font-weight:900;text-transform:uppercase}.category-links a i,.category-links a b{color:var(--accent)}.category-links a:hover{background:var(--accent);color:white}.category-links a:hover i,.category-links a:hover b{color:white}
+  .menu-area{padding:84px 5.5vw 78px;background:#fff8e9}.menu-heading{max-width:1500px;margin-bottom:48px}.menu-heading .kicker{color:var(--accent);font-weight:900}.menu-heading h2{font:900 clamp(58px,8vw,108px)/.82 var(--display);text-transform:uppercase;letter-spacing:-.025em}.menu-heading h2 em{color:var(--accent);font-style:normal}.menu-heading>p:last-child{color:var(--ink);font-size:11px;font-weight:800;text-transform:uppercase}
+  .fried-feature{max-width:1600px;min-height:680px;margin-bottom:112px;grid-template-columns:minmax(0,1.22fr) minmax(390px,.78fr);background:#ffbe0b}.fried-photo{min-height:680px;background:#e6a900}.fried-photo:after{inset:45% 0 0;background:linear-gradient(0deg,#231b19bf,transparent)}.fried-photo img{transition:opacity .22s ease,transform .45s cubic-bezier(.2,.7,.2,1)}.fried-photo img.is-changing{opacity:.3;transform:scale(1.035)}.photo-overline,.photo-index{font-family:var(--sans);font-weight:900}.photo-overline{left:26px;bottom:24px;padding:10px 13px;background:#231b19;color:#fff8e9}.photo-index{right:20px;top:20px;padding:7px 10px;background:#fff8e9;color:#231b19}.fried-copy{padding:42px clamp(28px,4vw,62px)}.fried-copy>.kicker{margin:0 0 14px}.fried-copy h2{font:900 clamp(59px,6.7vw,99px)/.78 var(--display);letter-spacing:-.02em;text-transform:uppercase;color:var(--ink)}.fried-copy h2 em{color:var(--accent);font-style:normal}.fried-intro{margin:14px 0 19px;color:#46342d;font-size:13px;font-weight:600}.selected-combo{padding:15px 0;border-color:#231b1970}.selected-combo>span{color:#3d2d24;font-weight:900}.selected-combo h3{font:800 clamp(21px,2.4vw,31px)/1.05 var(--display);text-transform:uppercase;letter-spacing:0}.selected-combo>strong{color:var(--accent);font:900 48px/.9 var(--display)}.selected-combo>p{color:#46342d;font:500 10px/1.5 var(--sans)}.selected-options b{color:var(--ink)}.selected-options>div>span{color:#46342d}.combo-full-description{color:#46342d}.combo-full-description summary{color:#8a1e16;font-weight:900}.combo-picker{margin-top:17px}.picker-label{color:#46342d;font-weight:900}.combo-options{gap:6px}.combo-option{min-height:66px;border:2px solid #231b19;background:#fff8e9;color:var(--ink);border-radius:4px}.combo-option b{font:900 24px/.9 var(--display)}.combo-option small{font:800 8px var(--sans);text-transform:uppercase}.combo-option.active{background:var(--accent);border-color:var(--accent);color:#fff}.combo-option:focus-visible,.cover-link:focus-visible,.disabled-action:focus-visible{outline:3px solid #231b19;outline-offset:3px}.combo-buy{display:grid;grid-template-columns:1fr;gap:7px;margin-top:14px}.combo-buy button,.disabled-action{width:100%;min-height:54px;padding:0 17px;border:0;border-radius:3px;background:var(--ink);color:#ffbe0b;font:900 13px var(--sans);letter-spacing:.05em;text-transform:uppercase}.combo-buy button span,.disabled-action span{color:#ffbe0b;font-weight:900}.combo-buy button:disabled,.disabled-action:disabled{opacity:1;cursor:not-allowed;background:#231b19;color:#fff8e9;box-shadow:inset 0 -4px 0 #ffbe0b}.combo-buy small,.disabled-note{color:#46342d;font-weight:700}
+  .roast-feature{max-width:1600px;min-height:650px;margin-bottom:112px;padding:36px 4vw;background:#ff7417;grid-template-columns:minmax(300px,.75fr) minmax(0,1.25fr);gap:4vw}.roast-copy{padding:18px 0 20px 2vw}.roast-copy>.kicker{background:#e52b20;color:#fff8e9}.roast-copy .editorial-number{color:#231b19;font:900 12px var(--display)}.roast-copy h2{font:900 clamp(74px,9vw,132px)/.76 var(--display);letter-spacing:-.025em;text-transform:uppercase;color:#231b19}.roast-copy h2 em{color:#e52b20;font-style:normal}.roast-copy h3{font:900 18px var(--sans);text-transform:uppercase}.roast-copy .description-clamp,.roast-copy .full-description{color:#38241b;font-weight:600}.roast-copy .full-description summary{color:#7c160f}.roast-price{margin:16px 0}.roast-price strong{color:#231b19;font:900 54px/.85 var(--display)}.roast-price span{color:#38241b;font-weight:800}.roast-photo{height:600px;background:#e52b20;box-shadow:12px 12px 0 #231b19}.roast-photo:before{left:auto;right:-15px;width:20px;background:#e52b20}.roast-photo figcaption{background:#231b19;color:#fff8e9;font:800 14px var(--sans);text-transform:uppercase}.roast-photo figcaption i{color:#ffbe0b}.roast-copy .disabled-action{background:#231b19;color:#ffbe0b}.roast-copy .disabled-note{color:#38241b}
+  .rotisserie-feature{max-width:1600px;min-height:690px;margin-bottom:84px;background:#231b19;color:#fff8e9;grid-template-columns:minmax(0,1.2fr) minmax(370px,.8fr)}.rotisserie-image{min-height:690px;background:#e52b20}.rotisserie-image:after{background:linear-gradient(0deg,#231b1970,transparent 55%)}.rotisserie-stamp{border:3px solid #ffbe0b;background:#e52b20;color:#fff8e9;font:900 16px/.85 var(--display)}.rotisserie-stamp i{color:#ffbe0b}.rotisserie-copy{padding:46px clamp(30px,5vw,74px)}.rotisserie-copy .editorial-number{color:#ffbe0b;font:900 12px var(--display)}.rotisserie-copy>.kicker{background:#e52b20;color:#fff8e9}.rotisserie-copy h2{font:900 clamp(70px,8.5vw,124px)/.72 var(--display);letter-spacing:-.02em}.rotisserie-copy h2 em{color:#ffbe0b}.rotisserie-product-name{font:900 20px var(--sans);text-transform:uppercase}.rotisserie-copy .description-clamp,.rotisserie-copy .full-description{color:#f2dfc6}.rotisserie-copy .full-description summary{color:#ffbe0b}.rotisserie-price strong{color:#ffbe0b;font-size:54px}.rotisserie-price span,.rotisserie-copy .disabled-note{color:#f2dfc6}.rotisserie-copy .disabled-action{background:#ffbe0b;color:#231b19}.rotisserie-copy .disabled-action span{color:#231b19}
+  .remaining-products{max-width:1500px}.remaining-products article{border-top:4px solid #e52b20}.remaining-products article>span{font-weight:900;text-transform:uppercase}.remaining-products h3{font:900 26px var(--display);text-transform:uppercase}.remaining-products strong{color:#e52b20;font-size:32px}.remaining-products button{width:100%;min-height:46px;background:#231b19;color:#fff8e9;font-weight:900;text-transform:uppercase}.proto-footer{background:#231b19;color:#fff8e9}.proto-footer p{color:#f2dfc6}.proto-footer a{color:#ffbe0b}
+  @media(max-width:900px){.proto-header{padding-inline:4vw}.cover{min-height:560px;padding:48px 6vw 54px}.cover h1{font-size:clamp(70px,10vw,108px)}.cover-art{height:430px;margin-right:-5vw}.cover-index{margin-top:36px}.fried-feature{min-height:570px;grid-template-columns:1.1fr .9fr}.fried-photo{min-height:570px}.fried-copy{padding:32px 24px}.fried-copy h2{font-size:clamp(56px,7vw,78px)}.selected-combo>strong{font-size:42px}.roast-feature{min-height:570px;grid-template-columns:.8fr 1.2fr;padding-inline:3vw}.roast-photo{height:510px}.rotisserie-feature{min-height:570px;grid-template-columns:1.1fr .9fr}.rotisserie-image{min-height:570px}.rotisserie-copy{padding:38px 25px}.rotisserie-copy h2{font-size:clamp(64px,8vw,84px)}}
+  @media(max-width:620px){.proto-header{height:70px;padding-inline:5vw}.brand-logo{width:46px;height:54px}.wordmark>span:last-child{font-size:15px}.wordmark small{font-size:7px}.cover{min-height:0;grid-template-columns:1fr;padding:43px 6vw 38px;gap:26px}.cover:after{right:-8%;bottom:40%;font-size:43vw}.cover h1{font-size:clamp(76px,19vw,116px);margin:19px 0;line-height:.75}.cover-intro{font-size:13px;max-width:300px}.cover-link{min-height:48px;padding:13px 17px}.cover-index{margin-top:28px;font-size:8px}.cover-art{height:min(100vw,410px);margin:0 1vw 0 6vw}.art-note{left:-5vw;bottom:17px;min-width:165px;padding:12px 14px}.art-note b{font-size:17px}.art-number{right:2%;top:2%}.category-band{grid-template-columns:1fr;padding:18px 5vw;gap:10px}.category-links{display:grid;grid-template-columns:1fr 1fr;gap:6px}.category-links a{justify-content:space-between;min-height:44px;padding:9px;font-size:8px}.category-links i{margin-right:auto}.menu-area{padding:52px 5vw 48px}.menu-heading{display:block;margin-bottom:27px}.menu-heading h2{margin-top:8px;font-size:clamp(58px,15vw,78px)}.menu-heading>p:last-child{margin-top:12px}.fried-feature{display:flex;flex-direction:column;margin:0 -5vw 67px;min-height:0}.fried-photo{height:min(113vw,480px);min-height:0}.fried-photo:after{inset:50% 0 0}.photo-overline{left:12px;bottom:12px;padding:8px 9px;font-size:8px}.photo-index{right:11px;top:11px;font-size:8px}.fried-copy{padding:24px 5vw 25px}.fried-copy>.kicker{margin-bottom:10px}.fried-copy h2{font-size:clamp(63px,17vw,88px)}.fried-intro{margin:10px 0 14px;font-size:12px}.selected-combo{gap:5px 8px;padding:12px 0}.selected-combo h3{font-size:23px}.selected-combo>strong{font-size:43px}.selected-combo>p{font-size:9px}.combo-options{gap:5px}.combo-option{min-height:62px;border-width:2px}.combo-option b{font-size:22px}.combo-option small{font-size:7px}.combo-buy{margin-top:13px}.combo-buy button{min-height:54px;font-size:12px}.roast-feature{display:flex;flex-direction:column-reverse;gap:0;margin:0 -5vw 68px;padding:0}.roast-copy{padding:24px 5vw 20px}.roast-copy .editorial-number{margin-bottom:17px}.roast-copy h2{font-size:clamp(78px,21vw,112px)}.roast-copy h3{margin-top:18px}.roast-photo{width:100%;height:min(112vw,470px);box-shadow:0 9px 0 #231b19}.roast-photo:before{display:none}.roast-photo figcaption{font-size:11px}.roast-price{margin:13px 0}.roast-price strong{font-size:48px}.roast-copy .disabled-action{min-height:53px}.rotisserie-feature{display:flex;flex-direction:column;margin:0 -5vw 52px;min-height:0}.rotisserie-image{height:min(112vw,470px);min-height:0}.rotisserie-stamp{left:14px;top:14px;width:82px;height:82px;font-size:12px}.rotisserie-copy{padding:25px 6vw 28px}.rotisserie-copy .editorial-number{margin-bottom:16px}.rotisserie-copy h2{font-size:clamp(80px,22vw,112px)}.rotisserie-product-name{margin-top:17px}.rotisserie-price{margin:14px 0}.rotisserie-price strong{font-size:48px}.rotisserie-copy .disabled-action{min-height:53px}.remaining-products{margin-bottom:48px}.proto-footer{padding:21px 5vw}}
+  @media(max-width:360px){.cover h1{font-size:74px}.combo-option{min-height:58px}.combo-option b{font-size:19px}.selected-combo>strong{font-size:39px}.roast-copy h2,.rotisserie-copy h2{font-size:76px}}
+</style>
