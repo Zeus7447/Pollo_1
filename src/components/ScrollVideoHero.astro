@@ -1,0 +1,408 @@
+---
+const poster = '/media/pollo-fresa-hero/poster.webp';
+const mobilePoster = '/media/pollo-fresa-hero/poster-mobile-vertical.webp';
+const desktopManifest = '/media/pollo-fresa-hero/manifest.json';
+const mobileManifest = '/media/pollo-fresa-hero/manifest-mobile.json';
+---
+
+<section class="scroll-canvas-hero" id="inicio" aria-label="Secuencia cinematográfica de Pollo Fresa" data-scroll-canvas data-desktop-manifest={desktopManifest} data-mobile-manifest={mobileManifest}>
+  <div class="scroll-canvas-stage" data-pin-stage>
+    <picture>
+      <source media="(max-width: 767px)" srcset={mobilePoster} width="1080" height="1920" />
+      <img class="scroll-canvas-poster" src={poster} alt="" width="1920" height="1080" fetchpriority="high" decoding="async" />
+    </picture>
+    <canvas class="scroll-canvas" aria-hidden="true"></canvas>
+  </div>
+  <p class="sr-only">Secuencia visual de Pollo Fresa. Desplázate para recorrerla. Los enlaces a ambas marcas están disponibles al terminar el hero y en la navegación principal.</p>
+</section>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  type HeroVariant = 'desktop' | 'mobile';
+  type FrameImage = ImageBitmap | HTMLImageElement;
+  type SequenceManifest = {
+    source: { width: number; height: number; fps: number; durationSeconds: number; codec: string; bytes: number };
+    sequence: { fps: number; frameCount: number; digits: number; firstFrame: number; format: string };
+    variants: Partial<Record<HeroVariant, { width: number; height: number; pattern: string; bytes: number }>>;
+  };
+  type HeroDevMetrics = {
+    progress: number; targetFrame: number; displayedFrame: number; frameDifference: number;
+    canvasDrawMs: number; cachedFrames: number; pendingRequests: number;
+    estimatedDecodedBytes: number; lastFrameWaitMs: number | null;
+  };
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  document.querySelectorAll<HTMLElement>('[data-scroll-canvas]').forEach((section) => {
+    if (section.dataset.scrollInitialized === 'true') return;
+    section.dataset.scrollInitialized = 'true';
+    const stage = section.querySelector<HTMLElement>('[data-pin-stage]');
+    const canvas = section.querySelector<HTMLCanvasElement>('.scroll-canvas');
+    const posterImage = section.querySelector<HTMLImageElement>('.scroll-canvas-poster');
+    const context = canvas?.getContext('2d', { alpha: false });
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mobileQuery = window.matchMedia('(max-width: 767px)');
+    if (!stage || !canvas || !posterImage || !context || reducedMotion.matches) return;
+
+    const cache = new Map<number, FrameImage>();
+    const queued = new Set<number>();
+    const controllers = new Map<number, AbortController>();
+    const failedUntil = new Map<number, number>();
+    const cacheLimit = 6;
+    const concurrencyLimit = 3;
+    let activeLoads = 0;
+    let disposed = false;
+    let switching = false;
+    let sequenceReady = false;
+    let count = 0;
+    let pattern = '';
+    let digits = 3;
+    let activeVariant: HeroVariant | null = null;
+    let requestedVariant: HeroVariant | null = null;
+    let sequenceGeneration = 0;
+    let requestGeneration = 0;
+    let wanted = 0;
+    let currentProgress = 0;
+    let lastDrawn = -1;
+    let resizeRaf = 0;
+    let pinContext: gsap.Context | undefined;
+    let resizeObserver: ResizeObserver | undefined;
+    const diagnosticsEnabled = import.meta.env.DEV;
+    const requestedAt = new Map<number, number>();
+    let sequenceWidth = 0;
+    let sequenceHeight = 0;
+    let lastCanvasDrawMs = 0;
+    let lastFrameWaitMs: number | null = null;
+    const updateDiagnostics = () => {
+      if (!diagnosticsEnabled) return;
+      const metrics: HeroDevMetrics = {
+        progress: currentProgress,
+        targetFrame: wanted,
+        displayedFrame: lastDrawn,
+        frameDifference: lastDrawn < 0 ? count : Math.abs(wanted - lastDrawn),
+        canvasDrawMs: lastCanvasDrawMs,
+        cachedFrames: cache.size,
+        pendingRequests: queued.size + activeLoads,
+        estimatedDecodedBytes: cache.size * sequenceWidth * sequenceHeight * 4,
+        lastFrameWaitMs
+      };
+      (window as Window & { __polloHeroMetrics?: HeroDevMetrics }).__polloHeroMetrics = metrics;
+    };
+    const header = document.querySelector<HTMLElement>('[data-storefront-header]');
+    const onHeaderTransitionEnd = (event: TransitionEvent) => {
+      if (event.propertyName !== 'height') return;
+      const previous = ScrollTrigger.getById('pollo-fresa-hero');
+      const progress = previous?.progress ?? currentProgress;
+      const preservePinnedPosition = Boolean(previous?.isActive);
+      ScrollTrigger.refresh();
+      const refreshed = ScrollTrigger.getById('pollo-fresa-hero');
+      if (preservePinnedPosition && refreshed) {
+        window.scrollTo(0, refreshed.start + (refreshed.end - refreshed.start) * progress);
+        ScrollTrigger.update();
+      }
+    };
+
+    const closeImage = (image: FrameImage) => {
+      if ('close' in image && typeof image.close === 'function') image.close();
+      else if (image instanceof HTMLImageElement) image.removeAttribute('src');
+    };
+    const selectedVariant = (): HeroVariant => mobileQuery.matches ? 'mobile' : 'desktop';
+    const manifestUrl = (variant: HeroVariant) => variant === 'mobile' ? section.dataset.mobileManifest : section.dataset.desktopManifest;
+    const frameUrl = (framePattern: string, frameDigits: number, index: number) => framePattern.replace('{index}', String(index + 1).padStart(frameDigits, '0'));
+    const resizeCanvas = () => {
+      if (switching) return;
+      const rect = stage.getBoundingClientRect();
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      const width = Math.max(1, Math.round(rect.width * ratio));
+      const height = Math.max(1, Math.round(rect.height * ratio));
+      if (canvas.width === width && canvas.height === height) return;
+      canvas.width = width;
+      canvas.height = height;
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      lastDrawn = -1;
+      drawNearest();
+    };
+    const draw = (index: number, image: FrameImage) => {
+      if (lastDrawn === index || !canvas.width || !canvas.height || !activeVariant) return;
+      const drawStartedAt = performance.now();
+      const width = image instanceof HTMLImageElement ? image.naturalWidth : image.width;
+      const height = image instanceof HTMLImageElement ? image.naturalHeight : image.height;
+      if (!width || !height) return;
+      context.fillStyle = activeVariant === 'mobile' ? '#d81727' : '#080706';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      const scale = Math.max(canvas.width / width, canvas.height / height);
+      const drawnWidth = width * scale;
+      const drawnHeight = height * scale;
+      context.drawImage(image, (canvas.width - drawnWidth) / 2, (canvas.height - drawnHeight) / 2, drawnWidth, drawnHeight);
+      lastCanvasDrawMs = performance.now() - drawStartedAt;
+      lastDrawn = index;
+      const requestedTime = requestedAt.get(index);
+      if (requestedTime !== undefined) {
+        lastFrameWaitMs = performance.now() - requestedTime;
+        requestedAt.delete(index);
+      }
+      canvas.classList.add('is-ready');
+      posterImage.classList.add('is-covered');
+      updateDiagnostics();
+    };
+    function drawNearest() {
+      let index = -1;
+      let distance = Number.POSITIVE_INFINITY;
+      for (const candidate of cache.keys()) {
+        const nextDistance = Math.abs(candidate - wanted);
+        if (nextDistance < distance) { index = candidate; distance = nextDistance; }
+      }
+      if (index < 0) return;
+      const image = cache.get(index);
+      if (!image) return;
+      cache.delete(index);
+      cache.set(index, image);
+      draw(index, image);
+    }
+    const remember = (index: number, image: FrameImage) => {
+      const old = cache.get(index);
+      if (old) closeImage(old);
+      cache.delete(index);
+      cache.set(index, image);
+      while (cache.size > cacheLimit) {
+        const oldest = cache.keys().next().value as number | undefined;
+        if (oldest === undefined) break;
+        const stale = cache.get(oldest);
+        cache.delete(oldest);
+        if (stale) closeImage(stale);
+      }
+      drawNearest();
+      updateDiagnostics();
+    };
+    const decode = async (index: number, framePattern: string, frameDigits: number, signal?: AbortSignal): Promise<FrameImage> => {
+      const url = frameUrl(framePattern, frameDigits, index);
+      if ('createImageBitmap' in window) {
+        const response = await fetch(url, { signal, cache: 'force-cache' });
+        if (!response.ok) throw new Error('No se pudo cargar un fotograma.');
+        return createImageBitmap(await response.blob());
+      }
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      return image;
+    };
+    const clearFrameResources = () => {
+      requestGeneration += 1;
+      controllers.forEach((controller) => controller.abort());
+      controllers.clear();
+      queued.clear();
+      failedUntil.clear();
+      cache.forEach(closeImage);
+      cache.clear();
+    };
+    const pump = () => {
+      if (disposed || switching || !pattern || !activeVariant) return;
+      while (activeLoads < concurrencyLimit && queued.size) {
+        const next = [...queued].sort((a, b) => Math.abs(a - wanted) - Math.abs(b - wanted))[0];
+        queued.delete(next);
+        if (cache.has(next) || controllers.has(next)) continue;
+        const controller = new AbortController();
+        controllers.set(next, controller);
+        activeLoads += 1;
+        const generation = requestGeneration;
+        const selectedPattern = pattern;
+        const selectedDigits = digits;
+        void decode(next, selectedPattern, selectedDigits, controller.signal).then((image) => {
+          if (disposed || generation !== requestGeneration || Math.abs(next - wanted) > 8) closeImage(image);
+          else remember(next, image);
+        }).catch(() => {
+          if (!disposed && generation === requestGeneration) failedUntil.set(next, Date.now() + 3000);
+        }).finally(() => {
+          if (controllers.get(next) === controller) controllers.delete(next);
+          activeLoads -= 1;
+          pump();
+        });
+      }
+    };
+    const requestWindow = (index: number) => {
+      if (switching || !activeVariant || !count) return;
+      wanted = Math.max(0, Math.min(count - 1, index));
+      for (let frame = Math.max(0, wanted - 4); frame <= Math.min(count - 1, wanted + 4); frame += 1) {
+        if (!cache.has(frame) && !controllers.has(frame) && (failedUntil.get(frame) ?? 0) <= Date.now()) {
+          failedUntil.delete(frame);
+          queued.add(frame);
+          if (!requestedAt.has(frame)) requestedAt.set(frame, performance.now());
+        }
+      }
+      for (const frame of queued) {
+        if (Math.abs(frame - wanted) > 8) {
+          queued.delete(frame);
+          requestedAt.delete(frame);
+        }
+      }
+      for (const [frame, controller] of controllers) {
+        if (Math.abs(frame - wanted) > 8) {
+          controller.abort();
+          controllers.delete(frame);
+          requestedAt.delete(frame);
+        }
+      }
+      drawNearest();
+      pump();
+      updateDiagnostics();
+    };
+    const installScrollTrigger = (restoreProgress: number, preservePinnedPosition: boolean) => {
+      const playhead = { frame: 0 };
+      pinContext = gsap.context(() => {
+        gsap.fromTo(playhead, { frame: 0 }, {
+          frame: count - 1,
+          ease: 'none',
+          onUpdate: () => {
+            currentProgress = count > 1 ? playhead.frame / (count - 1) : 0;
+            if (!switching) requestWindow(Math.round(playhead.frame));
+          },
+          scrollTrigger: {
+            id: 'pollo-fresa-hero',
+            trigger: section,
+            pin: stage,
+            pinSpacing: true,
+            start: () => {
+              const headerHeight = Math.round(document.querySelector<HTMLElement>('[data-storefront-header]')?.getBoundingClientRect().height ?? 0);
+              return `top top+=${headerHeight}px`;
+            },
+            end: () => {
+              const screens = activeVariant === 'mobile' ? 2.8 : window.innerWidth <= 900 ? 3.2 : 4;
+              return '+=' + Math.round(window.innerHeight * screens);
+            },
+            scrub: true,
+            invalidateOnRefresh: true,
+            anticipatePin: 1,
+            onRefresh: (trigger) => {
+              currentProgress = trigger.progress;
+              if (!switching) requestWindow(Math.round(trigger.progress * (count - 1)));
+            }
+          }
+        });
+      }, section);
+      ScrollTrigger.refresh();
+      let appliedProgress = ScrollTrigger.getById('pollo-fresa-hero')?.progress ?? restoreProgress;
+      if (preservePinnedPosition) {
+        const trigger = ScrollTrigger.getById('pollo-fresa-hero');
+        if (trigger) {
+          const targetScroll = trigger.start + (trigger.end - trigger.start) * Math.max(0, Math.min(1, restoreProgress));
+          window.scrollTo(0, targetScroll);
+          ScrollTrigger.update();
+          appliedProgress = trigger.progress;
+        }
+      }
+      currentProgress = appliedProgress;
+      requestWindow(Math.round(appliedProgress * (count - 1)));
+    };
+    const loadVariant = async (variant: HeroVariant) => {
+      if (disposed || requestedVariant === variant || (sequenceReady && activeVariant === variant)) return;
+      requestedVariant = variant;
+      const generation = ++sequenceGeneration;
+      switching = true;
+      canvas.classList.remove('is-ready');
+      posterImage.classList.remove('is-covered');
+      clearFrameResources();
+      try {
+        const response = await fetch(manifestUrl(variant) ?? '', { cache: 'force-cache' });
+        if (!response.ok) throw new Error('No se pudo cargar el manifiesto del hero.');
+        const manifest = await response.json() as SequenceManifest;
+        const data = manifest.variants[variant];
+        if (!data || !manifest.sequence.frameCount) throw new Error('El manifiesto no contiene esta secuencia.');
+        const first = await decode(0, data.pattern, manifest.sequence.digits);
+        if (disposed || generation !== sequenceGeneration) { closeImage(first); return; }
+        if (selectedVariant() !== variant) {
+          closeImage(first);
+          switching = false;
+          requestedVariant = activeVariant;
+          void loadVariant(selectedVariant());
+          return;
+        }
+
+        const latestProgress = currentProgress;
+        const previousTrigger = ScrollTrigger.getById('pollo-fresa-hero');
+        const preservePinnedPosition = Boolean(previousTrigger?.isActive || latestProgress >= 1);
+        pinContext?.revert();
+        pinContext = undefined;
+        activeVariant = variant;
+        count = manifest.sequence.frameCount;
+        sequenceWidth = data.width;
+        sequenceHeight = data.height;
+        digits = manifest.sequence.digits;
+        pattern = data.pattern;
+        wanted = Math.round(Math.max(0, Math.min(1, latestProgress)) * (count - 1));
+        lastDrawn = -1;
+        canvas.classList.remove('is-ready');
+        posterImage.classList.remove('is-covered');
+        sequenceReady = true;
+        switching = false;
+        resizeCanvas();
+        remember(0, first);
+        installScrollTrigger(latestProgress, preservePinnedPosition);
+      } catch {
+        if (generation !== sequenceGeneration || disposed) return;
+        switching = false;
+        requestedVariant = null;
+        pinContext?.revert();
+        pinContext = undefined;
+        clearFrameResources();
+        sequenceReady = false;
+        activeVariant = null;
+        count = 0;
+        pattern = '';
+        canvas.classList.remove('is-ready');
+        posterImage.classList.remove('is-covered');
+        ScrollTrigger.refresh();
+      }
+    };
+    const onResize = () => {
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        const nextVariant = selectedVariant();
+        if (nextVariant !== activeVariant && nextVariant !== requestedVariant) void loadVariant(nextVariant);
+        else if (nextVariant === activeVariant) {
+          resizeCanvas();
+          ScrollTrigger.refresh();
+        }
+      });
+    };
+
+    resizeCanvas();
+    resizeObserver = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(resizeCanvas);
+    resizeObserver?.observe(stage);
+    window.addEventListener('resize', onResize, { passive: true });
+    mobileQuery.addEventListener('change', onResize);
+    header?.addEventListener('transitionend', onHeaderTransitionEnd);
+    void loadVariant(selectedVariant());
+    window.addEventListener('pagehide', () => {
+      disposed = true;
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+      resizeObserver?.disconnect();
+      clearFrameResources();
+      requestedAt.clear();
+      pinContext?.revert();
+      window.removeEventListener('resize', onResize);
+      mobileQuery.removeEventListener('change', onResize);
+      header?.removeEventListener('transitionend', onHeaderTransitionEnd);
+    }, { once: true });
+  });
+</script>
+
+<style>
+  .scroll-canvas-hero{position:relative;width:100%;margin:0;padding:0;background:#080706;color:#fff5e8}
+  .scroll-canvas-stage{position:relative;width:100%;height:min(calc(100svh - 83px),56.25vw);min-height:0;overflow:hidden;background:#080706}
+  .scroll-canvas-stage picture{position:absolute;inset:0;display:block;width:100%;height:100%}
+  .scroll-canvas-poster,.scroll-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:center;background:#080706}
+  .scroll-canvas{opacity:0;transition:opacity .12s linear}.scroll-canvas.is-ready{opacity:1}
+  .scroll-canvas-poster{transition:opacity .12s linear}.scroll-canvas-poster.is-covered{opacity:0}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  :global(body.theme-pollo #inicio.scroll-canvas-hero),:global(body.theme-wings #inicio.scroll-canvas-hero),:global(body.theme-combined #inicio.scroll-canvas-hero),:global(body.theme-closed #inicio.scroll-canvas-hero){background:#080706}
+  @media(max-width:767px){
+    .scroll-canvas-hero,.scroll-canvas-stage{background:#d81727}
+    .scroll-canvas-stage{height:calc(100svh - 73px);height:calc(100dvh - 73px);min-height:0}
+    .scroll-canvas-poster{object-fit:cover;background:#d81727}
+  }
+  @media(prefers-reduced-motion:reduce){.scroll-canvas,.scroll-canvas-poster{transition:none}}
+</style>

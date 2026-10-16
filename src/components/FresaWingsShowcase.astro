@@ -1,0 +1,250 @@
+---
+import StorefrontPromotions from './StorefrontPromotions.astro';
+import type { CatalogCategory, CatalogProduct, CatalogPromotion } from '../lib/directus';
+import hawaianaVideo from '../assets/fresa_wings/braing_hawaiana_pagina.mp4';
+
+interface Props {
+  products: CatalogProduct[];
+  categories: CatalogCategory[];
+  promotions?: CatalogPromotion[];
+}
+
+const { products, categories, promotions = [] } = Astro.props;
+const visibleCategories = categories
+  .map((category) => ({
+    category,
+    products: products.filter((product) => product.categoryId === category.id).sort((first, second) => {
+      if (!/alitas|boneless/i.test(category.name)) return 0;
+      const firstPortion = Number(first.name.match(/\d+/)?.[0] ?? 0);
+      const secondPortion = Number(second.name.match(/\d+/)?.[0] ?? 0);
+      return firstPortion - secondPortion;
+    }),
+  }))
+  .filter(({ products: categoryProducts }) => categoryProducts.length > 0);
+const uncategorized = products.filter((product) => !product.categoryId || !categories.some((category) => category.id === product.categoryId));
+const categoryGroups = [
+  ...visibleCategories,
+  ...(uncategorized.length ? [{ category: { id: -1, name: 'M\u00e1s del men\u00fa', brand: 'Fresa Wings' as const }, products: uncategorized }] : []),
+];
+const hawaianaProduct = products.find((product) => /hawaian[ae]/i.test(product.name));
+const hamburguesasCategory = categoryGroups.find(({ category }) => /hamburguesa/i.test(category.name))?.category;
+const hawaianaHref = hawaianaProduct ? `#promotion-product-${hawaianaProduct.id}` : hamburguesasCategory ? `#fw-category-${hamburguesasCategory.id}` : '#fw-categories';
+const hawaianaCtaLabel = hawaianaProduct ? 'Pedir hamburguesa hawaiana' : 'Explorar hamburguesas';
+
+---
+
+<section class="fresa-wings-showcase" id="fresa-wings-menu" data-catalog-brand="Fresa Wings" data-food-motion-scope="wings" aria-labelledby="fw-menu-title">
+  <header class="fw-intro">
+    <div class="fw-intro-copy" data-motion-story>
+      <p class="fw-eyebrow" data-motion-step><span>FRESA WINGS</span><i>WINGS &middot; BONELESS &middot; STREET FOOD</i></p>
+      <h2 id="fw-menu-title" data-motion-step>El antojo<br /><em>va en serio.</em></h2>
+      <p data-motion-step>Alitas, boneless y favoritos para compartir sin pensarlo dos veces.</p>
+      <a href="#fw-categories">Explorar el men&#250; <span aria-hidden="true">&darr;</span></a>
+      <a class="fw-hawaiana-cta" href={hawaianaHref}>{hawaianaCtaLabel}<span aria-hidden="true">&#8599;</span></a>
+    </div>
+    <div class="fw-intro-feature">
+      <div class="fw-intro-mark" aria-hidden="true" data-motion-stagger><span data-motion-item>FW</span><b data-motion-item>CRUNCH<br />LOUD.</b></div>
+      <div class="fw-hawaiana-video-wrap">
+        <video class="fw-hawaiana-video" data-hawaiana-video data-motion-image autoplay muted loop playsinline preload="none" poster="/media/fresa-wings/hawaiana-video-poster.webp" aria-hidden="true" tabindex="-1">
+          <source data-src={hawaianaVideo} type="video/mp4" />
+        </video>
+        <span class="fw-video-caption" aria-hidden="true">Hamburguesa hawaiana &middot; Fresa Wings</span>
+      </div>
+    </div>
+  </header>
+
+  <StorefrontPromotions brand="Fresa Wings" promotions={promotions} products={products} />
+
+  <nav class="fw-category-nav" id="fw-categories" aria-label="Categor&#237;as de Fresa Wings">
+    <span>IR DIRECTO A</span>
+    {categoryGroups.map(({ category }, index) => <a href={`#fw-category-${category.id}`} data-motion-hover><i>{String(index + 1).padStart(2, '0')}</i>{category.name}<b aria-hidden="true">&#8600;</b></a>)}
+  </nav>
+
+  <div class="fw-menu-content">
+    <header class="fw-menu-heading">
+      <p class="fw-eyebrow">Hecho para entrarle</p>
+      <h3 data-motion-text>Escoge tu<br /><em>siguiente antojo.</em></h3>
+      <span>{products.length} productos disponibles</span>
+    </header>
+
+    {categoryGroups.map(({ category, products: categoryProducts }, groupIndex) => {
+      const isBurgers = /hamburguesa/i.test(category.name);
+      const family = categoryProducts.length > 1 && !isBurgers;
+      const initial = categoryProducts[0];
+      const familyId = `fw-family-${category.id}-${groupIndex}`;
+      return <section class:list={['fw-category', groupIndex % 2 === 1 && 'fw-category-shifted']} id={`fw-category-${category.id}`} aria-labelledby={`fw-heading-${category.id}`}>
+        <header class="fw-category-heading">
+          <span>{String(groupIndex + 1).padStart(2, '0')}</span>
+          <h3 id={`fw-heading-${category.id}`} data-motion-text>{category.name}</h3>
+          <i>{String(categoryProducts.length).padStart(2, '0')} opciones</i>
+        </header>
+        {family ? <div class="fw-family-layout">
+          <article class="fw-family-product product-card product-wings" data-product-id={initial.id} id={`${familyId}-product`}>
+            <div class="fw-family-image-wrap">
+              <img class="fw-family-image" data-showcase-image data-motion-image data-motion-parallax src={initial.image} alt={initial.name} loading="lazy" hidden={!initial.image} />
+              <div class="fw-image-unavailable" data-showcase-placeholder hidden={Boolean(initial.image)}>Fotograf&#237;a no disponible</div>
+              <span class="fw-family-stamp" aria-hidden="true">FRESA<br />WINGS</span>
+            </div>
+            <div class="fw-family-copy" aria-live="polite" aria-atomic="true">
+              <span class="fw-product-category" data-showcase-category data-motion-text>{initial.category}</span>
+              <h4 data-showcase-name data-motion-text>{initial.name}</h4>
+              <p data-showcase-description data-motion-text>{initial.description}</p>
+              <span class="fw-option-hint" data-showcase-options hidden={!initial.optionGroups.length}>{initial.optionGroups.length ? `Personalizaci\u00f3n &middot; ${initial.optionGroups.map((group) => group.name).join(' · ')}` : ''}</span>
+              <div class="fw-buy-row"><strong data-showcase-price>{initial.price}</strong><button type="button" class="add-button" data-add-product={initial.id} aria-label={`Agregar ${initial.name} al pedido`}><span class="add-button-label">{initial.optionGroups.length > 0 ? 'Personalizar' : 'Agregar'}</span><span aria-hidden="true">+</span></button></div>
+            </div>
+          </article>
+          <div class="fw-product-picker" role="group" aria-label={`Elige una opci\u00f3n de ${category.name}`} id={familyId}>
+            <p>{category.name.match(/alitas|boneless/i) ? 'Elige tu tama\u00f1o' : 'Elige tu favorito'}</p>
+            <div class="fw-product-picker-options">{categoryProducts.map((product, index) => <button type="button" id={`promotion-product-${product.id}`} class="fw-product-choice" data-showcase-choice data-motion-hover data-product-id={product.id} data-name={product.name} data-description={product.description} data-price={product.price} data-image={product.image ?? ''} data-category={product.category} data-has-options={product.optionGroups.length > 0 ? 'true' : 'false'} data-option-names={product.optionGroups.map((group) => group.name).join(' · ')} aria-pressed={index === 0 ? 'true' : 'false'} aria-controls={`${familyId}-product`}><span>{product.name}</span><b>{product.price}</b></button>)}</div>
+          </div>
+        </div> : <div class="fw-spotlight-list">{categoryProducts.map((product, index) => <article id={`promotion-product-${product.id}`} class:list={['fw-product', 'product-card', 'product-wings', isBurgers && 'fw-product-featured']} data-product-id={product.id}>
+          <div class="fw-product-image">{product.image ? <img src={product.image} alt={product.name} loading="lazy" data-motion-image /> : <div class="fw-image-unavailable">Fotograf&#237;a no disponible</div>}<span class="fw-image-index">{String(index + 1).padStart(2, '0')}</span></div>
+          <div class="fw-product-copy"><span class="fw-product-category" data-motion-text>{category.name}</span><h4 data-motion-text>{product.name}</h4><p data-motion-text>{product.description}</p>{product.optionGroups.length > 0 && <span class="fw-option-hint">Personalizaci&#243;n disponible</span>}<div class="fw-buy-row"><strong>{product.price}</strong><button type="button" class="add-button" data-add-product={product.id} aria-label={`Agregar ${product.name} al pedido`}><span class="add-button-label">{product.optionGroups.length > 0 ? 'Personalizar' : 'Agregar'}</span><span aria-hidden="true">+</span></button></div></div>
+        </article>)}</div>}
+      </section>;
+    })}
+
+    {products.length === 0 && <p class="fw-empty" role="status">No hay productos disponibles para Fresa Wings en este momento.</p>}
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-catalog-brand="Fresa Wings"]').forEach((showcase) => {
+    showcase.querySelectorAll<HTMLButtonElement>('[data-showcase-choice]').forEach((choice) => {
+      choice.addEventListener('click', () => {
+        const family = choice.closest('.fw-family-layout');
+        const card = family?.querySelector<HTMLElement>('.fw-family-product');
+        const button = card?.querySelector<HTMLButtonElement>('.add-button');
+        const title = card?.querySelector<HTMLElement>('[data-showcase-name]');
+        const description = card?.querySelector<HTMLElement>('[data-showcase-description]');
+        const price = card?.querySelector<HTMLElement>('[data-showcase-price]');
+        const image = card?.querySelector<HTMLImageElement>('[data-showcase-image]');
+        const placeholder = card?.querySelector<HTMLElement>('[data-showcase-placeholder]');
+        const category = card?.querySelector<HTMLElement>('[data-showcase-category]');
+        const optionHint = card?.querySelector<HTMLElement>('[data-showcase-options]');
+        if (!card || !button || !title || !description || !price || !category || !optionHint) return;
+
+        const { productId, name, description: productDescription, price: productPrice, image: productImage, category: productCategory, hasOptions, optionNames } = choice.dataset;
+        if (!productId || !name) return;
+        card.dataset.productId = productId;
+        button.dataset.addProduct = productId;
+        button.setAttribute('aria-label', `${hasOptions === 'true' ? 'Personalizar' : 'Agregar'} ${name} al pedido`);
+        const label = button.querySelector<HTMLElement>('.add-button-label');
+        if (label) label.textContent = hasOptions === 'true' ? 'Personalizar' : 'Agregar';
+        title.textContent = name;
+        description.textContent = productDescription ?? '';
+        price.textContent = productPrice ?? '';
+        category.textContent = productCategory ?? '';
+        optionHint.textContent = optionNames ? `Personalizaci\u00f3n \u00b7 ${optionNames}` : '';
+        optionHint.hidden = !optionNames;
+        if (image) {
+          image.hidden = !productImage;
+          if (productImage) image.src = productImage;
+          image.alt = name;
+        }
+        if (placeholder) placeholder.hidden = Boolean(productImage);
+        choice.parentElement?.querySelectorAll<HTMLButtonElement>('[data-showcase-choice]').forEach((other) => {
+          const selected = other === choice;
+          other.setAttribute('aria-pressed', String(selected));
+          other.classList.toggle('is-selected', selected);
+        });
+      });
+    });
+  });
+</script>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-catalog-brand="Fresa Wings"]').forEach((showcase) => {
+    const video = showcase.querySelector<HTMLVideoElement>('[data-hawaiana-video]');
+    const source = video?.querySelector<HTMLSourceElement>('source[data-src]');
+    if (!video || !source || video.dataset.visibilityReady === 'true') return;
+    video.dataset.visibilityReady = 'true';
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let isVisible = false;
+    let sourceAttached = false;
+    const playWhenAllowed = () => {
+      if (!isVisible || document.hidden || reducedMotion.matches) {
+        video.pause();
+        return;
+      }
+      if (!sourceAttached) {
+        const url = source.dataset.src;
+        if (!url) return;
+        source.src = url;
+        sourceAttached = true;
+        video.load();
+      }
+      void video.play().catch(() => {});
+    };
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver((entries) => {
+      isVisible = entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.12);
+      if (isVisible) playWhenAllowed();
+      else video.pause();
+    }, { threshold: [0, 0.12], rootMargin: '120px 0px' });
+    const onVisibilityChange = () => document.hidden ? video.pause() : playWhenAllowed();
+    const onMotionChange = () => playWhenAllowed();
+    const dispose = () => {
+      observer?.disconnect();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener('astro:before-swap', dispose);
+      reducedMotion.removeEventListener('change', onMotionChange);
+      video.pause();
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    document.addEventListener('astro:before-swap', dispose, { once: true });
+    reducedMotion.addEventListener('change', onMotionChange);
+    if (observer) observer.observe(video);
+    else {
+      isVisible = true;
+      playWhenAllowed();
+    }
+  });
+</script>
+
+<style>
+  .fresa-wings-showcase{--fw-bg:#151211;--fw-surface:#24201e;--fw-cream:#fff5e8;--fw-muted:#cbbdb4;--fw-red:#ff5037;position:relative;overflow:hidden;color:var(--fw-cream);background:var(--fw-bg);font-family:var(--body,Arial,sans-serif)}
+  .fw-intro{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(250px,.85fr);align-items:center;min-height:430px;overflow:hidden;padding:70px max(7vw,24px);border-top:1px solid #51423b;border-bottom:1px solid #51423b;background:radial-gradient(ellipse at 83% 45%,#64201655,transparent 38%),linear-gradient(115deg,#151211,#211613 58%,#151211)}
+  .fw-intro-copy{position:relative;z-index:2;max-width:720px}.fw-eyebrow{display:flex;flex-wrap:wrap;align-items:center;gap:15px;margin:0 0 16px;color:var(--fw-red);font-size:.7rem;font-weight:900;letter-spacing:.17em}.fw-eyebrow i{color:var(--fw-muted);font-size:.58rem;font-style:normal}.fw-intro h2,.fw-menu-heading h3{margin:0;font-family:var(--display,Impact,sans-serif);font-size:clamp(4rem,9vw,8.8rem);font-weight:900;line-height:.79;letter-spacing:-.035em;text-transform:uppercase}.fw-intro h2 em,.fw-menu-heading h3 em{color:var(--fw-red);font-style:normal}.fw-intro-copy>p:not(.fw-eyebrow){max-width:420px;margin:25px 0 0;color:var(--fw-muted);font-size:1rem;line-height:1.55}.fw-intro-copy>a{display:inline-flex;align-items:center;gap:22px;margin-top:27px;padding:13px 18px;border:1px solid var(--fw-red);color:var(--fw-cream);font-size:.75rem;font-weight:900;text-decoration:none;text-transform:uppercase;transition:background .2s ease,color .2s ease}.fw-intro-copy>a:hover{color:#151211;background:var(--fw-red)}.fw-intro-copy>a span{font-size:1.2rem;color:var(--fw-red)}.fw-intro-copy>a:hover span{color:#151211}.fw-intro-mark{position:relative;display:grid;min-height:290px;place-items:center;transform:rotate(-7deg)}.fw-intro-mark::before{position:absolute;inset:5% 8%;content:'';border:2px solid var(--fw-red);background:repeating-linear-gradient(135deg,#ff50370d 0 8px,transparent 8px 17px);clip-path:polygon(4% 0,100% 7%,94% 100%,0 90%)}.fw-intro-mark span{position:absolute;top:4%;right:8%;color:var(--fw-red);font:900 clamp(7rem,14vw,13rem)/.8 var(--display,Impact,sans-serif);letter-spacing:-.08em}.fw-intro-mark b{position:relative;z-index:1;margin-top:100px;color:var(--fw-cream);font:900 clamp(1.5rem,3vw,3rem)/.83 var(--display,Impact,sans-serif);letter-spacing:.06em;text-align:center;transform:rotate(7deg)}
+  .fw-category-nav{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:20px max(7vw,24px);border-bottom:1px solid #51423b;background:#1c1917}.fw-category-nav>span{margin-right:10px;color:var(--fw-muted);font-size:.58rem;font-weight:900;letter-spacing:.15em}.fw-category-nav a{display:flex;min-height:44px;align-items:center;gap:10px;padding:0 13px;border:1px solid #51423b;color:var(--fw-cream);font-size:.68rem;font-weight:800;text-decoration:none;transition:border-color .18s ease,background .18s ease}.fw-category-nav a:hover,.fw-category-nav a:focus-visible{border-color:var(--fw-red);background:#ff503718;outline:none}.fw-category-nav a i{color:var(--fw-red);font:800 .8rem var(--display,Impact,sans-serif);font-style:normal}.fw-category-nav a b{margin-left:4px;color:var(--fw-red)}
+  .fw-menu-content{max-width:1600px;margin:auto;padding:90px clamp(22px,7vw,112px) 115px}.fw-menu-heading{display:grid;grid-template-columns:1fr auto;align-items:end;gap:14px 25px;margin-bottom:68px}.fw-menu-heading .fw-eyebrow{grid-column:1/-1;margin-bottom:0}.fw-menu-heading h3{font-size:clamp(3.2rem,7vw,6.2rem)}.fw-menu-heading>span{padding-bottom:8px;color:var(--fw-muted);font-size:.72rem}
+  .fw-category{margin:0 0 96px;scroll-margin-top:28px}.fw-category-heading{display:grid;grid-template-columns:42px auto 1fr;align-items:center;gap:15px;margin-bottom:24px;padding-bottom:15px;border-bottom:1px solid #51423b}.fw-category-heading>span{color:var(--fw-red);font:900 1.1rem var(--display,Impact,sans-serif)}.fw-category-heading h3{margin:0;color:var(--fw-cream);font:900 clamp(2rem,4vw,3.3rem)/.95 var(--display,Impact,sans-serif);letter-spacing:.01em;text-transform:uppercase}.fw-category-heading i{justify-self:end;color:var(--fw-muted);font-size:.62rem;font-style:normal;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+  .fw-family-layout{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:12px}.fw-family-product.product-card{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(280px,.92fr);align-items:stretch;gap:0;min-width:0;min-height:470px;padding:0;overflow:hidden;border:1px solid #51423b;border-radius:4px 28px 4px 28px;color:var(--fw-cream);background:var(--fw-surface);box-shadow:none}.fw-family-image-wrap{position:relative;min-height:100%;overflow:hidden;background:#332a25}.fw-family-image{display:block;width:100%;height:100%;min-height:470px;object-fit:cover;transition:opacity .2s ease,transform .55s cubic-bezier(.2,.75,.2,1)}.fw-family-product:hover .fw-family-image{transform:scale(1.025)}.fw-family-stamp{position:absolute;right:18px;bottom:16px;display:grid;width:77px;height:77px;place-content:center;border:2px solid var(--fw-cream);border-radius:50%;color:var(--fw-cream);font:900 .8rem/.9 var(--display,Impact,sans-serif);letter-spacing:.08em;text-align:center;transform:rotate(9deg)}.fw-family-copy{display:flex;flex-direction:column;justify-content:center;padding:clamp(25px,4vw,62px)}.fw-family-copy h4,.fw-product-copy h4{margin:12px 0 14px;color:var(--fw-cream);font:900 clamp(2.4rem,5vw,5.6rem)/.84 var(--display,Impact,sans-serif);letter-spacing:-.02em;text-transform:uppercase}.fw-family-copy>p,.fw-product-copy>p{max-width:430px;margin:0;color:var(--fw-muted);font-size:.9rem;line-height:1.55}.fw-option-hint{margin-top:16px;color:#ff947f;font-size:.65rem;font-weight:800;letter-spacing:.04em}.fw-option-hint[hidden]{display:none}.fw-buy-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-top:28px}.fw-buy-row>strong{color:var(--fw-cream);font:900 clamp(2.2rem,4vw,3.7rem)/1 var(--display,Impact,sans-serif);letter-spacing:-.02em}.fresa-wings-showcase .fw-buy-row .add-button{display:flex;position:relative;isolation:isolate;min-width:168px;min-height:52px;align-items:center;justify-content:space-between;gap:18px;padding:0 18px;border:1px solid var(--fw-red);border-radius:2px 12px 2px 12px;color:#151211;background:var(--fw-red);font:900 .76rem var(--display,Impact,sans-serif);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:transform .18s ease,background .18s ease,box-shadow .18s ease}.fresa-wings-showcase .fw-buy-row .add-button:hover:not(.is-added){background:#ff725e;box-shadow:0 8px 22px #ff503733;transform:translateY(-2px)}.fresa-wings-showcase .fw-buy-row .add-button:focus-visible{outline:3px solid var(--fw-cream);outline-offset:3px}.fresa-wings-showcase .fw-buy-row .add-button:disabled{color:#cbbdb4;background:#51423b;border-color:#51423b;cursor:not-allowed}.fresa-wings-showcase .fw-buy-row .add-button .add-button-label,.fresa-wings-showcase .fw-buy-row .add-button>span{position:relative;z-index:2;color:#151211;-webkit-text-fill-color:#151211;opacity:1}.fresa-wings-showcase .fw-buy-row .add-button.is-added{color:var(--fw-cream);background:#151211;border-color:var(--fw-red)}.fresa-wings-showcase .fw-buy-row .add-button.is-added .add-button-label{color:var(--fw-cream);-webkit-text-fill-color:var(--fw-cream)}.fresa-wings-showcase .fw-buy-row .add-button.is-added>span{color:#ff725e;-webkit-text-fill-color:#ff725e}
+  .fw-product-picker{display:grid;gap:12px;padding:18px 14px;border:1px solid #51423b;background:#1b1816}.fw-product-picker>p{margin:0;color:var(--fw-muted);font-size:.6rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.fw-product-picker-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.fw-product-choice{display:grid;min-height:54px;align-content:center;gap:4px;padding:9px 10px;border:1px solid #51423b;color:var(--fw-cream);background:transparent;text-align:left;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease}.fw-product-choice span{font-size:.69rem;font-weight:900;line-height:1.2}.fw-product-choice b{color:var(--fw-muted);font-size:.63rem}.fw-product-choice:hover{border-color:#ff725e;transform:translateX(2px)}.fw-product-choice:focus-visible{outline:2px solid var(--fw-cream);outline-offset:2px}.fw-product-choice.is-selected{border-color:var(--fw-red);background:#ff50371a;box-shadow:inset 3px 0 var(--fw-red)}.fw-product-choice.is-selected b{color:var(--fw-red)}
+  .fw-spotlight-list{display:grid;gap:26px}.fw-product.product-card{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr);align-items:stretch;gap:0;min-width:0;min-height:400px;padding:0;overflow:hidden;border:1px solid #51423b;border-radius:26px 4px 26px 4px;color:var(--fw-cream);background:var(--fw-surface);box-shadow:none}.fw-product:nth-child(even){grid-template-columns:minmax(260px,.9fr) minmax(0,1.1fr)}.fw-product:nth-child(even) .fw-product-image{order:2}.fw-product-image{position:relative;min-height:400px;overflow:hidden;background:#332a25}.fw-product-image img{display:block;width:100%;height:100%;min-height:400px;object-fit:cover;transition:transform .55s cubic-bezier(.2,.75,.2,1)}.fw-product:hover .fw-product-image img{transform:scale(1.025)}.fw-image-index{position:absolute;top:15px;left:15px;display:grid;width:38px;height:38px;place-items:center;color:var(--fw-cream);background:#151211;font:900 .8rem var(--display,Impact,sans-serif)}.fw-product-copy{display:flex;flex-direction:column;justify-content:center;padding:clamp(25px,5vw,76px)}.fw-product-copy h4{font-size:clamp(2.7rem,5vw,5.3rem)}.fw-product-copy .fw-buy-row{margin-top:24px}.fw-product-featured{min-height:450px!important}.fw-product-featured .fw-product-image,.fw-product-featured .fw-product-image img{min-height:450px}
+  .fw-image-unavailable{display:grid;width:100%;height:100%;min-height:360px;place-items:center;color:var(--fw-muted);background:linear-gradient(135deg,#332a25,#1d1917);font-size:.8rem}.fw-family-image[hidden],.fw-image-unavailable[hidden]{display:none}.fw-empty{padding:35px;border:1px dashed #51423b;color:var(--fw-muted)}
+  @media(max-width:900px){.fw-intro{min-height:350px;padding:55px 6vw}.fw-intro-mark{min-height:230px}.fw-category-nav{padding-inline:6vw}.fw-menu-content{padding:72px 6vw 90px}.fw-family-layout{grid-template-columns:minmax(0,1fr);gap:12px}.fw-family-product.product-card{grid-template-columns:1fr;min-height:0}.fw-family-image,.fw-family-image-wrap{height:42vw;min-height:280px;max-height:430px}.fw-family-copy{padding:26px}.fw-family-copy h4{font-size:clamp(2.6rem,7vw,4.8rem)}.fw-product.product-card,.fw-product:nth-child(even){grid-template-columns:1fr;min-height:0}.fw-product:nth-child(even) .fw-product-image{order:0}.fw-product-image,.fw-product-image img{width:100%;height:42vw;min-height:280px;max-height:430px}.fw-product-copy{padding:28px}.fw-product-copy h4{font-size:clamp(2.5rem,6vw,4.4rem)}}
+  @media(max-width:600px){.fw-intro{grid-template-columns:1fr;min-height:0;padding:56px 22px 45px}.fw-intro h2{font-size:clamp(4.2rem,18vw,6.7rem)}.fw-intro-copy>p:not(.fw-eyebrow){max-width:330px;font-size:.87rem}.fw-intro-mark{position:absolute;right:-8%;bottom:-8%;width:42%;min-height:190px;opacity:.35;pointer-events:none}.fw-intro-mark span{font-size:clamp(6rem,30vw,9rem)}.fw-intro-mark b{font-size:1.1rem}.fw-category-nav{gap:7px;padding:15px 18px}.fw-category-nav>span{flex:0 0 100%;margin-bottom:3px}.fw-category-nav a{flex:1;min-width:max-content;justify-content:space-between;padding-inline:10px;font-size:.62rem}.fw-menu-content{padding:60px 18px 72px}.fw-menu-heading{display:block;margin-bottom:48px}.fw-menu-heading h3{font-size:clamp(3rem,13vw,4.7rem)}.fw-menu-heading>span{display:block;margin-top:15px}.fw-category{margin-bottom:66px}.fw-category-heading{grid-template-columns:30px 1fr auto;gap:9px}.fw-category-heading h3{font-size:clamp(1.8rem,8vw,2.5rem)}.fw-category-heading i{font-size:.52rem}.fw-family-layout{grid-template-columns:1fr;gap:10px}.fw-family-product.product-card{grid-template-columns:1fr;min-height:0;border-radius:4px 20px 4px 20px}.fw-family-image,.fw-family-image-wrap{width:100%;height:64vw;min-height:245px;max-height:360px}.fw-family-copy{padding:22px}.fw-family-copy h4{font-size:clamp(2.9rem,12vw,4.7rem)}.fw-family-copy>p,.fw-product-copy>p{font-size:.83rem}.fw-buy-row{margin-top:20px}.fw-buy-row>strong{font-size:2.6rem}.fresa-wings-showcase .fw-buy-row .add-button{min-width:145px;min-height:50px}.fw-product-picker{padding:12px}.fw-product-picker-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.fw-product-choice{min-height:60px}.fw-product-choice span{font-size:.62rem}.fw-product.product-card,.fw-product:nth-child(even){grid-template-columns:1fr;min-height:0;border-radius:20px 4px 20px 4px}.fw-product:nth-child(even) .fw-product-image{order:0}.fw-product-image,.fw-product-image img,.fw-product-featured .fw-product-image,.fw-product-featured .fw-product-image img{width:100%;height:64vw;min-height:245px;max-height:360px}.fw-product-copy{padding:22px}.fw-product-copy h4{font-size:clamp(2.8rem,11vw,4.4rem)}.fw-spotlight-list{gap:17px}}
+  @media(prefers-reduced-motion:reduce){.fresa-wings-showcase *,.fresa-wings-showcase *::before,.fresa-wings-showcase *::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<style is:global>
+  .fresa-wings-showcase .fw-buy-row .add-button .add-button-label,
+  .fresa-wings-showcase .fw-buy-row .add-button>span{position:relative;z-index:2;color:#151211;-webkit-text-fill-color:#151211;opacity:1}
+  .fresa-wings-showcase .fw-buy-row .add-button:hover:not(.is-added) .add-button-label,
+  .fresa-wings-showcase .fw-buy-row .add-button:hover:not(.is-added)>span{color:#151211;-webkit-text-fill-color:#151211}
+  .fresa-wings-showcase .fw-buy-row .add-button.is-added .add-button-label{color:#fff5e8;-webkit-text-fill-color:#fff5e8}
+  .fresa-wings-showcase .fw-buy-row .add-button.is-added>span{color:#ff725e;-webkit-text-fill-color:#ff725e}
+</style>
+
+<style>
+  .fresa-wings-showcase .fw-intro{grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:clamp(28px,5vw,76px)}
+  .fresa-wings-showcase .fw-intro-feature{display:grid;min-width:0;gap:14px;align-content:center}
+  .fresa-wings-showcase .fw-intro-mark{display:flex;min-height:0;justify-content:flex-end;gap:clamp(16px,3vw,42px);transform:none}
+  .fresa-wings-showcase .fw-intro-mark::before{display:none}
+  .fresa-wings-showcase .fw-intro-mark span,.fresa-wings-showcase .fw-intro-mark b{position:static;margin:0;transform:none;text-align:left}
+  .fresa-wings-showcase .fw-intro-mark span{font-size:clamp(3.8rem,7vw,7.5rem);line-height:.8}
+  .fresa-wings-showcase .fw-intro-mark b{font-size:clamp(2.2rem,4vw,4.2rem);line-height:.78;letter-spacing:.015em}
+  .fresa-wings-showcase .fw-hawaiana-video-wrap{position:relative;overflow:hidden;aspect-ratio:16/9;min-width:0;border:1px solid #51423b;border-radius:3px 24px 3px 24px;background:#241a19}
+  .fresa-wings-showcase .fw-hawaiana-video{display:block;width:100%;height:100%;object-fit:cover;object-position:center;background:#241a19}
+  .fresa-wings-showcase .fw-video-caption{position:absolute;right:12px;bottom:12px;padding:8px 10px;color:#fff5e8;background:#151211d9;font-size:.58rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .fresa-wings-showcase .fw-intro-copy .fw-hawaiana-cta{gap:16px;margin-top:12px;border-color:#ff5037;color:#151211;background:#ff5037}
+  .fresa-wings-showcase .fw-intro-copy .fw-hawaiana-cta:hover{background:#ff725e}
+  .fresa-wings-showcase .fw-intro-copy .fw-hawaiana-cta span{color:#151211}
+  @media(max-width:900px){.fresa-wings-showcase .fw-intro{grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);gap:28px}.fresa-wings-showcase .fw-intro-mark span{font-size:clamp(3.5rem,8vw,5.8rem)}.fresa-wings-showcase .fw-intro-mark b{font-size:clamp(1.9rem,4.4vw,3.2rem)}}
+  @media(max-width:600px){.fresa-wings-showcase .fw-intro{grid-template-columns:1fr;gap:0;padding:48px 20px 36px}.fresa-wings-showcase .fw-intro-copy{max-width:none}.fresa-wings-showcase .fw-intro h2{font-size:clamp(3.7rem,16vw,5.2rem)}.fresa-wings-showcase .fw-intro-feature{gap:12px;margin-top:30px}.fresa-wings-showcase .fw-intro-mark{position:relative;right:auto;bottom:auto;width:auto;min-height:0;justify-content:flex-start;gap:20px;opacity:1;pointer-events:auto}.fresa-wings-showcase .fw-intro-mark span{font-size:clamp(3.8rem,18vw,5.4rem)}.fresa-wings-showcase .fw-intro-mark b{font-size:clamp(2rem,9vw,2.8rem)}.fresa-wings-showcase .fw-hawaiana-video-wrap{width:100%;aspect-ratio:16/9;border-radius:3px 18px 3px 18px}.fresa-wings-showcase .fw-video-caption{right:8px;bottom:8px;padding:6px 8px;font-size:.5rem}}
+</style>

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "source": {
+    "file": "src/assets/Pollo_fresa_hero_publish_movil.mp4",
+    "width": 1080,
+    "height": 1920,
+    "fps": 24,
+    "durationSeconds": 8,
+    "codec": "H.264",
+    "bytes": 4515586
+  },
+  "sequence": {
+    "fps": 12,
+    "frameCount": 96,
+    "firstFrame": 1,
+    "digits": 3,
+    "format": "WebP",
+    "poster": {
+      "mobile": "/media/pollo-fresa-hero/poster-mobile-vertical.webp"
+    },
+    "posterBytes": {
+      "mobile": 74332
+    },
+    "quality": {
+      "mobile": 82
+    },
+    "posterQuality": {
+      "mobile": 86
+    }
+  },
+  "variants": {
+    "mobile": {
+      "width": 810,
+      "height": 1440,
+      "pattern": "/media/pollo-fresa-hero/mobile-vertical/frame-{index}.webp",
+      "bytes": 3407248
+    }
+  }
+}

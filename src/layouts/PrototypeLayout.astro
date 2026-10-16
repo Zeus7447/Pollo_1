@@ -1,0 +1,30 @@
+---
+import '../styles/global.css';
+import type { ImageMetadata } from 'astro';
+
+interface Props { title: string; description: string; logo: ImageMetadata; brand: string; theme: 'pollo' | 'wings' }
+const { title, description, logo, brand, theme } = Astro.props;
+---
+<!doctype html>
+<html lang="es" data-prototype-theme={theme}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <meta name="color-scheme" content={theme === 'pollo' ? 'light' : 'dark'} />
+    <link rel="icon" href={logo.src} />
+    <title>{title}</title>
+  </head>
+  <body class:list={[`prototype-body-${theme}`]}>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+  body.prototype-body-pollo, body.prototype-body-wings { margin: 0; min-width: 320px; }
+  body.prototype-body-pollo { background: #f1e9da; color: #251e19; }
+  body.prototype-body-wings { background: #151312; color: #fff8eb; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+</style>

@@ -128,6 +128,7 @@ const getItems = async <T>(collection: string, params: URLSearchParams) => {
   if (!directusToken) throw new Error('Falta DIRECTUS_TOKEN.');
   const response = await fetch(`${directusUrl}/items/${collection}?${params}`, {
     headers: { Authorization: `Bearer ${directusToken}` },
+    cache: 'no-store',
   });
 
   if (!response.ok) throw new Error(`Directus respondió ${response.status} para ${collection}`);
@@ -164,7 +165,7 @@ const getStorefrontPromotions = async (businessId: string, brand: CatalogPromoti
         price: promotion.price?.trim() || undefined,
         secondaryText: promotion.secondary_text?.trim() || undefined,
         ctaLabel: promotion.cta_label?.trim() || 'Ver promoción',
-        destination: promotion.destination_url?.trim() || '#destacados',
+        destination: promotion.destination_url?.trim() || (brand === 'Pollo Fresa' ? '#pollo-menu-list' : '#fresa-wings-menu'),
         terms: promotion.terms_text?.trim() || undefined,
         productIds: Array.isArray(promotion.product_ids) ? promotion.product_ids.map(Number).filter(Number.isFinite) : [],
       }));
@@ -249,7 +250,11 @@ export const getCatalog = async () => {
         getStorefrontPromotions(id, brand),
       ]);
       const optionGroups = await getProductOptionGroups(id, products.map((product) => product.id));
-      return { brand, products, categories, promotions, optionGroups };
+      const availableProductIds = new Set(products.map((product) => Number(product.id)));
+      const currentPromotions = promotions.filter((promotion) =>
+        promotion.productIds.length === 0 || promotion.productIds.every((productId) => availableProductIds.has(productId)),
+      );
+      return { brand, products, categories, promotions: currentPromotions, optionGroups };
     }));
 
     const products: CatalogProduct[] = catalogResults.flatMap(({ brand, products: rawProducts, categories, optionGroups }) => {
@@ -273,6 +278,56 @@ export const getCatalog = async () => {
   } catch (error) {
     console.warn('[Directus] No se pudo cargar el catálogo.', error);
     return { products: [] as CatalogProduct[], promotions: [] as CatalogPromotion[], categories: [] as CatalogCategory[], catalogError: true };
+  }
+};
+
+/** Load only one business catalog. Used by isolated, server-rendered previews. */
+export const getBrandCatalog = async (brand: 'Pollo Fresa' | 'Fresa Wings') => {
+  const catalog = catalogs.find((entry) => entry.brand === brand);
+  if (!catalog) throw new Error(`No existe configuración para ${brand}.`);
+
+  try {
+    const productQuery = new URLSearchParams({
+      fields: 'id,name,description,price,image,available,featured,sort_order,category,business',
+      sort: 'sort_order,name',
+      'filter[active][_eq]': 'true',
+      'filter[available][_eq]': 'true',
+      'filter[business][_eq]': catalog.id,
+      limit: '-1',
+    });
+    const categoryQuery = new URLSearchParams({
+      fields: 'id,name,sort_order',
+      sort: 'sort_order,name',
+      'filter[active][_eq]': 'true',
+      'filter[business][_eq]': catalog.id,
+      limit: '-1',
+    });
+    const [products, categories] = await Promise.all([
+      getItems<DirectusProduct>('products', productQuery),
+      getItems<DirectusCategory>('categories', categoryQuery),
+    ]);
+    const optionGroups = await getProductOptionGroups(catalog.id, products.map((product) => product.id));
+    const categoryNames = new Map(categories.map((category) => [category.id, category.name]));
+
+    return {
+      products: products.map((product): CatalogProduct => ({
+        id: product.id,
+        name: product.name,
+        description: product.description?.trim() || `Un favorito de ${brand}.`,
+        price: `$${Number(product.price).toFixed(2)}`,
+        image: product.image ? `${directusUrl}/assets/${product.image}?width=1200&quality=84` : undefined,
+        categoryId: product.category,
+        category: product.category ? categoryNames.get(product.category) ?? brand : brand,
+        featured: product.featured,
+        brand,
+        optionGroups: optionGroups.get(product.id) ?? [],
+      })),
+      categories: categories.map(({ id, name }): CatalogCategory => ({ id, name, brand })),
+      catalogError: false,
+    };
+  } catch (error) {
+    console.warn(`[Directus] No se pudo cargar el catálogo de ${brand}.`, error);
+    return { products: [] as CatalogProduct[], categories: [] as CatalogCategory[], catalogError: true };
   }
 };
 import { readFileSync } from 'node:fs';

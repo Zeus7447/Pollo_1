@@ -1,0 +1,110 @@
+---
+import type { CatalogProduct, CatalogPromotion } from '../lib/directus';
+
+interface Props {
+  brand: CatalogProduct['brand'];
+  promotions: CatalogPromotion[];
+  products: CatalogProduct[];
+}
+
+const { brand, promotions, products } = Astro.props;
+const productsById = new Map(products.map((product) => [product.id, product]));
+const promotionItems = promotions.flatMap((promotion) => {
+  const relatedProducts = [...new Set(promotion.productIds)].map((id) => productsById.get(id));
+  if (promotion.productIds.length && relatedProducts.some((product) => !product)) return [];
+
+  const destination = promotion.destination?.trim() ?? '';
+  const external = /^https:\/\//i.test(destination);
+  const internal = destination.startsWith('#') || (destination.startsWith('/') && !destination.startsWith('//'));
+  const safeDestination = relatedProducts.length
+    ? `#promotion-product-${relatedProducts[0]!.id}`
+    : external || internal
+      ? destination
+      : brand === 'Pollo Fresa' ? '#pollo-menu-list' : '#fresa-wings-menu';
+
+  return [{ promotion, relatedProducts: relatedProducts.filter((product): product is CatalogProduct => Boolean(product)), destination: safeDestination, external: external && relatedProducts.length === 0 }];
+});
+const promotionAnchorId = brand === 'Pollo Fresa' ? 'promociones-pollo' : 'promociones-wings';
+---
+
+{promotionItems.length > 0 && <section class:list={['brand-promotions', brand === 'Fresa Wings' && 'brand-promotions-wings']} id={promotionAnchorId} data-promotion-brand={brand} aria-label={`Promociones de ${brand}`}>
+  <header class="brand-promotions-heading" data-motion-story>
+    <p data-motion-step>Promociones de {brand}</p>
+    <h2 data-motion-step>El antojo tiene<br /><em>su momento.</em></h2>
+  </header>
+  <div class="brand-promotions-list">
+    {promotionItems.map(({ promotion, relatedProducts, destination, external }, index) => <article class="brand-promotion" data-motion-stagger>
+      <div class="brand-promotion-image" data-motion-item>
+        {promotion.image && <img src={promotion.image} alt={promotion.title} loading="lazy" />}
+        <span>{promotion.badge}</span>
+      </div>
+      <div class="brand-promotion-copy" data-motion-item>
+        <span class="brand-promotion-index">{String(index + 1).padStart(2, '0')} / {String(promotionItems.length).padStart(2, '0')}</span>
+        <h3>{promotion.title}</h3>
+        <p>{promotion.subtitle}</p>
+        {relatedProducts.length > 0 && <div class="brand-promotion-products" aria-label="Productos disponibles en esta promoción">
+          {relatedProducts.map((product) => <a href={`#promotion-product-${product.id}`}><span>{product.name}<small>Precio vigente en el menú</small></span><b>{product.price}</b></a>)}
+          <small class="brand-promotion-price-note">El pedido usa los precios actuales del catálogo; esta promoción no aplica descuentos automáticos.</small>
+        </div>}
+        {promotion.terms && <small class="brand-promotion-terms">{promotion.terms}</small>}
+        <a class="brand-promotion-cta" href={destination} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>
+          {promotion.ctaLabel}<span aria-hidden="true">&#8594;</span>
+        </a>
+      </div>
+    </article>)}
+  </div>
+</section>}
+
+<style is:global>
+  [data-promotion-brand].brand-promotions{width:min(100% - 48px,1440px);margin:0 auto 96px;padding:clamp(26px,4vw,56px);scroll-margin-top:100px;color:#231b19;background:#ffbe0b}
+  [id^="promotion-product-"]{scroll-margin-top:100px}
+  .brand-promotions-heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:26px}
+  .brand-promotions-heading>p{margin:0;color:#8e261d;font-size:.68rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}
+  .brand-promotions-heading h2{margin:8px 0 0;color:#231b19;font:900 clamp(2.5rem,5vw,5rem)/.85 var(--display,Impact,sans-serif);letter-spacing:-.025em;text-transform:uppercase}
+  .brand-promotions-heading h2 em{color:#e52b20;font-style:normal}
+  .brand-promotions-list{display:grid;gap:16px}
+  .brand-promotion{display:grid;min-height:320px;grid-template-columns:minmax(0,1.12fr) minmax(260px,.88fr);overflow:hidden;background:#fff8e9}
+  .brand-promotion-image{position:relative;min-height:320px;overflow:hidden;background:#e6a900}
+  .brand-promotion-image img{display:block;width:100%;height:100%;min-height:320px;object-fit:cover}
+  .brand-promotion-image>span{position:absolute;top:16px;left:16px;max-width:calc(100% - 32px);padding:9px 12px;color:#fff8e9;background:#231b19;font-size:.62rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+  .brand-promotion-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start;padding:clamp(22px,3vw,42px)}
+  .brand-promotion-index{color:#7b6c61;font-size:.62rem;font-weight:900;letter-spacing:.12em}
+  .brand-promotion-copy h3{margin:18px 0 0;color:#231b19;font:900 clamp(1.8rem,3.3vw,3.4rem)/.9 var(--display,Impact,sans-serif);letter-spacing:-.015em;text-transform:uppercase}
+  .brand-promotion-copy>p{margin:12px 0 18px;color:#54463f;font-size:.83rem;line-height:1.5}
+  .brand-promotion-products{display:grid;width:100%;gap:0;margin:0 0 15px;border-top:1px solid #e3d8c5}
+  .brand-promotion-products>a{display:flex;min-height:46px;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #e3d8c5;color:#231b19;text-decoration:none}
+  .brand-promotion-products>a:hover span{text-decoration:underline;text-underline-offset:3px}
+  .brand-promotion-products>a span{display:grid;gap:3px;font-size:.73rem;font-weight:800}
+  .brand-promotion-products>a small,.brand-promotion-price-note{color:#75675f;font-size:.59rem;font-weight:500}
+  .brand-promotion-products>a b{flex:none;font-size:.78rem}
+  .brand-promotion-price-note{margin-top:9px;line-height:1.4}
+  .brand-promotion-terms{margin:0 0 14px;color:#75675f;font-size:.62rem;line-height:1.45}
+  .brand-promotion-cta{display:inline-flex;min-height:46px;align-items:center;justify-content:space-between;gap:24px;margin-top:auto;padding:0 15px;color:#fff;background:#e52b20;font-size:.7rem;font-weight:900;text-decoration:none;text-transform:uppercase;transition:background .18s ease,transform .18s ease}
+  .brand-promotion-cta:hover{transform:translateY(-1px);background:#bd231a}
+  .brand-promotion-cta span{font-size:1rem}
+  [data-promotion-brand].brand-promotions-wings{color:#fff5e8;background:#151211}
+  .brand-promotions-wings .brand-promotions-heading>p{color:#ff5037}
+  .brand-promotions-wings .brand-promotions-heading h2{color:#fff5e8}
+  .brand-promotions-wings .brand-promotions-heading h2 em{color:#ff5037}
+  .brand-promotions-wings .brand-promotion{color:#fff5e8;background:#24201e}
+  .brand-promotions-wings .brand-promotion-image{background:#2c2522}
+  .brand-promotions-wings .brand-promotion-image>span{color:#151211;background:#ff5037}
+  .brand-promotions-wings .brand-promotion-index{color:#cbbdb4}
+  .brand-promotions-wings .brand-promotion-copy h3,.brand-promotions-wings .brand-promotion-products>a{color:#fff5e8}
+  .brand-promotions-wings .brand-promotion-copy>p{color:#cbbdb4}
+  .brand-promotions-wings .brand-promotion-products{border-color:#51423b}
+  .brand-promotions-wings .brand-promotion-products>a{border-color:#51423b}
+  .brand-promotions-wings .brand-promotion-products>a small,.brand-promotions-wings .brand-promotion-price-note,.brand-promotions-wings .brand-promotion-terms{color:#cbbdb4}
+  .brand-promotions-wings .brand-promotion-cta{color:#151211;background:#ff5037}
+  .brand-promotions-wings .brand-promotion-cta:hover{background:#ff725e}
+  @media(max-width:760px){
+    [data-promotion-brand].brand-promotions{width:100%;margin-bottom:64px;padding:28px 5vw}
+    .brand-promotions-heading{display:block;margin-bottom:20px}
+    .brand-promotions-heading h2{font-size:clamp(2.5rem,11vw,4.25rem)}
+    .brand-promotion{grid-template-columns:1fr}
+    .brand-promotion-image,.brand-promotion-image img{min-height:0;height:68vw;max-height:390px}
+    .brand-promotion-copy{min-height:260px;padding:23px 20px}
+    .brand-promotion-copy h3{margin-top:12px;font-size:clamp(1.9rem,9vw,3rem)}
+  }
+  @media(prefers-reduced-motion:reduce){.brand-promotion-cta{transition:none}}
+</style>

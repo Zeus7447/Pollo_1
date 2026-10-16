@@ -1,0 +1,89 @@
+---
+---
+
+<section class="brand-transition" id="marcas" aria-labelledby="brand-transition-title">
+  <div class="brand-transition-inner">
+    <header class="brand-transition-heading" data-transition-enter>
+      <p>DOS MARCAS. UN MISMO ANTOJO.</p>
+      <h2 id="brand-transition-title">&iquest;QU&Eacute; SE TE ANTOJA HOY?</h2>
+    </header>
+
+    <nav class="brand-transition-links" aria-label="Elige una marca">
+      <a class="transition-brand pollo-status" href="#pollo-menu" data-transition-enter>
+        <span class="status-dot" aria-hidden="true"></span>
+        <span class="transition-brand-copy"><strong>POLLO FRESA</strong><i>Frito, asado y rostizado</i></span>
+        <span class="transition-brand-status"><span class="transition-hours">9 AM &mdash; 6 PM</span><b class="status-label" aria-live="polite">Consultando...</b></span>
+        <span class="transition-arrow" aria-hidden="true">&#8594;</span>
+      </a>
+      <a class="transition-brand transition-brand-wings wings-status" href="#fresa-wings-menu" data-transition-enter>
+        <span class="status-dot" aria-hidden="true"></span>
+        <span class="transition-brand-copy"><strong>FRESA WINGS</strong><i>Alitas, boneless y hamburguesas</i></span>
+        <span class="transition-brand-status"><span class="transition-hours">3 PM &mdash; 10 PM</span><b class="status-label" aria-live="polite">Consultando...</b></span>
+        <span class="transition-arrow" aria-hidden="true">&#8594;</span>
+      </a>
+    </nav>
+  </div>
+</section>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  document.querySelectorAll<HTMLElement>('.brand-transition').forEach((section) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const context = gsap.context(() => {
+      gsap.from(section.querySelectorAll<HTMLElement>('[data-transition-enter]'), {
+        autoAlpha: 0,
+        y: 14,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: 'power2.out',
+        scrollTrigger: { trigger: section, start: 'top 88%', once: true },
+      });
+    }, section);
+    window.addEventListener('pagehide', () => context.revert(), { once: true });
+  });
+</script>
+
+<style>
+  .brand-transition{position:relative;width:100%;margin:0;padding:0 24px;color:#fff5e8;background:#161211;overflow:hidden}
+  .brand-transition-inner{width:min(1200px,100%);margin:0 auto;padding:36px 0 38px}
+  .brand-transition-heading{margin-bottom:22px}
+  .brand-transition-heading p{margin:0 0 9px;color:#cbbdb4;font-size:.62rem;font-weight:900;letter-spacing:.18em}
+  .brand-transition-heading h2{color:#fff5e8;font-family:var(--display,Impact,sans-serif);font-size:clamp(1.8rem,6.2vw,4.7rem);font-weight:900;line-height:.95;letter-spacing:-.045em}
+  .brand-transition-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid #51423b;border-bottom:1px solid #51423b}
+  .transition-brand{position:relative;display:grid;grid-template-columns:10px minmax(0,1fr) auto 28px;align-items:center;gap:15px;min-width:0;min-height:94px;padding:15px 22px 15px 4px;color:#fff5e8;text-decoration:none;transition:background-color .22s ease}
+  .transition-brand+.transition-brand{padding-left:25px;border-left:1px solid #51423b}
+  .transition-brand:hover,.transition-brand:focus-visible{background:#ffffff08;outline:none}
+  .transition-brand:focus-visible{box-shadow:inset 0 0 0 2px #fff5e8}
+  .status-dot{display:block;width:8px;height:8px;border-radius:50%;background:#71635c;transition:background-color .2s ease,box-shadow .2s ease}
+  .transition-brand.open .status-dot{background:#74bd71;box-shadow:0 0 0 4px #74bd7122}
+  .transition-brand-copy{display:grid;gap:5px;min-width:0}
+  .transition-brand-copy strong{color:#ffbe0b;font-family:var(--body,Arial,sans-serif);font-size:clamp(1.45rem,2.7vw,2.25rem);font-weight:950;line-height:1;letter-spacing:-.045em}
+  .transition-brand-copy i{overflow:hidden;color:#cbbdb4;font-size:.76rem;font-style:normal;text-overflow:ellipsis;white-space:nowrap}
+  .transition-brand-status{display:grid;justify-items:end;gap:5px;color:#cbbdb4;font-size:.64rem;white-space:nowrap}
+  .transition-brand-status .status-label{color:#cbbdb4;font-size:.65rem;font-weight:800}
+  .transition-brand.open .status-label{color:#a7d99f}
+  .transition-brand-wings .transition-brand-copy strong{color:#ff5037}
+  .transition-arrow{justify-self:end;color:#ffbe0b;font-size:1.2rem;transition:color .2s ease,transform .2s ease}
+  .transition-brand-wings .transition-arrow{color:#ff5037}
+  .transition-brand:hover .transition-arrow,.transition-brand:focus-visible .transition-arrow{transform:translateX(5px)}
+  @media(max-width:700px){
+    .brand-transition{padding-inline:18px}
+    .brand-transition-inner{padding:29px 0 27px}
+    .brand-transition-heading{margin-bottom:16px}
+    .brand-transition-heading h2{max-width:17ch;font-size:clamp(1.8rem,7.2vw,2.7rem);line-height:1.02}
+    .brand-transition-links{grid-template-columns:minmax(0,1fr)}
+    .transition-brand{grid-template-columns:9px minmax(0,1fr) auto 22px;gap:11px;min-height:82px;padding:12px 2px}
+    .transition-brand+.transition-brand{padding-left:2px;border-top:1px solid #51423b;border-left:0}
+    .transition-brand-copy strong{font-size:clamp(1.45rem,6vw,1.8rem)}
+    .transition-brand-copy i{font-size:.7rem}
+    .transition-brand-status{font-size:.58rem}
+    .transition-brand-status .status-label{font-size:.58rem}
+    .transition-arrow{font-size:1rem}
+  }
+  @media(max-width:380px){.transition-brand{grid-template-columns:8px minmax(0,1fr) auto 18px;gap:8px}.transition-brand-status{font-size:.54rem}.transition-brand-status .status-label{font-size:.54rem}}
+  @media(prefers-reduced-motion:reduce){.transition-brand,.status-dot,.transition-arrow{transition:none}}
+</style>
