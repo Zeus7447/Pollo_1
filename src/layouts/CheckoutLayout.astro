@@ -1,0 +1,24 @@
+---
+import '../styles/global.css';
+import logo from '../assets/pollo_fresa.webp';
+
+interface Props {
+  title?: string;
+}
+
+const { title = 'Finalizar pedido | Pollo Fresa' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" type="image/png" href={logo.src} />
+    <title>{title}</title>
+  </head>
+  <body class="checkout-body">
+    <slot />
+  </body>
+</html>

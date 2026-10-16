@@ -28,9 +28,9 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
   {wingsPromotions.length > 0 && <a href="#promociones-wings" data-promotion-jump data-promotion-theme="theme-wings">Fresa Wings <b>{wingsPromotions.length}</b><span aria-hidden="true">&#8599;</span></a>}
 </nav>}
 <main id="contenido">
-{catalogError ? <section class="catalog-error section-wrap" id="destacados" role="alert"><p class="eyebrow">MenÃº temporalmente no disponible</p><h2>No pudimos cargar el catÃ¡logo.</h2><p>Intenta mÃ¡s tarde o contÃ¡ctanos por WhatsApp.</p></section> : <div id="menus-integrados"><PolloFresaMenu products={polloProducts} categories={categories.filter((category) => category.brand === 'Pollo Fresa')} promotions={polloPromotions} demo={false} /><FresaWingsShowcase products={wingsProducts} categories={categories.filter((category) => category.brand === 'Fresa Wings')} promotions={wingsPromotions} /></div>}
-<section class="location section-wrap" id="ubicacion"><header class="location-heading"><p class="eyebrow">EncuÃ©ntranos</p><h2>Ven por tu <em>antojo.</em></h2></header><div class="location-map-panel"><div class="map-placeholder"><iframe id="location-map" title="Mapa de Pollo Fresa en Irapuato" src="https://www.google.com/maps?q=Av%20Mariano%20J.%20Garc%C3%ADa%201254%2C%20Los%20Alamos%2C%2036568%20Irapuato%2C%20Gto.&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="location-addresses"><a data-location="pollo" href="https://www.google.com/maps/search/?api=1&query=Av%20Mariano%20J.%20Garc%C3%ADa%201254%2C%20Los%20Alamos%2C%2036568%20Irapuato%2C%20Gto." target="_blank" rel="noopener"><span>01</span><div><strong>Pollo Fresa</strong><small>Av. Mariano J. GarcÃ­a 1254, Los Ãlamos</small></div></a><a data-location="wings" href="https://www.google.com/maps/search/?api=1&query=Av%20Independencia%201811%2C%20Miguel%20Hidalgo%2C%2036550%20Irapuato%2C%20Gto." target="_blank" rel="noopener"><span>02</span><div><strong>Fresa Wings</strong><small>Av. Independencia 1811, Miguel Hidalgo</small></div></a></div></div><aside class="location-details"><div class="local-carousel" aria-label="Fotos de los locales"><figure class="local-photo is-active" data-location-photo="pollo"><img src={localPollo.src} alt="Local de Pollo Fresa" /><figcaption>Pollo Fresa</figcaption></figure><figure class="local-photo" data-location-photo="wings"><img src={localFresaWings.src} alt="Local de Fresa Wings" /><figcaption>Fresa Wings</figcaption></figure><div class="carousel-dots" aria-hidden="true"><span class="is-active"></span><span></span></div></div><div class="daily-hours"><p class="eyebrow">Horarios</p><h3>Todos los dÃ­as</h3><div><p><strong>Pollo Fresa</strong><span>9 AM â€” 6 PM</span></p><p><strong>Fresa Wings</strong><span>3 PM â€” 10 PM</span></p></div></div></aside></section>
-</main><footer id="contacto"><div class="footer-main"><img src={logo.src} alt="Pollo Fresa" /><p>Dos marcas, un solo lugar<br />para comer delicioso.</p><a class="button button-light" href="#pollo-menu">Pedir ahora</a></div><div class="footer-bottom"><span>Â© 2026 Pollo Fresa</span><nav class="footer-socials" aria-label="Redes sociales"><a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4h-3c-3 0-5 2-5 5v3H6v4h3v6h4v-6h3l1-4h-4V9c0-.7.3-1 1-1Z" /></svg></a><a href="#" aria-label="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4a9 9 0 0 0-14 11L4 20l5-2a9 9 0 0 0 11-14Zm-8 15a7 7 0 0 1-4-1l-3 1 1-3a7 7 0 1 1 6 3Zm4-5c-.2.4-1 .8-1.4.8-.4.1-1 .1-1.6-.2a8 8 0 0 1-3.2-2.8c-.3-.5-.8-1.4-.8-2.1 0-.7.4-1.2.7-1.4.2-.2.5-.2.7-.2h.5c.2 0 .3.1.4.4l.6 1.4c.1.3.1.4-.1.6l-.4.5c-.1.1-.2.2-.1.4.2.4.6 1 1.1 1.4.6.5 1.1.7 1.5.8.2.1.3 0 .4-.1l.5-.6c.2-.2.3-.2.6-.1l1.4.7c.3.1.4.2.2.4Z" /></svg></a><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" class="fill" /></svg></a></nav><span>Hecho para compartir.</span></div></footer>
+{catalogError ? <section class="catalog-error section-wrap" id="destacados" role="alert"><p class="eyebrow">Menú temporalmente no disponible</p><h2>No pudimos cargar el catálogo.</h2><p>El servicio del catálogo no respondió. Puedes intentarlo de nuevo en unos momentos.</p><a class="catalog-retry" href="/">Intentar de nuevo</a></section> : <div id="menus-integrados"><PolloFresaMenu products={polloProducts} categories={categories.filter((category) => category.brand === 'Pollo Fresa')} promotions={polloPromotions} demo={false} /><FresaWingsShowcase products={wingsProducts} categories={categories.filter((category) => category.brand === 'Fresa Wings')} /></div>}
+<section class="location section-wrap" id="ubicacion"><header class="location-heading"><p class="eyebrow">Encuéntranos</p><h2>Ven por tu <em>antojo.</em></h2></header><div class="location-map-panel"><div class="map-placeholder"><iframe id="location-map" title="Mapa de Pollo Fresa en Irapuato" src="https://www.google.com/maps?q=Av%20Mariano%20J.%20Garc%C3%ADa%201254%2C%20Los%20Alamos%2C%2036568%20Irapuato%2C%20Gto.&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="location-addresses"><a data-location="pollo" href="https://www.google.com/maps/search/?api=1&query=Av%20Mariano%20J.%20Garc%C3%ADa%201254%2C%20Los%20Alamos%2C%2036568%20Irapuato%2C%20Gto." target="_blank" rel="noopener"><span>01</span><div><strong>Pollo Fresa</strong><small>Av. Mariano J. García 1254, Los Álamos</small></div></a><a data-location="wings" href="https://www.google.com/maps/search/?api=1&query=Av%20Independencia%201811%2C%20Miguel%20Hidalgo%2C%2036550%20Irapuato%2C%20Gto." target="_blank" rel="noopener"><span>02</span><div><strong>Fresa Wings</strong><small>Av. Independencia 1811, Miguel Hidalgo</small></div></a></div></div><aside class="location-details"><div class="local-carousel" aria-label="Fotos de los locales"><figure class="local-photo is-active" data-location-photo="pollo"><img src={localPollo.src} alt="Local de Pollo Fresa" /><figcaption>Pollo Fresa</figcaption></figure><figure class="local-photo" data-location-photo="wings"><img src={localFresaWings.src} alt="Local de Fresa Wings" /><figcaption>Fresa Wings</figcaption></figure><div class="carousel-dots" aria-hidden="true"><span class="is-active"></span><span></span></div></div><div class="daily-hours"><p class="eyebrow">Horarios</p><h3>Todos los días</h3><div><p><strong>Pollo Fresa</strong><span>9 AM — 6 PM</span></p><p><strong>Fresa Wings</strong><span>3 PM — 10 PM</span></p></div></div></aside></section>
+</main><footer id="contacto"><div class="footer-main"><img src={logo.src} alt="Pollo Fresa" /><p>Dos marcas, un solo lugar<br />para comer delicioso.</p><a class="button button-light" href="#pollo-menu">Pedir ahora</a></div><div class="footer-bottom"><span>© 2026 Pollo Fresa</span><nav class="footer-socials" aria-label="Redes sociales"><a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4h-3c-3 0-5 2-5 5v3H6v4h3v6h4v-6h3l1-4h-4V9c0-.7.3-1 1-1Z" /></svg></a><a href="#" aria-label="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4a9 9 0 0 0-14 11L4 20l5-2a9 9 0 0 0 11-14Zm-8 15a7 7 0 0 1-4-1l-3 1 1-3a7 7 0 1 1 6 3Zm4-5c-.2.4-1 .8-1.4.8-.4.1-1 .1-1.6-.2a8 8 0 0 1-3.2-2.8c-.3-.5-.8-1.4-.8-2.1 0-.7.4-1.2.7-1.4.2-.2.5-.2.7-.2h.5c.2 0 .3.1.4.4l.6 1.4c.1.3.1.4-.1.6l-.4.5c-.1.1-.2.2-.1.4.2.4.6 1 1.1 1.4.6.5 1.1.7 1.5.8.2.1.3 0 .4-.1l.5-.6c.2-.2.3-.2.6-.1l1.4.7c.3.1.4.2.2.4Z" /></svg></a><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" class="fill" /></svg></a></nav><span>Hecho para compartir.</span></div></footer>
 </Layout>
 <script>
   import { installFoodMotion } from '../lib/motion/foodMotion';
@@ -51,22 +51,12 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
     </header>
     <div class="cart-hours" data-cart-hours></div>
     <div class="cart-items" data-cart-items></div>
-    <form class="cart-checkout-form" data-cart-form novalidate hidden>
-      <div class="cart-checkout-heading"><span>02</span><div><p>Último paso</p><h3>Entrega y tus datos</h3></div></div>
-      <fieldset class="cart-fieldset"><legend>¿Cómo quieres recibirlo? <b>*</b></legend><div class="cart-options"><label><input type="radio" name="order-type" value="pickup" checked /><span><b>Recoger</b><small>En sucursal</small></span></label><label><input type="radio" name="order-type" value="delivery" /><span><b>A domicilio</b><small>A tu dirección</small></span></label></div></fieldset>
-      <label class="cart-field cart-pickup-field"><span>Sucursal para recoger <b>*</b></span><select data-pickup-location><option value="Pollo Fresa · Av. Mariano J. García 1254, Los Álamos">Pollo Fresa · Los Álamos</option></select><small data-pickup-help></small></label>
-      <label class="cart-field cart-delivery-field" data-delivery-field hidden><span>Dirección de entrega <b>*</b></span><textarea data-delivery-address rows="2" placeholder="Calle, número, colonia y referencias" autocomplete="street-address"></textarea><small>La cobertura y el envío se confirman por WhatsApp.</small></label>
-      <label class="cart-field"><span>Nombre <b>*</b></span><input data-customer-name type="text" placeholder="¿A nombre de quién?" autocomplete="name" /></label>
-      <label class="cart-field"><span>Teléfono <b>*</b></span><input data-customer-phone type="tel" placeholder="462 000 0000" autocomplete="tel" inputmode="tel" /></label>
-      <label class="cart-field"><span>Notas <small>Opcional</small></span><textarea data-customer-notes rows="2" placeholder="Ej. Sin salsa, tocar el timbre, etc."></textarea></label>
-      <div class="cart-payment"><span>Forma de pago</span><strong>Efectivo</strong><small>El monto y la disponibilidad se confirman por WhatsApp.</small></div>
-      <p class="cart-checkout-error" data-checkout-error role="alert" hidden></p>
-    </form>
+    <p class="cart-checkout-error" data-checkout-error role="alert" hidden></p>
     <footer class="cart-footer">
       <div class="cart-summary" data-cart-summary>
         <div class="cart-total"><span>Total del pedido</span><strong data-cart-total>$0.00</strong></div>
-        <button class="cart-checkout" type="button" data-cart-checkout>Continuar por WhatsApp <span aria-hidden="true">&#8594;</span></button>
-        <p class="cart-note" data-cart-note aria-live="polite">Revisa tu pedido y envíalo por WhatsApp para confirmar disponibilidad.</p>
+        <button class="cart-checkout" type="button" data-cart-checkout>Confirmar mi carrito <span aria-hidden="true">&#8594;</span></button>
+        <p class="cart-note" data-cart-note aria-live="polite">Revisa tus productos antes de continuar.</p>
       </div>
     </footer>
   </aside>
@@ -81,7 +71,7 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
         <p class="product-options-description" id="product-options-description" data-product-options-description>Personaliza tu pedido</p>
         <p class="product-options-base" data-product-options-base></p>
       </div>
-      <button type="button" class="product-options-close" data-product-options-close aria-label="Cerrar opciones">Ã—</button>
+      <button type="button" class="product-options-close" data-product-options-close aria-label="Cerrar opciones">×</button>
     </header>
     <div class="product-options-selection-status" data-product-options-summary aria-live="polite"></div>
     <div class="product-options-groups" data-product-options-groups></div>
@@ -93,9 +83,9 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
   </section>
 </div>
 <div class="theme-switcher" aria-label="Selector de tema para pruebas">
-  <button class="theme-switcher-toggle" type="button" aria-expanded="false">Tema <span>âŒ„</span></button>
+  <button class="theme-switcher-toggle" type="button" aria-expanded="false">Tema <span>⌄</span></button>
   <div class="theme-switcher-menu" role="group" aria-label="Temas disponibles">
-    <button type="button" data-theme-choice="auto">AutomÃ¡tico</button>
+    <button type="button" data-theme-choice="auto">Automático</button>
     <button type="button" data-theme-choice="theme-pollo">Pollo Fresa</button>
     <button type="button" data-theme-choice="theme-wings">Fresa Wings</button>
     <button type="button" data-theme-choice="theme-combined">Combinado</button>
@@ -104,7 +94,7 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
 <script define:vars={{ polloCoolSrc: polloCool.src, fresaWingsCoolSrc: fresaWingsCool.src, todoPoderosoSrc: todoPoderoso }}>
   document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach((item) => item.classList.remove('active')); tab.classList.add('active'); document.querySelectorAll('[data-menu]').forEach((menu) => menu.classList.toggle('hidden', menu.getAttribute('data-menu') !== tab.getAttribute('data-brand'))); }));
   let selectedTheme = 'auto'; const themeClasses = ['theme-pollo', 'theme-wings', 'theme-combined', 'theme-closed']; const syncCatalogBrand = (theme) => { const brand = theme === 'theme-pollo' ? 'Pollo Fresa' : theme === 'theme-wings' ? 'Fresa Wings' : null; document.querySelectorAll('[data-catalog-brand], [data-promotion-brand]').forEach((section) => { const sectionBrand = section.getAttribute('data-catalog-brand') ?? section.getAttribute('data-promotion-brand'); section.hidden = Boolean(brand && sectionBrand !== brand); }); }; const applyTheme = (theme, catalogTheme = theme) => { document.body.classList.remove(...themeClasses); document.body.classList.add(theme); syncCatalogBrand(catalogTheme); };
-  const updateStatus = () => { const hour = new Date().getHours(); const pollo = hour >= 9 && hour < 18; const wings = hour >= 15 && hour < 22; const automaticTheme = pollo && wings ? 'theme-combined' : pollo ? 'theme-pollo' : wings ? 'theme-wings' : 'theme-closed'; applyTheme(selectedTheme === 'auto' ? automaticTheme : selectedTheme, selectedTheme === 'auto' ? 'theme-combined' : selectedTheme); document.querySelector('.pollo-status')?.classList.toggle('open', pollo); document.querySelector('.wings-status')?.classList.toggle('open', wings); const labels = document.querySelectorAll('.status-label'); if (labels[0]) labels[0].textContent = pollo ? 'Abierto ahora' : hour < 9 ? 'Abre a las 9 AM' : 'Cerrado Â· abre maÃ±ana'; if (labels[1]) labels[1].textContent = wings ? 'Abierto ahora' : hour < 15 ? 'Abre a las 3 PM' : 'Cerrado Â· abre maÃ±ana'; }; updateStatus(); setInterval(updateStatus, 60000);
+  const updateStatus = () => { const hour = new Date().getHours(); const pollo = hour >= 9 && hour < 18; const wings = hour >= 15 && hour < 22; const automaticTheme = pollo && wings ? 'theme-combined' : pollo ? 'theme-pollo' : wings ? 'theme-wings' : 'theme-closed'; applyTheme(selectedTheme === 'auto' ? automaticTheme : selectedTheme, selectedTheme === 'auto' ? 'theme-combined' : selectedTheme); document.querySelector('.pollo-status')?.classList.toggle('open', pollo); document.querySelector('.wings-status')?.classList.toggle('open', wings); const labels = document.querySelectorAll('.status-label'); if (labels[0]) labels[0].textContent = pollo ? 'Abierto ahora' : hour < 9 ? 'Abre a las 9 AM' : 'Cerrado · abre mañana'; if (labels[1]) labels[1].textContent = wings ? 'Abierto ahora' : hour < 15 ? 'Abre a las 3 PM' : 'Cerrado · abre mañana'; }; updateStatus(); setInterval(updateStatus, 60000);
   const themeToggle = document.querySelector('.theme-switcher-toggle'); const themeMenu = document.querySelector('.theme-switcher-menu'); themeToggle?.addEventListener('click', () => { const open = themeMenu?.classList.toggle('is-open') ?? false; themeToggle.setAttribute('aria-expanded', String(open)); }); document.querySelectorAll('[data-theme-choice]').forEach((choice) => choice.addEventListener('click', () => { selectedTheme = choice.getAttribute('data-theme-choice') ?? 'auto'; updateStatus(); themeMenu?.classList.remove('is-open'); themeToggle?.setAttribute('aria-expanded', 'false'); }));
   document.querySelectorAll<HTMLAnchorElement>('[data-promotion-jump]').forEach((link) => link.addEventListener('click', () => { const theme = link.dataset.promotionTheme; if (theme) { selectedTheme = theme; updateStatus(); } }));
   const polloCard = document.querySelector('.brand-pollo');
@@ -138,7 +128,6 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
 </script>
 <script define:vars={{ cartProducts: directusProducts }}>
   const CART_KEY = 'pollo-fresa-cart-v1';
-  const WHATSAPP_NUMBER = '524463869132';
   const schedules = {
     pollo: { label: 'Pollo Fresa', start: 9, end: 18 },
     wings: { label: 'Fresa Wings', start: 15, end: 22 },
@@ -151,15 +140,6 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
   const cartNoteElement = document.querySelector('[data-cart-note]');
   const checkoutButton = document.querySelector('[data-cart-checkout]');
   const cartCountElements = document.querySelectorAll('[data-cart-count]');
-  const checkoutForm = document.querySelector('[data-cart-form]');
-  const deliveryField = document.querySelector('[data-delivery-field]');
-  const deliveryAddress = document.querySelector('[data-delivery-address]');
-  const customerName = document.querySelector('[data-customer-name]');
-  const customerPhone = document.querySelector('[data-customer-phone]');
-  const customerNotes = document.querySelector('[data-customer-notes]');
-  const pickupLocation = document.querySelector('[data-pickup-location]');
-  const pickupHelp = document.querySelector('[data-pickup-help]');
-  const pickupField = document.querySelector('.cart-pickup-field');
   const checkoutError = document.querySelector('[data-checkout-error]');
   const productOptionsModal = document.querySelector('[data-product-options-modal]');
   const productOptionsTitle = document.querySelector('[data-product-options-title]');
@@ -234,34 +214,6 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
     }
     document.querySelectorAll('[data-cart-toggle]').forEach((button) => button.setAttribute('aria-expanded', String(open)));
   };
-  const getOrderType = () => document.querySelector('input[name="order-type"]:checked')?.value ?? 'pickup';
-  const syncDeliveryFields = () => {
-    const isDelivery = getOrderType() === 'delivery';
-    if (deliveryField instanceof HTMLElement) deliveryField.hidden = !isDelivery;
-    if (pickupField instanceof HTMLElement) pickupField.hidden = isDelivery;
-    if (deliveryAddress instanceof HTMLTextAreaElement) deliveryAddress.required = isDelivery;
-  };
-  const syncPickupLocation = (items) => {
-    if (!(pickupLocation instanceof HTMLSelectElement)) return;
-    const brands = new Set(items.map(({ product }) => getBrandKey(product)));
-    const hasPollo = brands.has('pollo');
-    const hasWings = brands.has('wings');
-    if (hasPollo && hasWings) {
-      pickupLocation.innerHTML = '<option value="Pedidos separados por marca">Pollo Fresa y Fresa Wings · pedidos separados</option>';
-      pickupLocation.disabled = true;
-      if (pickupHelp) pickupHelp.textContent = 'Al confirmar, registraremos un pedido para cada marca en su sucursal correspondiente.';
-      return;
-    }
-    if (hasWings) {
-      pickupLocation.innerHTML = '<option value="Fresa Wings · Av. Independencia 1811, Miguel Hidalgo">Fresa Wings · Miguel Hidalgo</option>';
-      pickupLocation.disabled = true;
-      if (pickupHelp) pickupHelp.textContent = 'Tu pedido se registrará en Fresa Wings.';
-      return;
-    }
-    pickupLocation.innerHTML = '<option value="Pollo Fresa · Av. Mariano J. García 1254, Los Álamos">Pollo Fresa · Los Álamos</option>';
-    pickupLocation.disabled = true;
-    if (pickupHelp) pickupHelp.textContent = hasPollo ? 'Tu pedido se registrará en Pollo Fresa.' : '';
-  };
   const showCheckoutError = (message = '') => {
     if (!(checkoutError instanceof HTMLElement)) return;
     checkoutError.textContent = message;
@@ -292,10 +244,8 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
       }).join('') : `<section class="cart-empty-state" aria-labelledby="cart-empty-title"><div class="cart-empty-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M8 17h32l-3 25H11L8 17Z"/><path d="M17 18v-5a7 7 0 0 1 14 0v5M19 27v7m10-7v7"/></svg></div><p class="cart-empty-kicker">Tu antojo empieza aquí</p><h3 id="cart-empty-title">Tu carrito está vacío</h3><p class="cart-empty-copy">Elige tus favoritos y arma tu pedido.</p><nav class="cart-empty-brands" aria-label="Explorar marcas"><a href="#pollo-menu" data-cart-browse><span><b>Pollo Fresa</b><small>Frito, asado y rostizado</small></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a><a href="#fresa-wings-menu" data-cart-browse><span><b>Fresa Wings</b><small>Alitas, boneless y más</small></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></nav><a class="cart-empty-cta" href="#pollo-menu" data-cart-browse>Explorar el menú<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></section>`;
     }
     const canCheckout = hydratedItems.length > 0;
-    syncPickupLocation(hydratedItems);
-    if (checkoutForm instanceof HTMLElement) checkoutForm.hidden = !hydratedItems.length;
     if (checkoutButton instanceof HTMLButtonElement) checkoutButton.disabled = !canCheckout;
-    if (cartNoteElement) cartNoteElement.textContent = !hydratedItems.length ? 'Agrega tus favoritos para empezar.' : 'Revisa tu pedido y envíalo por WhatsApp para confirmar disponibilidad.';
+    if (cartNoteElement) cartNoteElement.textContent = !hydratedItems.length ? 'Agrega tus favoritos para empezar.' : 'Elige cómo recibirlo y revisa tu pedido en el siguiente paso.';
   };
 
   const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
@@ -518,7 +468,6 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
     if (event.shiftKey && (document.activeElement === first || !cartDrawer.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && (document.activeElement === last || !cartDrawer.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
   });
-  document.querySelectorAll('input[name="order-type"]').forEach((input) => input.addEventListener('change', () => { showCheckoutError(); syncDeliveryFields(); }));
   cartItemsElement?.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;
     const removeButton = target?.closest('[data-cart-remove]');
@@ -554,32 +503,21 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
       if (editControl instanceof HTMLButtonElement) editControl.focus();
       return;
     }
-    const name = customerName instanceof HTMLInputElement ? customerName.value.trim() : '';
-    const phone = customerPhone instanceof HTMLInputElement ? customerPhone.value.trim() : '';
-    const notes = customerNotes instanceof HTMLTextAreaElement ? customerNotes.value.trim() : '';
-    const orderType = getOrderType();
-    const address = deliveryAddress instanceof HTMLTextAreaElement ? deliveryAddress.value.trim() : '';
-    const location = pickupLocation instanceof HTMLSelectElement ? pickupLocation.value : 'Pollo Fresa';
-    if (!name) { showCheckoutError('Escribe el nombre de quien recibirá el pedido.'); customerName?.focus(); return; }
-    if (!phone) { showCheckoutError('Escribe un teléfono de contacto.'); customerPhone?.focus(); return; }
-    if (orderType === 'delivery' && !address) { showCheckoutError('Escribe la dirección para el pedido a domicilio.'); deliveryAddress?.focus(); return; }
     showCheckoutError();
-    const lines = hydratedItems.map((item) => {
-      const options = getLineOptions(item.product, item).map(({ group, option }) => `${group.name}: ${option.name}`);
-      return `- ${item.quantity} x ${item.product.name} (${schedules[getBrandKey(item.product)].label}) - ${formatPrice(getLineUnitPrice(item.product, item) * item.quantity)}${options.length ? `\n   ${options.join(', ')}` : ''}`;
-    });
-    const total = hydratedItems.reduce((sum, item) => sum + getLineUnitPrice(item.product, item) * item.quantity, 0);
-    const fulfillment = orderType === 'delivery' ? ['*Modalidad:* A domicilio', `*Dirección:* ${address}`] : ['*Modalidad:* Recoger en sucursal', `*Sucursal:* ${location}`];
-    const orderMessage = ['Hola, quiero hacer este pedido:', '', ...lines, '', `*Total:* ${formatPrice(total)}`, '', ...fulfillment, '*Pago:* Efectivo', `*Cliente:* ${name}`, `*Teléfono:* ${phone}`, ...(notes ? [`*Notas:* ${notes}`] : []), '', '¿Me ayudan a confirmar disponibilidad y tiempo de entrega?'].join('\n');
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderMessage)}`, '_blank', 'noopener');
+    window.location.assign('/checkout');
   });
-  syncDeliveryFields();
   renderCart();
+  if (new URLSearchParams(window.location.search).get('cart') === 'open') {
+    requestAnimationFrame(() => setDrawer(true));
+    const url = new URL(window.location.href);
+    url.searchParams.delete('cart');
+    window.history.replaceState(null, '', `${url.pathname}${url.hash}`);
+  }
   setInterval(renderCart, 60000);
 </script>
 <style is:global>
   .catalog-error{padding:80px 24px;background:#fff8e9;text-align:center;color:#231b19}
-  .catalog-error h2{font-size:clamp(2rem,5vw,4rem)}
+  .catalog-error h2{font-size:clamp(2rem,5vw,4rem)}.catalog-error .catalog-retry{display:inline-flex;min-height:46px;align-items:center;margin-top:18px;padding:0 18px;border-radius:4px;color:#fff8e9;background:#231b19;font-size:.75rem;font-weight:800;text-decoration:none}.catalog-error .catalog-retry:hover{background:#40332e}
   .promotion-directory{display:flex;max-width:1440px;align-items:center;gap:10px;margin:0 auto;padding:14px 24px;border-bottom:1px solid #ffffff26;color:#fff8e9}
   .promotion-directory>span{margin-right:auto;color:#d3c5bb;font-size:.63rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
   .promotion-directory>a{display:inline-flex;min-height:40px;align-items:center;gap:9px;padding:0 12px;border:1px solid #ffffff35;color:inherit;font-size:.7rem;font-weight:800;text-decoration:none;transition:background .18s ease,border-color .18s ease}
@@ -628,7 +566,7 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
   body.theme-combined .brands { position:relative; width:100vw; max-width:none; margin:0 0 72px calc(50% - 50vw); padding:0; overflow:visible; }
   body.theme-combined .combined-video { position:relative; z-index:1; display:block; width:100%; height:380px; margin:0 0 58px; border-radius:0; object-fit:cover; filter:brightness(1.03) contrast(1.12) saturate(1.48); box-shadow:none; }
   body.theme-combined .combined-power-title { position:relative; z-index:2; display:block; width:100%; margin:0; padding:30px max(24px,calc((100vw - 1040px)/2)); overflow:hidden; text-align:center; color:#fff8ed; background:linear-gradient(100deg,#21110f 0%,#552018 48%,#28110e 100%); border-bottom:4px solid #e7472c; }
-  body.theme-combined .combined-power-title::before, body.theme-combined .combined-power-title::after { content:'âœ¦'; position:absolute; top:50%; color:#ffc84b; font-size:2rem; opacity:.65; transform:translateY(-50%); }
+  body.theme-combined .combined-power-title::before, body.theme-combined .combined-power-title::after { content:'✦'; position:absolute; top:50%; color:#ffc84b; font-size:2rem; opacity:.65; transform:translateY(-50%); }
   body.theme-combined .combined-power-title::before { left:8%; }
   body.theme-combined .combined-power-title::after { right:8%; }
   body.theme-combined .combined-power-title p { margin:0 0 8px; color:#ffc84b; font-size:.68rem; font-weight:800; letter-spacing:.2em; text-transform:uppercase; }
@@ -930,4 +868,8 @@ const wingsPromotions = promotions.filter((promotion) => promotion.brand === 'Fr
     :where([data-motion-hover]) { transition: none; }
     :where([data-motion-hover]:active) { transform: none; }
   }
+</style>
+<style is:global>
+  [data-cart-ui] .cart-drawer{grid-template-rows:auto auto minmax(0,1fr) auto auto}
+  @media(max-width:600px){[data-cart-ui] .cart-drawer{grid-template-rows:auto auto minmax(0,1fr) auto auto}}
 </style>
